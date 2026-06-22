@@ -3,8 +3,8 @@ import { App } from "./App.js";
 import { render, screen } from "@testing-library/react";
 
 describe("App", () => {
-  it("renders greeting", () => {
+  it("renders a run ID", () => {
     render(<App />);
-    expect(screen.getByText("Hello, Team!")).toBeDefined();
+    expect(screen.getByText(/Run ID:/)).toBeDefined();
   });
 });
