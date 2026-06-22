@@ -1,8 +1,9 @@
-import { runWorkflow } from "@aiteam/core";
+import { runDocsOnlyWorkflow } from "@aiteam/core";
 
-function start(): void {
+async function start(): Promise<void> {
   console.log("Local server starting...");
-  console.log(runWorkflow("Server"));
+  const result = await runDocsOnlyWorkflow({ requirement: "Server" });
+  console.log(result);
 }
 
-start();
+void start();

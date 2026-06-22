@@ -1,7 +1,8 @@
-import { runWorkflow } from "@aiteam/core";
+import { runDocsOnlyWorkflow } from "@aiteam/core";
 
-function main(): void {
-  console.log(runWorkflow("CLI"));
+async function main(): Promise<void> {
+  const result = await runDocsOnlyWorkflow({ requirement: "CLI" });
+  console.log(result);
 }
 
-main();
+void main();
