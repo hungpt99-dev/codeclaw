@@ -17,5 +17,11 @@
     "test:coverage": "vitest run --coverage",
     "build": "tsc"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@aiteam/shared": "workspace:*",
+    "better-sqlite3": "^12.11.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13"
+  }
 }
