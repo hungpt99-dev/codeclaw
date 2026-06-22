@@ -1,0 +1,16 @@
+node_modules
+dist
+build
+coverage
+.env
+.env.*
+!.env.example
+
+.DS_Store
+
+.ai-team/database.sqlite
+.ai-team/runs
+.ai-team/logs
+.ai-team/tmp
+
+*.log

@@ -1,0 +1,56 @@
+{
+  "name": "local-ai-software-team",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.1.2",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint:fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm -r test",
+    "test:coverage": "pnpm -r test:coverage",
+    "quality": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm deps:check && pnpm codegraph:check",
+    "prepare": "husky",
+    "deps:check": "knip",
+    "codegraph": "pnpm codegraph:deps && pnpm arch:graph",
+    "codegraph:check": "pnpm codegraph:circular && pnpm arch:check",
+    "codegraph:deps": "madge apps packages --extensions ts,tsx --image docs/codegraph/dependencies.svg",
+    "codegraph:circular": "madge apps packages --extensions ts,tsx --circular",
+    "arch:check": "dependency-cruiser apps packages --config .dependency-cruiser.cjs",
+    "arch:graph": "dependency-cruiser apps packages --config .dependency-cruiser.cjs --output-type dot | dot -T svg > docs/codegraph/architecture.svg"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,md,css}": [
+      "prettier --write"
+    ],
+    "*.{ts,tsx}": [
+      "eslint --fix"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@eslint/js": "^9.25.1",
+    "@types/node": "^24.10.1",
+    "dependency-cruiser": "^16.10.4",
+    "eslint": "^9.25.1",
+    "husky": "^9.1.7",
+    "knip": "^5.54.3",
+    "lint-staged": "^15.5.2",
+    "madge": "^8.0.0",
+    "prettier": "^3.5.3",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.32.1",
+    "vitest": "^3.1.3"
+  }
+}

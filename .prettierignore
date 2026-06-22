@@ -1,0 +1,8 @@
+node_modules
+dist
+build
+coverage
+.ai-team
+pnpm-lock.yaml
+docs/codegraph/*.svg
+docs/codegraph/*.html

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    "apps/cli": {},
+    "apps/local-server": {},
+    "apps/local-web": {},
+    "packages/core": {},
+    "packages/shared": {},
+    "packages/storage": {},
+    "packages/adapters": {}
+  },
+  "ignoreBinaries": ["dot"]
+}
