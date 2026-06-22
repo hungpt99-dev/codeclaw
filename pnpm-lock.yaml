@@ -59,6 +59,15 @@ importers:
       '@aiteam/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@aiteam/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@aiteam/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
+      commander:
+        specifier: ^13.1.0
+        version: 13.1.0
 
   apps/local-server:
     dependencies:
