@@ -15,6 +15,9 @@
     "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
-    "@aiteam/core": "workspace:*"
+    "@aiteam/core": "workspace:*",
+    "@aiteam/shared": "workspace:*",
+    "@aiteam/storage": "workspace:*",
+    "fastify": "^5.4.0"
   }
 }

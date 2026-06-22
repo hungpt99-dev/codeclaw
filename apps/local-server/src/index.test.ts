@@ -1,7 +1,296 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { mkdir, writeFile, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { createApp } from "./server.js";
+import type { FastifyInstance } from "fastify";
 
-describe("Local Server", () => {
-  it("placeholder", () => {
-    expect(true).toBe(true);
+const TEST_DIR = join(".ai-team", "test-server");
+const DB_PATH = join(TEST_DIR, "test.sqlite");
+const PROMPTS_DIR = join(TEST_DIR, "prompts");
+
+let app: FastifyInstance;
+
+beforeAll(async () => {
+  await mkdir(TEST_DIR, { recursive: true });
+  await mkdir(PROMPTS_DIR, { recursive: true });
+  await writeFile(join(PROMPTS_DIR, "ba-agent.md"), "# BA Agent\n\nYou are a BA agent.", "utf-8");
+  await writeFile(
+    join(PROMPTS_DIR, "architect-agent.md"),
+    "# Architect Agent\n\nYou are an architect.",
+    "utf-8",
+  );
+
+  app = createApp({ dbPath: DB_PATH, promptsDir: PROMPTS_DIR });
+  await app.ready();
+});
+
+afterAll(async () => {
+  await app.close();
+  await rm(TEST_DIR, { recursive: true, force: true });
+});
+
+function getJson<T>(res: { json: () => T }): T {
+  return res.json();
+}
+
+interface RunItem {
+  id: string;
+  title: string;
+  mode: string;
+  status: string;
+}
+
+interface ArtifactItem {
+  id: string;
+  content?: string;
+}
+
+interface PromptItem {
+  name: string;
+  content?: string;
+  updated?: boolean;
+}
+
+describe("Local Server API", () => {
+  describe("GET /api/health", () => {
+    it("returns ok status", async () => {
+      const res = await app.inject({ method: "GET", url: "/api/health" });
+      expect(res.statusCode).toBe(200);
+      expect(getJson(res)).toEqual({ status: "ok" });
+    });
+  });
+
+  describe("GET /api/settings", () => {
+    it("returns settings list", async () => {
+      const res = await app.inject({ method: "GET", url: "/api/settings" });
+      expect(res.statusCode).toBe(200);
+      expect(getJson(res)).toHaveProperty("settings");
+    });
+  });
+
+  describe("PUT /api/settings", () => {
+    it("updates settings", async () => {
+      const res = await app.inject({
+        method: "PUT",
+        url: "/api/settings",
+        payload: { projectName: "test-project" },
+      });
+      expect(res.statusCode).toBe(200);
+      const body = getJson<{ settings: { key: string; value: string }[] }>(res);
+      expect(body.settings).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: "projectName", value: "test-project" }),
+        ]),
+      );
+    });
+
+    it("rejects non-object body", async () => {
+      const res = await app.inject({
+        method: "PUT",
+        url: "/api/settings",
+        payload: "invalid",
+      });
+      expect(res.statusCode).toBe(415);
+    });
+  });
+
+  describe("POST /api/runs", () => {
+    it("creates a run and returns it", async () => {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/runs",
+        payload: { requirement: "Test requirement for API" },
+      });
+      expect(res.statusCode).toBe(200);
+      const body = getJson<{ run: RunItem }>(res);
+      expect(body.run).toBeDefined();
+      expect(body.run.title).toBe("Test requirement for API");
+      expect(body.run.mode).toBe("docs-only");
+      expect(body.run.status).toBe("REPORT_GENERATED");
+    });
+
+    it("rejects empty requirement", async () => {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/runs",
+        payload: { requirement: "" },
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it("rejects missing requirement", async () => {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/runs",
+        payload: {},
+      });
+      expect(res.statusCode).toBe(400);
+    });
+  });
+
+  describe("GET /api/runs", () => {
+    it("lists runs", async () => {
+      const res = await app.inject({ method: "GET", url: "/api/runs" });
+      expect(res.statusCode).toBe(200);
+      const body = getJson<{ runs: RunItem[] }>(res);
+      expect(body.runs).toBeInstanceOf(Array);
+      expect(body.runs.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("GET /api/runs/:id", () => {
+    it("returns a specific run", async () => {
+      const listRes = await app.inject({ method: "GET", url: "/api/runs" });
+      const runs = getJson<{ runs: RunItem[] }>(listRes).runs;
+      const firstRun = runs[0];
+      expect(firstRun).toBeDefined();
+      if (!firstRun) return;
+
+      const res = await app.inject({ method: "GET", url: `/api/runs/${firstRun.id}` });
+      expect(res.statusCode).toBe(200);
+      expect(getJson<{ run: RunItem }>(res).run.id).toBe(firstRun.id);
+    });
+
+    it("returns 404 for unknown run", async () => {
+      const res = await app.inject({ method: "GET", url: "/api/runs/nonexistent" });
+      expect(res.statusCode).toBe(404);
+    });
+  });
+
+  describe("GET /api/runs/:id/artifacts", () => {
+    it("lists artifacts for a run", async () => {
+      const listRes = await app.inject({ method: "GET", url: "/api/runs" });
+      const runs = getJson<{ runs: RunItem[] }>(listRes).runs;
+      const firstRun = runs[0];
+      expect(firstRun).toBeDefined();
+      if (!firstRun) return;
+
+      const res = await app.inject({
+        method: "GET",
+        url: `/api/runs/${firstRun.id}/artifacts`,
+      });
+      expect(res.statusCode).toBe(200);
+      const body = getJson<{ artifacts: ArtifactItem[] }>(res);
+      expect(body.artifacts).toBeInstanceOf(Array);
+      expect(body.artifacts.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("GET /api/runs/:id/artifacts/:artifactId", () => {
+    it("returns artifact content", async () => {
+      const listRes = await app.inject({ method: "GET", url: "/api/runs" });
+      const runs = getJson<{ runs: RunItem[] }>(listRes).runs;
+      const firstRun = runs[0];
+      expect(firstRun).toBeDefined();
+      if (!firstRun) return;
+
+      const artRes = await app.inject({
+        method: "GET",
+        url: `/api/runs/${firstRun.id}/artifacts`,
+      });
+      const artifacts = getJson<{ artifacts: ArtifactItem[] }>(artRes).artifacts;
+      const firstArtifact = artifacts[0];
+      expect(firstArtifact).toBeDefined();
+      if (!firstArtifact) return;
+
+      const res = await app.inject({
+        method: "GET",
+        url: `/api/runs/${firstRun.id}/artifacts/${firstArtifact.id}`,
+      });
+      expect(res.statusCode).toBe(200);
+      expect(getJson<{ artifact: ArtifactItem }>(res).artifact).toHaveProperty("content");
+    });
+
+    it("returns 404 for unknown artifact", async () => {
+      const listRes = await app.inject({ method: "GET", url: "/api/runs" });
+      const runs = getJson<{ runs: RunItem[] }>(listRes).runs;
+      const firstRun = runs[0];
+      expect(firstRun).toBeDefined();
+      if (!firstRun) return;
+
+      const res = await app.inject({
+        method: "GET",
+        url: `/api/runs/${firstRun.id}/artifacts/nonexistent`,
+      });
+      expect(res.statusCode).toBe(404);
+    });
+  });
+
+  describe("GET /api/prompts", () => {
+    it("lists prompt templates", async () => {
+      const res = await app.inject({ method: "GET", url: "/api/prompts" });
+      expect(res.statusCode).toBe(200);
+      const body = getJson<{ prompts: PromptItem[] }>(res);
+      expect(body.prompts).toBeInstanceOf(Array);
+      expect(body.prompts.length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  describe("GET /api/prompts/:name", () => {
+    it("returns prompt content", async () => {
+      const res = await app.inject({ method: "GET", url: "/api/prompts/ba-agent.md" });
+      expect(res.statusCode).toBe(200);
+      expect(getJson<PromptItem>(res).content).toContain("BA Agent");
+    });
+
+    it("returns 404 for unknown prompt", async () => {
+      const res = await app.inject({ method: "GET", url: "/api/prompts/nonexistent.md" });
+      expect(res.statusCode).toBe(404);
+    });
+
+    it("blocks path traversal (Fastify normalizes before routing)", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: "/api/prompts/../../../etc/passwd",
+      });
+      expect(res.statusCode).toBe(404);
+    });
+
+    it("blocks path traversal with encoded dots", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: "/api/prompts/..%2F..%2Fetc%2Fpasswd",
+      });
+      expect(res.statusCode).toBe(400);
+    });
+  });
+
+  describe("PUT /api/prompts/:name", () => {
+    it("updates prompt content", async () => {
+      const res = await app.inject({
+        method: "PUT",
+        url: "/api/prompts/ba-agent.md",
+        payload: { content: "# Updated BA Agent" },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(getJson<PromptItem>(res).updated).toBe(true);
+    });
+
+    it("returns 404 for unknown prompt", async () => {
+      const res = await app.inject({
+        method: "PUT",
+        url: "/api/prompts/nonexistent.md",
+        payload: { content: "test" },
+      });
+      expect(res.statusCode).toBe(404);
+    });
+
+    it("rejects missing content", async () => {
+      const res = await app.inject({
+        method: "PUT",
+        url: "/api/prompts/ba-agent.md",
+        payload: {},
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it("blocks path traversal on PUT (Fastify normalizes before routing)", async () => {
+      const res = await app.inject({
+        method: "PUT",
+        url: "/api/prompts/../../../etc/passwd",
+        payload: { content: "hacked" },
+      });
+      expect(res.statusCode).toBe(404);
+    });
   });
 });

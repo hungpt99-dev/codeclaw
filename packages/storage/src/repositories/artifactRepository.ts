@@ -1,6 +1,6 @@
-import type Database from "better-sqlite3";
 import { nowIso } from "@aiteam/shared";
 import type { ArtifactType } from "@aiteam/shared";
+import type { DbConnection } from "../db.js";
 
 interface ArtifactRow {
   id: string;
@@ -43,7 +43,7 @@ export interface CreateArtifactInput {
   format: string;
 }
 
-export function createArtifactRepository(db: Database.Database) {
+export function createArtifactRepository(db: DbConnection) {
   const create = (input: CreateArtifactInput): ArtifactRecord => {
     const now = nowIso();
     db.prepare(

@@ -1,12 +1,35 @@
-import type Database from "better-sqlite3";
 import { nowIso } from "@aiteam/shared";
+import type { DbConnection } from "../db.js";
 
-export function createSettingRepository(db: Database.Database) {
+interface SettingRow {
+  key: string;
+  value: string;
+  updated_at: string;
+}
+
+export interface SettingRecord {
+  key: string;
+  value: string;
+  updatedAt: string;
+}
+
+export function createSettingRepository(db: DbConnection) {
   const get = (key: string): string | undefined => {
     const row = db.prepare("SELECT value FROM settings WHERE key = ?").get(key) as
       | { value: string }
       | undefined;
     return row?.value;
+  };
+
+  const getAll = (): SettingRecord[] => {
+    const rows = db
+      .prepare("SELECT key, value, updated_at FROM settings ORDER BY key")
+      .all() as SettingRow[];
+    return rows.map((row) => ({
+      key: row.key,
+      value: row.value,
+      updatedAt: row.updated_at,
+    }));
   };
 
   const set = (key: string, value: string): void => {
@@ -16,5 +39,5 @@ export function createSettingRepository(db: Database.Database) {
     ).run(key, value, now);
   };
 
-  return { get, set };
+  return { get, getAll, set };
 }

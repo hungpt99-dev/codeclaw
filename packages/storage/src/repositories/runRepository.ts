@@ -1,6 +1,6 @@
-import type Database from "better-sqlite3";
 import { nowIso } from "@aiteam/shared";
 import type { RunMode, RunStatus } from "@aiteam/shared";
+import type { DbConnection } from "../db.js";
 
 interface RunRow {
   id: string;
@@ -41,7 +41,7 @@ export interface CreateRunInput {
   mode: RunMode;
 }
 
-export function createRunRepository(db: Database.Database) {
+export function createRunRepository(db: DbConnection) {
   const create = (input: CreateRunInput): RunRecord => {
     const now = nowIso();
     db.prepare(
@@ -60,6 +60,11 @@ export function createRunRepository(db: Database.Database) {
     return rowToRecord(row);
   };
 
+  const findAll = (): RunRecord[] => {
+    const rows = db.prepare("SELECT * FROM runs ORDER BY created_at DESC").all() as RunRow[];
+    return rows.map(rowToRecord);
+  };
+
   const findRecent = (limit: number): RunRecord[] => {
     const rows = db
       .prepare("SELECT * FROM runs ORDER BY created_at DESC LIMIT ?")
@@ -73,5 +78,5 @@ export function createRunRepository(db: Database.Database) {
     return findById(id);
   };
 
-  return { create, findById, findRecent, updateStatus };
+  return { create, findById, findAll, findRecent, updateStatus };
 }

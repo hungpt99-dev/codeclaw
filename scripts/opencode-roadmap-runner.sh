@@ -5,7 +5,8 @@ set -Eeuo pipefail
 # OpenCode Roadmap Runner
 # =============================================================================
 # Automatically runs OpenCode step by step through the Local AI Software Team
-# roadmap, starting from Step 02 by default (Step 01 is already completed).
+# roadmap. Step 01 is already completed. Starts from 00-docs-preflight by
+# default if state is "01-engineering-foundation", otherwise resumes from state.
 # =============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -28,6 +29,7 @@ QUALITY_COMMAND="${QUALITY_COMMAND:-}"
 # Step definitions (in order)
 # -----------------------------------------------------------------------------
 STEP_IDS=(
+  "00-docs-preflight"
   "02-monorepo-structure"
   "03-shared-package"
   "04-storage-package"
@@ -47,6 +49,7 @@ STEP_IDS=(
 
 # Commit messages for each step (index-aligned with STEP_IDS)
 STEP_COMMIT_MESSAGES=(
+  "docs: add coding-agent documentation source of truth"
   "chore(repo): create monorepo structure"
   "feat(shared): add domain types and config schema"
   "feat(storage): add sqlite storage repositories"
@@ -183,8 +186,8 @@ get_start_index() {
     target="$LAST_COMPLETED"
     log_info "Resuming from last completed step: ${YELLOW}${target}${NC}" >&2
   else
-    # Default: start from Step 02
-    target="02-monorepo-structure"
+    # Default: start from 00-docs-preflight
+    target="00-docs-preflight"
     log_info "No previous state. Starting from default: ${YELLOW}${target}${NC}" >&2
   fi
 
@@ -326,9 +329,21 @@ run_fix_attempt() {
   quality_content=$(tail -n 100 "$quality_log" 2>/dev/null || echo "(quality log not available)")
 
   cat > "$fix_prompt_file" <<FIXEOF
-The previous step failed quality checks.
+## Mandatory Fix Documentation Context
 
-You must fix the issues shown in the quality log.
+This fix attempt is a new `opencode run` session.
+
+Do not rely on memory from previous OpenCode runs.
+
+Before fixing, read these files once for this session if they exist:
+
+- /docs folder
+- the current step prompt
+- the quality log
+
+After reading these once in this same fix session, do not reread them unless needed.
+
+Fix only the quality issues shown in the quality log.
 
 Rules:
 - Do not implement unrelated features.
@@ -337,7 +352,12 @@ Rules:
 - Do not bypass lint/typecheck/build.
 - Keep changes minimal.
 - Preserve the intended architecture.
-- After fixing, summarize what was changed.
+- Do not make optional integrations required.
+- Do not add cloud backend.
+- Do not add login.
+- Do not add billing.
+- Do not add desktop app.
+- After fixing, summarize docs read and what changed.
 
 Failed step:
 ${step_id}
@@ -404,11 +424,23 @@ auto_commit() {
 run_step() {
   local step_id="$1"
   local prompt_file="$STEPS_DIR/${step_id}.md"
+  local quality_cmd
+  quality_cmd=$(get_quality_command)
 
   echo ""
   echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
   log_step "Starting step: ${GREEN}${step_id}${NC}"
   echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo ""
+  log_info "Current step:   ${GREEN}${step_id}${NC}"
+  log_info "State:          ${GREEN}$(cat "$STATE_FILE" 2>/dev/null || echo "N/A")${NC}"
+  log_info "Prompt:         ${prompt_file}"
+  log_info "Log:            ${LOGS_DIR}/${step_id}.log"
+  log_info "Auto commit:    ${GREEN}$([[ "$SKIP_COMMIT" == "1" ]] && echo "disabled" || echo "enabled")${NC}"
+  log_info "Quality cmd:    ${YELLOW}${quality_cmd}${NC}"
+  log_warn "Session rule:   this is a new OpenCode session. Read docs once before coding."
+  log_warn "                Do not rely on previous session memory."
+  echo ""
 
   # Check prompt file exists
   if [[ ! -f "$prompt_file" ]]; then
