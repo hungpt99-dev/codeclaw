@@ -33,6 +33,7 @@ const AGENT_FORMATS = [
 
 const GROUPS = [
   { key: "requirement", title: "Requirement", prefix: "requirement/" },
+  { key: "scope", title: "Scope", prefix: "scope/" },
   { key: "design", title: "Design", prefix: "design/" },
   { key: "tasks", title: "Tasks", prefix: "tasks/" },
   { key: "tests", title: "Tests", prefix: "tests/" },

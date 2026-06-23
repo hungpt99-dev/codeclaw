@@ -37,7 +37,9 @@ export async function resumeCommand(runId: string): Promise<void> {
   const approvalRepo = createApprovalRepository(db);
 
   let gateToCheck: ApprovalGate;
-  if (run.status === "WAITING_FOR_REQUIREMENT_APPROVAL") {
+  if (run.status === "WAITING_FOR_SCOPE_APPROVAL") {
+    gateToCheck = "SCOPE";
+  } else if (run.status === "WAITING_FOR_REQUIREMENT_APPROVAL") {
     gateToCheck = "REQUIREMENT";
   } else if (run.status === "WAITING_FOR_PLAN_APPROVAL") {
     gateToCheck = "PLAN";

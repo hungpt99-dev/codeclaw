@@ -30,6 +30,7 @@ export const configSchema = z.object({
   }),
   agents: z.object({
     defaultBa: aiCliToolSchema.default("claude"),
+    defaultPo: aiCliToolSchema.default("claude"),
     defaultArchitect: aiCliToolSchema.default("claude"),
     defaultPm: aiCliToolSchema.default("claude"),
     defaultQa: aiCliToolSchema.default("claude"),
@@ -46,6 +47,7 @@ export const configSchema = z.object({
     defaultMode: z.enum(Object.values(RunMode) as [string, ...string[]]),
     defaultOutputLanguage: z.string(),
     generateTraceability: z.boolean(),
+    requireScopeApproval: z.boolean(),
     requireRequirementApproval: z.boolean(),
     requirePlanApproval: z.boolean(),
   }),
@@ -101,6 +103,7 @@ export const defaultConfig: Config = {
   },
   agents: {
     defaultBa: "claude",
+    defaultPo: "claude",
     defaultArchitect: "claude",
     defaultPm: "claude",
     defaultQa: "claude",
@@ -117,6 +120,7 @@ export const defaultConfig: Config = {
     defaultMode: "docs-only",
     defaultOutputLanguage: "bilingual",
     generateTraceability: false,
+    requireScopeApproval: false,
     requireRequirementApproval: false,
     requirePlanApproval: false,
   },

@@ -3,6 +3,7 @@ import { createRunId, nowIso } from "@aiteam/shared";
 import type { SlackIntegrationConfig } from "@aiteam/shared";
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
 import { runBaAgent } from "../agents/baAgent.js";
+import { runPoAgent } from "../agents/poAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
 import { runPmAgent } from "../agents/pmAgent.js";
 import { runQaAgent } from "../agents/qaAgent.js";
@@ -63,6 +64,11 @@ export async function runDocsOnlyWorkflow(
       ? getAiToolConfig("BA", input.agentMapping, input.cliConfigs)
       : undefined;
 
+  const poTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("PRODUCT_OWNER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
   const architectTool: AiToolConfig | undefined =
     input.agentMapping && input.cliConfigs
       ? getAiToolConfig("ARCHITECT", input.agentMapping, input.cliConfigs)
@@ -120,9 +126,34 @@ export async function runDocsOnlyWorkflow(
   await writeArtifact(join(paths.requirementDir, "assumptions.md"), baOutput.assumptions);
   artifacts.push(join(paths.requirementDir, "assumptions.md"));
 
+  const poOutput = await runPoAgent(
+    {
+      clarifiedRequirement: baOutput.clarifiedRequirement,
+      acceptanceCriteria: baOutput.acceptanceCriteria,
+      openQuestions: baOutput.openQuestions,
+      assumptions: baOutput.assumptions,
+    },
+    { templateDir, aiTool: poTool },
+  );
+
+  await writeArtifact(paths.scopeDefinitionPath, poOutput.productGoal);
+  artifacts.push(paths.scopeDefinitionPath);
+
+  await writeArtifact(join(paths.scopeDir, "mvp-scope.md"), poOutput.mvpScope);
+  artifacts.push(join(paths.scopeDir, "mvp-scope.md"));
+
+  await writeArtifact(paths.outOfScopePath, poOutput.outOfScope);
+  artifacts.push(paths.outOfScopePath);
+
+  await writeArtifact(paths.successCriteriaPath, poOutput.successCriteria);
+  artifacts.push(paths.successCriteriaPath);
+
   const architectInput: Parameters<typeof runArchitectAgent>[0] = {
     requirement: input.requirement,
     clarifiedRequirement: baOutput.clarifiedRequirement,
+    scopeDefinition: poOutput.productGoal,
+    mvpScope: poOutput.mvpScope,
+    successCriteria: poOutput.successCriteria,
     ...(repoAnalysis ? { repositoryAnalysis: repoAnalysis } : {}),
   };
 

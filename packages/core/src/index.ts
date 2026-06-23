@@ -5,6 +5,8 @@ export { getArtifactPaths, createArtifactDirs, writeArtifact } from "./artifacts
 export type { ArtifactPaths } from "./artifacts/artifactWriter.js";
 export { runBaAgent } from "./agents/baAgent.js";
 export type { BaAgentInput, BaAgentOutput } from "./agents/baAgent.js";
+export { runPoAgent } from "./agents/poAgent.js";
+export type { PoAgentInput, PoAgentOutput } from "./agents/poAgent.js";
 export { runArchitectAgent } from "./agents/architectAgent.js";
 export type { ArchitectAgentInput, ArchitectAgentOutput } from "./agents/architectAgent.js";
 export { runPmAgent } from "./agents/pmAgent.js";

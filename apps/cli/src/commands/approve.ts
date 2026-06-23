@@ -37,6 +37,7 @@ export async function approveCommand(runId: string, options: ApproveOptions): Pr
 
   const gate = (options.gate ?? "REQUIREMENT").toUpperCase() as ApprovalGate;
   const validGates: ApprovalGate[] = [
+    "SCOPE",
     "REQUIREMENT",
     "PLAN",
     "CODE_GENERATION",
@@ -86,7 +87,9 @@ export async function approveCommand(runId: string, options: ApproveOptions): Pr
     approvalRepo.create(createInput);
   }
 
-  if (gate === "REQUIREMENT") {
+  if (gate === "SCOPE") {
+    runRepo.updateStatus(runId, "SCOPE_GENERATED");
+  } else if (gate === "REQUIREMENT") {
     runRepo.updateStatus(runId, "SPEC_GENERATED");
   } else if (gate === "PLAN") {
     const approval = approvalRepo.findByRunIdAndGate(runId, "REQUIREMENT");

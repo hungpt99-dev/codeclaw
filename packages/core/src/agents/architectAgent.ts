@@ -8,6 +8,9 @@ import { parseArchitectOutput } from "./parsers/architectOutputParser.js";
 export interface ArchitectAgentInput {
   requirement: string;
   clarifiedRequirement: string;
+  scopeDefinition?: string;
+  mvpScope?: string;
+  successCriteria?: string;
   repositoryAnalysis?: RepositoryAnalysis;
 }
 

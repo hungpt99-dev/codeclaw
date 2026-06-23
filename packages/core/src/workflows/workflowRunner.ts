@@ -3,6 +3,7 @@ import { createRunId, nowIso } from "@aiteam/shared";
 import type { ApprovalGate, ApprovalStatus } from "@aiteam/shared";
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
 import { runBaAgent } from "../agents/baAgent.js";
+import { runPoAgent } from "../agents/poAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
 import { runPmAgent } from "../agents/pmAgent.js";
 import { runQaAgent } from "../agents/qaAgent.js";
@@ -10,7 +11,7 @@ import { runReporterAgent } from "../agents/reporterAgent.js";
 import { getAiToolConfig } from "./workflowHelpers.js";
 import type { AiToolConfig } from "./workflowHelpers.js";
 
-export type WorkflowPhase = "requirement" | "plan" | "report";
+export type WorkflowPhase = "scope" | "requirement" | "plan" | "report";
 
 export interface WorkflowGate {
   gate: ApprovalGate;
@@ -64,6 +65,11 @@ export async function runWorkflowWithGates(input: WorkflowInput): Promise<Workfl
       ? getAiToolConfig("BA", input.agentMapping, input.cliConfigs)
       : undefined;
 
+  const poTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("PRODUCT_OWNER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
   const architectTool: AiToolConfig | undefined =
     input.agentMapping && input.cliConfigs
       ? getAiToolConfig("ARCHITECT", input.agentMapping, input.cliConfigs)
@@ -113,10 +119,32 @@ export async function runWorkflowWithGates(input: WorkflowInput): Promise<Workfl
   await writeArtifact(join(paths.requirementDir, "assumptions.md"), baOutput.assumptions);
   artifacts.push(join(paths.requirementDir, "assumptions.md"));
 
-  const requirementArtifacts = artifacts.slice(1);
+  const poOutput = await runPoAgent(
+    {
+      clarifiedRequirement: baOutput.clarifiedRequirement,
+      acceptanceCriteria: baOutput.acceptanceCriteria,
+      openQuestions: baOutput.openQuestions,
+      assumptions: baOutput.assumptions,
+    },
+    { templateDir, aiTool: poTool },
+  );
+
+  await writeArtifact(paths.scopeDefinitionPath, poOutput.productGoal);
+  artifacts.push(paths.scopeDefinitionPath);
+
+  await writeArtifact(join(paths.scopeDir, "mvp-scope.md"), poOutput.mvpScope);
+  artifacts.push(join(paths.scopeDir, "mvp-scope.md"));
+
+  await writeArtifact(paths.outOfScopePath, poOutput.outOfScope);
+  artifacts.push(paths.outOfScopePath);
+
+  await writeArtifact(paths.successCriteriaPath, poOutput.successCriteria);
+  artifacts.push(paths.successCriteriaPath);
+
+  const scopeArtifacts = artifacts.slice(1);
   const approvedGate: ApprovalGate | undefined = input.approvedGate;
 
-  if (!approvedGate || approvedGate === "REQUIREMENT") {
+  if (!approvedGate || approvedGate === "SCOPE") {
     if (!approvedGate) {
       const memoryUsed = input.memoryContext
         ? {
@@ -128,15 +156,16 @@ export async function runWorkflowWithGates(input: WorkflowInput): Promise<Workfl
 
       return {
         runId,
-        status: "WAITING_FOR_REQUIREMENT_APPROVAL",
+        status: "WAITING_FOR_SCOPE_APPROVAL",
         artifacts,
         createdAt,
         completedAt: nowIso(),
         pendingGate: {
-          gate: "REQUIREMENT",
+          gate: "SCOPE",
           status: "PENDING",
-          summary: "Review the generated requirement artifacts",
-          artifacts: requirementArtifacts,
+          summary:
+            "Review the generated scope artifacts (product goal, MVP scope, success criteria)",
+          artifacts: scopeArtifacts,
         },
         memoryUsed,
       };
@@ -192,9 +221,9 @@ export async function runWorkflowWithGates(input: WorkflowInput): Promise<Workfl
   await writeArtifact(join(paths.testsDir, "test-matrix.json"), qaOutput.testMatrixJson);
   artifacts.push(join(paths.testsDir, "test-matrix.json"));
 
-  const planArtifacts = artifacts.slice(1 + requirementArtifacts.length);
+  const planArtifacts = artifacts.slice(1 + scopeArtifacts.length);
 
-  if (approvedGate === "REQUIREMENT") {
+  if (approvedGate === "SCOPE") {
     const memoryUsed = input.memoryContext
       ? {
           projectMemoryFiles: input.memoryContext.projectMemoryCount,

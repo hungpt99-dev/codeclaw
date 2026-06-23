@@ -10,6 +10,8 @@ export type RunMode = (typeof RunMode)[keyof typeof RunMode];
 export const RunStatus = {
   CREATED: "CREATED",
   SPEC_GENERATED: "SPEC_GENERATED",
+  SCOPE_GENERATED: "SCOPE_GENERATED",
+  WAITING_FOR_SCOPE_APPROVAL: "WAITING_FOR_SCOPE_APPROVAL",
   WAITING_FOR_REQUIREMENT_APPROVAL: "WAITING_FOR_REQUIREMENT_APPROVAL",
   PLAN_GENERATED: "PLAN_GENERATED",
   WAITING_FOR_PLAN_APPROVAL: "WAITING_FOR_PLAN_APPROVAL",
@@ -31,6 +33,7 @@ export const RunStatus = {
 export type RunStatus = (typeof RunStatus)[keyof typeof RunStatus];
 
 export type ApprovalGate =
+  | "SCOPE"
   | "REQUIREMENT"
   | "PLAN"
   | "CODE_GENERATION"
@@ -62,6 +65,7 @@ export const ArtifactType = {
   TASK_BREAKDOWN: "TASK_BREAKDOWN",
   JIRA_READY_TASKS: "JIRA_READY_TASKS",
   TEST_MATRIX: "TEST_MATRIX",
+  SCOPE_DEFINITION: "SCOPE_DEFINITION",
   IMPLEMENTATION_PROMPT: "IMPLEMENTATION_PROMPT",
   AGENT_LOG: "AGENT_LOG",
   DIFF_PATCH: "DIFF_PATCH",
@@ -234,6 +238,7 @@ export interface AiTeamConfig {
   };
   agents: {
     defaultBa: AiCliTool;
+    defaultPo: AiCliTool;
     defaultArchitect: AiCliTool;
     defaultPm: AiCliTool;
     defaultQa: AiCliTool;
@@ -250,6 +255,7 @@ export interface AiTeamConfig {
     defaultMode: RunMode;
     defaultOutputLanguage: string;
     generateTraceability: boolean;
+    requireScopeApproval: boolean;
     requireRequirementApproval: boolean;
     requirePlanApproval: boolean;
   };

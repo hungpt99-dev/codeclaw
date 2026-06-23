@@ -11,6 +11,7 @@ import { approveCommand } from "./commands/approve.js";
 import { rejectCommand } from "./commands/reject.js";
 import { resumeCommand } from "./commands/resume.js";
 import { cancelCommand } from "./commands/cancel.js";
+import { scopeCommand } from "./commands/scope.js";
 import { analyzeCommand } from "./commands/analyze.js";
 import { traceCommand } from "./commands/trace.js";
 import { exportCommand } from "./commands/export.js";
@@ -205,6 +206,16 @@ program
   .option("--reason <reason>", "Cancellation reason")
   .action(async (runId: string, options: CancelCliOptions) => {
     await cancelCommand(runId, options);
+  });
+
+program
+  .command("scope")
+  .description("Generate scope definition for a run")
+  .requiredOption("--run <runId>", "Run ID")
+  .option("--strict", "Require scope approval before proceeding")
+  .option("--regenerate", "Regenerate scope artifacts")
+  .action(async (options: { run: string; strict?: boolean; regenerate?: boolean }) => {
+    await scopeCommand(options);
   });
 
 program

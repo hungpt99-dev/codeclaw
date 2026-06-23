@@ -5,6 +5,10 @@ export interface ArtifactPaths {
   runDir: string;
   inputFile: string;
   requirementDir: string;
+  scopeDir: string;
+  scopeDefinitionPath: string;
+  outOfScopePath: string;
+  successCriteriaPath: string;
   designDir: string;
   tasksDir: string;
   testsDir: string;
@@ -33,6 +37,10 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
     runDir,
     inputFile: join(runDir, "input.md"),
     requirementDir: join(runDir, "requirement"),
+    scopeDir: join(runDir, "scope"),
+    scopeDefinitionPath: join(runDir, "scope", "product-goal.md"),
+    outOfScopePath: join(runDir, "scope", "out-of-scope.md"),
+    successCriteriaPath: join(runDir, "scope", "success-criteria.md"),
     designDir: join(runDir, "design"),
     tasksDir: join(runDir, "tasks"),
     testsDir: join(runDir, "tests"),
@@ -60,6 +68,7 @@ export async function createArtifactDirs(runId: string): Promise<ArtifactPaths> 
   const paths = getArtifactPaths(runId);
   await mkdir(paths.runDir, { recursive: true });
   await mkdir(paths.requirementDir, { recursive: true });
+  await mkdir(paths.scopeDir, { recursive: true });
   await mkdir(paths.designDir, { recursive: true });
   await mkdir(paths.tasksDir, { recursive: true });
   await mkdir(paths.testsDir, { recursive: true });

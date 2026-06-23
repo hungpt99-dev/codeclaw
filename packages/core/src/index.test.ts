@@ -126,7 +126,7 @@ describe("docsOnlyWorkflow", () => {
   it("creates exactly 17 artifact files", async () => {
     const result = await runDocsOnlyWorkflow(defaultInput);
 
-    expect(result.artifacts).toHaveLength(17);
+    expect(result.artifacts).toHaveLength(21);
   });
 
   it("creates all expected artifact paths", async () => {
@@ -139,11 +139,16 @@ describe("docsOnlyWorkflow", () => {
       join(".ai-team", "runs", result.runId, "requirement", "acceptance-criteria.md"),
       join(".ai-team", "runs", result.runId, "requirement", "open-questions.md"),
       join(".ai-team", "runs", result.runId, "requirement", "assumptions.md"),
+      join(".ai-team", "runs", result.runId, "scope", "product-goal.md"),
+      join(".ai-team", "runs", result.runId, "scope", "mvp-scope.md"),
+      join(".ai-team", "runs", result.runId, "scope", "out-of-scope.md"),
+      join(".ai-team", "runs", result.runId, "scope", "success-criteria.md"),
       join(".ai-team", "runs", result.runId, "design", "technical-design.md"),
       join(".ai-team", "runs", result.runId, "design", "api-design.md"),
       join(".ai-team", "runs", result.runId, "design", "db-design.md"),
       join(".ai-team", "runs", result.runId, "tasks", "task-breakdown.md"),
       join(".ai-team", "runs", result.runId, "tasks", "task-breakdown.json"),
+      join(".ai-team", "runs", result.runId, "tasks", "jira-ready-tasks.md"),
       join(".ai-team", "runs", result.runId, "tests", "test-matrix.md"),
       join(".ai-team", "runs", result.runId, "tests", "test-matrix.json"),
       join(".ai-team", "runs", result.runId, "report", "traceability.md"),
