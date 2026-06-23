@@ -19,6 +19,7 @@ import type {
   ExportOptions,
   ReviewOutput,
   ReviewArtifacts,
+  FixLoopResult,
 } from "../lib/types.js";
 import type { ReactElement } from "react";
 
@@ -81,6 +82,7 @@ export function RunDetail(): ReactElement {
   const [reviewArtifacts, setReviewArtifacts] = useState<ReviewArtifacts | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const [fixLoopResult, setFixLoopResult] = useState<FixLoopResult | null>(null);
 
   const [gitHubStatus, setGitHubStatus] = useState<GitHubStatus | null>(null);
   const [gitHubPRSummary, setGitHubPRSummary] = useState<GitHubPRSummary | null>(null);
@@ -210,6 +212,7 @@ export function RunDetail(): ReactElement {
       const agent = "claude";
       const result = await api.triggerCodeGeneration(id, agent);
       setCodeResult(result.codeGeneration);
+      setFixLoopResult(result.fixLoopResult ?? null);
       if (result.codeGeneration.success) {
         const diffData = await api.getDiffPatch(id).catch(() => ({ diffContent: "" }));
         setDiffContent(diffData.diffContent);
@@ -1200,6 +1203,84 @@ export function RunDetail(): ReactElement {
           </p>
         )}
       </section>
+
+      {fixLoopResult && (
+        <section className="rounded-lg border bg-white p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">Fix Loop</h2>
+            <span
+              className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                fixLoopResult.finalStatus === "PASSED"
+                  ? "bg-green-100 text-green-700"
+                  : fixLoopResult.finalStatus === "MAX_ITERATIONS_REACHED"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : "bg-red-100 text-red-700"
+              }`}
+            >
+              {fixLoopResult.finalStatus === "MAX_ITERATIONS_REACHED"
+                ? "Max Iterations Reached"
+                : fixLoopResult.finalStatus}
+            </span>
+          </div>
+          <p className="text-sm text-gray-500 mb-4">
+            Total duration: {(fixLoopResult.totalDurationMs / 1000).toFixed(1)}s | Iterations:{" "}
+            {fixLoopResult.iterations.length}
+          </p>
+          <div className="space-y-4">
+            {fixLoopResult.iterations.map((iter) => (
+              <div key={iter.iteration} className="rounded-md border border-gray-200 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-gray-800">
+                    Iteration {iter.iteration}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`inline-block w-2 h-2 rounded-full ${iter.passed ? "bg-green-500" : "bg-red-500"}`}
+                    />
+                    <span className="text-xs text-gray-500">
+                      {iter.passed ? "PASSED" : "FAILED"}
+                    </span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
+                  <div>
+                    <span className="font-medium">Test Status:</span>{" "}
+                    {iter.testResult.overallStatus}
+                  </div>
+                  <div>
+                    <span className="font-medium">Review Status:</span>{" "}
+                    {iter.reviewResult.overallStatus}
+                  </div>
+                </div>
+                {iter.gitDiff && (
+                  <div>
+                    <details>
+                      <summary className="text-xs font-medium text-gray-700 cursor-pointer hover:text-gray-900">
+                        View Diff
+                      </summary>
+                      <pre className="mt-2 rounded-md bg-gray-50 p-3 text-xs text-gray-600 max-h-32 overflow-y-auto whitespace-pre-wrap">
+                        {iter.gitDiff.slice(0, 2000)}
+                        {iter.gitDiff.length > 2000 ? "..." : ""}
+                      </pre>
+                    </details>
+                  </div>
+                )}
+                <div>
+                  <details>
+                    <summary className="text-xs font-medium text-gray-700 cursor-pointer hover:text-gray-900">
+                      View Fix Prompt
+                    </summary>
+                    <pre className="mt-2 rounded-md bg-gray-50 p-3 text-xs text-gray-600 max-h-32 overflow-y-auto whitespace-pre-wrap">
+                      {iter.fixPrompt.slice(0, 2000)}
+                      {iter.fixPrompt.length > 2000 ? "..." : ""}
+                    </pre>
+                  </details>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {GROUPS.map((group) => {
         const groupArtifacts = grouped[group.key];

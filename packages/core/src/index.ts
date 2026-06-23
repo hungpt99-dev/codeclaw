@@ -69,3 +69,7 @@ export type {
   DeterministicReviewInput,
   DeterministicReviewOutput,
 } from "./review/deterministicReview.js";
+export { runFixLoop } from "./workflows/fixLoop.js";
+export type { FixLoopConfig, FixLoopIteration, FixLoopResult } from "./workflows/fixLoop.js";
+export { generateFixPrompt } from "./workflows/fixPromptGenerator.js";
+export type { ParsedTestFailure } from "./workflows/fixPromptGenerator.js";

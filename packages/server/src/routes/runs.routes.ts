@@ -310,6 +310,7 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
           diffPatchPath: "",
           agentLogPath: "",
         },
+        fixLoopResult: result.fixLoopResult ?? null,
       };
     }
 

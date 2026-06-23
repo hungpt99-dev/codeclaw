@@ -32,6 +32,7 @@ const mockPaths = {
   reviewReportPath: "/test/.ai-team/runs/run_123/review/review-report.md",
   securityReviewPath: "/test/.ai-team/runs/run_123/review/security-review.md",
   requirementCoveragePath: "/test/.ai-team/runs/run_123/review/requirement-coverage.md",
+  fixLoopDir: "/test/.ai-team/runs/run_123/implementation/fix-loop",
 };
 
 const mockRun = {

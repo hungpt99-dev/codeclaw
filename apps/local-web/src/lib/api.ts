@@ -21,6 +21,7 @@ import type {
   ExportResult,
   ReviewOutput,
   ReviewArtifacts,
+  FixLoopResult,
 } from "./types.js";
 
 const BASE = "/api";
@@ -135,7 +136,7 @@ export const api = {
     runId: string,
     agent: string,
     approved?: boolean,
-  ): Promise<{ codeGeneration: CodeGenerationResult }> {
+  ): Promise<{ codeGeneration: CodeGenerationResult; fixLoopResult?: FixLoopResult | null }> {
     return request(`/runs/${runId}/code`, {
       method: "POST",
       body: JSON.stringify({ agent, approved }),

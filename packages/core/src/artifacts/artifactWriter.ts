@@ -24,6 +24,7 @@ export interface ArtifactPaths {
   reviewReportPath: string;
   securityReviewPath: string;
   requirementCoveragePath: string;
+  fixLoopDir: string;
 }
 
 export function getArtifactPaths(runId: string): ArtifactPaths {
@@ -51,6 +52,7 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
     reviewReportPath: join(runDir, "review", "review-report.md"),
     securityReviewPath: join(runDir, "review", "security-review.md"),
     requirementCoveragePath: join(runDir, "review", "requirement-coverage.md"),
+    fixLoopDir: join(runDir, "implementation", "fix-loop"),
   };
 }
 
@@ -65,6 +67,7 @@ export async function createArtifactDirs(runId: string): Promise<ArtifactPaths> 
   await mkdir(paths.reportDir, { recursive: true });
   await mkdir(paths.logsDir, { recursive: true });
   await mkdir(paths.reviewDir, { recursive: true });
+  await mkdir(paths.fixLoopDir, { recursive: true });
   return paths;
 }
 

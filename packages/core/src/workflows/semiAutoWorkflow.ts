@@ -25,6 +25,8 @@ import type { SafetyPolicy, FileSafetyResult } from "../policies/safetyPolicy.js
 import { buildReportReadyMessage } from "../integrations/slackMessageTemplates.js";
 import type { SlackMessageInput } from "../integrations/slackMessageTemplates.js";
 import { loadAndReview, persistReview } from "../review/reviewService.js";
+import { runFixLoop } from "./fixLoop.js";
+import type { FixLoopResult } from "./fixLoop.js";
 
 export interface SemiAutoWorkflowInput {
   requirement: string;
@@ -53,6 +55,8 @@ export interface SemiAutoWorkflowInput {
     lint: string;
   };
   skipTests?: boolean;
+  maxIterations?: number;
+  noFixLoop?: boolean;
 }
 
 export interface SemiAutoWorkflowOutput {
@@ -89,6 +93,7 @@ export interface SemiAutoWorkflowOutput {
         results: TestCommandResult[];
       }
     | undefined;
+  fixLoopResult: FixLoopResult | undefined;
 }
 
 interface CodeGenResult {
@@ -369,6 +374,7 @@ export async function runSemiAutoWorkflow(
           }
         : undefined,
       testRunResult: undefined,
+      fixLoopResult: undefined,
     };
   }
 
@@ -439,6 +445,8 @@ export async function runSemiAutoWorkflow(
     }
   }
 
+  let fixLoopResult: FixLoopResult | undefined;
+
   if (codeResult.success && input.testCommands) {
     const reviewResult = await loadAndReview(runId);
     const persisted = await persistReview(runId, reviewResult);
@@ -447,7 +455,76 @@ export async function runSemiAutoWorkflow(
     artifacts.push(persisted.requirementCoveragePath);
 
     if (reviewResult.overallStatus === "CHANGES_REQUIRED") {
-      finalStatus = "REVIEW_FAILED";
+      if (input.noFixLoop) {
+        finalStatus = "REVIEW_FAILED";
+      } else {
+        const cmds: { name: string; command: string; cwd: string; timeoutSeconds: number }[] = [];
+        const timeout = input.commandTimeoutSeconds ?? 300;
+        if (input.testCommands.build)
+          cmds.push({
+            name: "build",
+            command: input.testCommands.build,
+            cwd: input.projectRoot ?? process.cwd(),
+            timeoutSeconds: timeout,
+          });
+        if (input.testCommands.unitTest)
+          cmds.push({
+            name: "unitTest",
+            command: input.testCommands.unitTest,
+            cwd: input.projectRoot ?? process.cwd(),
+            timeoutSeconds: timeout,
+          });
+        if (input.testCommands.integrationTest)
+          cmds.push({
+            name: "integrationTest",
+            command: input.testCommands.integrationTest,
+            cwd: input.projectRoot ?? process.cwd(),
+            timeoutSeconds: timeout,
+          });
+        if (input.testCommands.lint)
+          cmds.push({
+            name: "lint",
+            command: input.testCommands.lint,
+            cwd: input.projectRoot ?? process.cwd(),
+            timeoutSeconds: timeout,
+          });
+
+        const aiTool = developerTool
+          ? {
+              tool: developerTool.tool,
+              command: developerTool.command,
+              timeoutSeconds: developerTool.timeoutSeconds,
+            }
+          : { tool: "claude", command: "claude", timeoutSeconds: 900 };
+
+        fixLoopResult = await runFixLoop(runId, developerOutput.implementationPrompt, {
+          maxIterations: input.maxIterations ?? 3,
+          testCommands: cmds,
+          aiTool,
+        });
+
+        const lastIteration = fixLoopResult.iterations[fixLoopResult.iterations.length - 1];
+        if (lastIteration) {
+          testRunResult = {
+            overallStatus: lastIteration.testResult.overallStatus,
+            results: lastIteration.testResult.results.map((r) => ({
+              name: r.commandName,
+              command: r.command,
+              exitCode: r.exitCode,
+              status: r.timedOut ? "TIMEOUT" : r.passed ? "PASSED" : "FAILED",
+              durationMs: r.durationMs,
+              stdoutPath: r.stdoutPath,
+              stderrPath: r.stderrPath,
+            })),
+          };
+        }
+
+        if (fixLoopResult.finalStatus === "PASSED") {
+          finalStatus = "REVIEW_PASSED";
+        } else {
+          finalStatus = "REVIEW_FAILED";
+        }
+      }
     } else {
       finalStatus = finalStatus === "TEST_PASSED" ? "REVIEW_PASSED" : finalStatus;
     }
@@ -517,6 +594,7 @@ export async function runSemiAutoWorkflow(
     codeGenerationResult: codeResult,
     memoryUsed,
     testRunResult,
+    fixLoopResult,
   };
 }
 
@@ -562,5 +640,6 @@ export async function continueSemiAutoWorkflow(
     codeGenerationResult: codeResult,
     memoryUsed,
     testRunResult: undefined,
+    fixLoopResult: undefined,
   };
 }

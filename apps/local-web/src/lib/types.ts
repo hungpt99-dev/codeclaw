@@ -181,6 +181,21 @@ export interface ReviewArtifacts {
   requirementCoverage: string;
 }
 
+export interface FixLoopIteration {
+  iteration: number;
+  fixPrompt: string;
+  gitDiff: string;
+  passed: boolean;
+  testResult: TestRunResult;
+  reviewResult: ReviewOutput;
+}
+
+export interface FixLoopResult {
+  iterations: FixLoopIteration[];
+  finalStatus: "PASSED" | "FAILED" | "MAX_ITERATIONS_REACHED";
+  totalDurationMs: number;
+}
+
 export interface ExportResult {
   success: boolean;
   outputPath: string;

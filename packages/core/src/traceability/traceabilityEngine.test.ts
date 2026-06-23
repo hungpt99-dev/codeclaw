@@ -32,6 +32,7 @@ const mockPaths = {
   reviewReportPath: "/fake/runs/run-1/review/review-report.md",
   securityReviewPath: "/fake/runs/run-1/review/security-review.md",
   requirementCoveragePath: "/fake/runs/run-1/review/requirement-coverage.md",
+  fixLoopDir: "/fake/runs/run-1/implementation/fix-loop",
 };
 
 describe("traceabilityEngine", () => {
