@@ -5,8 +5,8 @@ set -Eeuo pipefail
 # OpenCode Roadmap Runner
 # =============================================================================
 # Automatically runs OpenCode step by step through the Local AI Software Team
-# roadmap. Step 01 is already completed. Starts from 00-docs-preflight by
-# default if state is "01-engineering-foundation", otherwise resumes from state.
+# roadmap (36 steps, 00-docs-preflight through 36-web-ui-integrations-and-settings).
+# Resumes from last completed step stored in state file, or starts fresh.
 # =============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -45,6 +45,26 @@ STEP_IDS=(
   "14-web-settings"
   "15-web-prompt-templates"
   "16-polish-mvp"
+  "17-fix-shared-barrel-export"
+  "18-ai-powered-agents-via-cli-tools"
+  "19-assisted-workflow-mode"
+  "20-approval-gates-system"
+  "21-repository-context-analyzer"
+  "22-traceability-matrix-engine"
+  "23-ai-cli-adapter-layer"
+  "24-semi-autonomous-workflow-mode"
+  "25-github-integration-optional"
+  "26-jira-integration-optional"
+  "27-slack-integration-optional"
+  "28-document-export-docx-pdf-html"
+  "29-test-runner"
+  "30-review-engine"
+  "31-fix-loop"
+  "32-scope-stage-po-agent"
+  "33-standalone-stage-cli-commands"
+  "34-cli-management-commands"
+  "35-approval-gates-4-6"
+  "36-web-ui-integrations-and-settings"
 )
 
 # Commit messages for each step (index-aligned with STEP_IDS)
@@ -65,6 +85,26 @@ STEP_COMMIT_MESSAGES=(
   "feat(web): add settings page"
   "feat(web): add prompt template editor"
   "chore(mvp): polish docs-only MVP"
+  "fix(shared): fix barrel export for web safety"
+  "feat(core): add AI-powered agents via CLI tools"
+  "feat(core): add assisted workflow mode with prompt generator"
+  "feat(core): add approval gates system"
+  "feat(core): add repository context analyzer"
+  "feat(core): add traceability matrix engine"
+  "feat(core): add AI CLI adapter layer"
+  "feat(core): add semi-autonomous workflow mode"
+  "feat(adapters): add GitHub integration"
+  "feat(adapters): add Jira integration"
+  "feat(adapters): add Slack integration"
+  "feat(core): add document export (DOCX/PDF/HTML)"
+  "feat(cli): add test runner command"
+  "feat(cli): add review engine command"
+  "feat(core): add fix loop iteration"
+  "feat(core): add scope stage and PO agent"
+  "feat(cli): add standalone stage commands"
+  "feat(cli): add management commands"
+  "feat(core): add approval gates 4-6"
+  "feat(web): add integrations page and full settings"
 )
 
 # Lookup commit message by step ID

@@ -20,8 +20,6 @@ export type { RunSchema } from "./schemas/run.schema.js";
 
 export { createRunId, slugify } from "./utils/ids.js";
 export { nowIso } from "./utils/date.js";
-export { ensureDir, fileExists } from "./utils/fs.js";
-
 export { MemoryScope, MemoryFormat, AgentRole } from "./types/memory.js";
 export type {
   MemoryScope as MemoryScopeType,
