@@ -1,6 +1,15 @@
 import type { ReactElement } from "react";
 
-const statusColors: Record<string, string> = {
+const STATUS_LABELS: Record<string, string> = {
+  CREATED: "Created",
+  SPEC_GENERATED: "Spec Generated",
+  PLAN_GENERATED: "Plan Generated",
+  REPORT_GENERATED: "Report Generated",
+  FAILED: "Failed",
+  CANCELLED: "Cancelled",
+};
+
+const STATUS_COLORS: Record<string, string> = {
   CREATED: "bg-yellow-100 text-yellow-800",
   SPEC_GENERATED: "bg-blue-100 text-blue-800",
   PLAN_GENERATED: "bg-blue-100 text-blue-800",
@@ -10,12 +19,13 @@ const statusColors: Record<string, string> = {
 };
 
 export function StatusBadge({ status }: { status: string }): ReactElement {
-  const color = statusColors[status] ?? "bg-gray-100 text-gray-800";
+  const label = STATUS_LABELS[status] ?? status;
+  const color = STATUS_COLORS[status] ?? "bg-gray-100 text-gray-800";
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${color}`}
     >
-      {status}
+      {label}
     </span>
   );
 }

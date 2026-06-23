@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import type { ReactElement } from "react";
+import { api } from "../lib/api.js";
 
 const navItems = [
   {
@@ -22,6 +24,19 @@ const navItems = [
 ];
 
 export function Sidebar(): ReactElement {
+  const [healthOk, setHealthOk] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    api
+      .health()
+      .then(() => {
+        setHealthOk(true);
+      })
+      .catch(() => {
+        setHealthOk(false);
+      });
+  }, []);
+
   return (
     <aside className="w-64 bg-gray-900 text-white min-h-screen flex flex-col">
       <div className="p-5 border-b border-gray-800">
@@ -55,7 +70,21 @@ export function Sidebar(): ReactElement {
           </NavLink>
         ))}
       </nav>
-      <div className="p-5 border-t border-gray-800">
+      <div className="p-5 border-t border-gray-800 space-y-2">
+        <div className="flex items-center gap-2">
+          <span
+            className={`h-2 w-2 rounded-full ${
+              healthOk === true ? "bg-green-500" : healthOk === false ? "bg-red-500" : "bg-gray-500"
+            }`}
+          />
+          <span className="text-xs text-gray-400">
+            {healthOk === true
+              ? "Local Mode Active"
+              : healthOk === false
+                ? "Server Offline"
+                : "Connecting..."}
+          </span>
+        </div>
         <p className="text-xs text-gray-600">v0.0.1</p>
       </div>
     </aside>

@@ -22,7 +22,25 @@ interface RunCliOptions {
 
 const program = new Command();
 
-program.name("aiteam").description("Local AI Software Team CLI").version("0.0.0");
+program
+  .name("aiteam")
+  .description(
+    "Local AI Software Team — generate structured software artifacts from a raw requirement",
+  )
+  .version("0.0.0")
+  .addHelpText(
+    "after",
+    `
+Examples:
+  aiteam init                          Initialize .ai-team in the current directory
+  aiteam doctor                        Check configuration
+  aiteam run "Add login page"          Run a docs-only workflow
+  aiteam list                          Show recent runs
+  aiteam show run_20260623_120000      Show run details
+  aiteam ui --open                     Start the local web UI
+  aiteam memory status                 Show runtime memory status
+`,
+  );
 
 program
   .command("init")
@@ -54,7 +72,7 @@ program
 
 program
   .command("list")
-  .description("Show recent runs")
+  .description("Show recent runs (up to 20)")
   .action(async () => {
     await listCommand();
   });

@@ -16,7 +16,7 @@ export async function uiCommand(options: UiOptions): Promise<void> {
   try {
     await access(aiTeamDir);
   } catch {
-    console.error("Error: .ai-team directory not found. Run 'aiteam init' first.");
+    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
     process.exit(1);
   }
 
@@ -27,8 +27,9 @@ export async function uiCommand(options: UiOptions): Promise<void> {
 
   try {
     await app.listen({ port, host });
-    console.log("Local AI Software Team UI is running.");
-    console.log(`URL: http://${host}:${String(port)}`);
+    console.log(`\n✅ Local AI Software Team UI is running.`);
+    console.log(`   URL: http://${host}:${String(port)}`);
+    console.log("");
 
     if (options.open) {
       const url = `http://${host}:${String(port)}`;
@@ -42,16 +43,16 @@ export async function uiCommand(options: UiOptions): Promise<void> {
             : `xdg-open "${url}"`;
       exec(cmd, (err) => {
         if (err) {
-          console.error("Failed to open browser:", err.message);
+          console.log("⚠️  Failed to open browser:", err.message);
         }
       });
     }
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes("EADDRINUSE")) {
-      console.error(`Error: Port ${String(port)} is already in use.`);
+      console.log(`❌ Port ${String(port)} is already in use.`);
     } else {
-      console.error("Failed to start server:", message);
+      console.log("❌ Failed to start server:", message);
     }
     process.exit(1);
   }

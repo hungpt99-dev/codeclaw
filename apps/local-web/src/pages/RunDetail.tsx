@@ -69,7 +69,24 @@ export function RunDetail(): ReactElement {
     return (
       <div className="max-w-4xl space-y-6">
         <h1 className="text-2xl font-bold text-gray-900">Run Detail</h1>
-        <p className="text-gray-500">Loading...</p>
+        <div className="flex items-center gap-2 text-sm text-gray-500 py-4">
+          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            />
+          </svg>
+          Loading run details...
+        </div>
       </div>
     );
   }
@@ -78,8 +95,23 @@ export function RunDetail(): ReactElement {
     return (
       <div className="max-w-4xl space-y-6">
         <h1 className="text-2xl font-bold text-gray-900">Run Detail</h1>
-        <div className="rounded-lg border bg-white p-6">
-          <p className="text-sm text-red-500">{error ?? "Run not found"}</p>
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6">
+          <div className="flex items-center gap-2">
+            <svg
+              className="h-5 w-5 text-red-500 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <p className="text-sm text-red-700">{error ?? "Run not found."}</p>
+          </div>
         </div>
       </div>
     );
@@ -124,7 +156,9 @@ export function RunDetail(): ReactElement {
                 {groupArtifacts.map((a) => (
                   <div key={a.id}>
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-medium text-gray-700">{a.name}</h3>
+                      <h3 className="text-sm font-medium text-gray-700">
+                        {a.name.replace(/\.(md|json)$/, "")}
+                      </h3>
                       <button
                         type="button"
                         onClick={(): void => {
@@ -140,7 +174,7 @@ export function RunDetail(): ReactElement {
                         <MarkdownViewer content={a.content} />
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-400 italic">No content available</p>
+                      <p className="text-sm text-gray-400 italic">No content available.</p>
                     )}
                   </div>
                 ))}
@@ -156,7 +190,22 @@ export function RunDetail(): ReactElement {
 
       <section className="rounded-lg border bg-white p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Logs</h2>
-        <p className="text-sm text-gray-400 italic">Logs are not available yet.</p>
+        <div className="flex items-center gap-2 text-sm text-gray-400 italic">
+          <svg
+            className="h-4 w-4 shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          Logs are not available yet.
+        </div>
       </section>
     </div>
   );

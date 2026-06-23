@@ -133,14 +133,53 @@ export function Dashboard(): ReactElement {
       </div>
 
       <div className="rounded-lg border bg-white p-6">
-        <h2 className="text-lg font-semibold text-gray-900">Latest Runs</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-gray-900">Latest Runs</h2>
+          {!loading && runs.length > 5 && (
+            <Link to="/runs" className="text-sm font-medium text-blue-600 hover:text-blue-500">
+              View all →
+            </Link>
+          )}
+        </div>
         {loading ? (
-          <p className="text-sm text-gray-500 mt-3">Loading...</p>
+          <div className="flex items-center gap-2 text-sm text-gray-500 py-4">
+            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+            Loading runs...
+          </div>
         ) : error ? (
-          <p className="text-sm text-red-500 mt-3">{error}</p>
+          <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 mt-3">
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
         ) : runs.length === 0 ? (
-          <div className="mt-3 text-center py-8">
-            <p className="text-sm text-gray-500">
+          <div className="text-center py-8">
+            <svg
+              className="mx-auto h-10 w-10 text-gray-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
+            </svg>
+            <p className="mt-3 text-sm text-gray-500">
               No runs yet. Create a new requirement to get started.
             </p>
             <Link
