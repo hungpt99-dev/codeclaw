@@ -62,3 +62,10 @@ export {
   defaultSafetyPolicy,
 } from "./policies/safetyPolicy.js";
 export type { SafetyPolicy, FileSafetyResult } from "./policies/safetyPolicy.js";
+export { runReview, loadAndReview, persistReview } from "./review/reviewService.js";
+export type { ReviewInput, ReviewOutput, ReviewOptions } from "./review/reviewService.js";
+export { generateDeterministicReview } from "./review/deterministicReview.js";
+export type {
+  DeterministicReviewInput,
+  DeterministicReviewOutput,
+} from "./review/deterministicReview.js";

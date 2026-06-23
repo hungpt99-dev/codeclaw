@@ -15,6 +15,7 @@ import { analyzeCommand } from "./commands/analyze.js";
 import { traceCommand } from "./commands/trace.js";
 import { exportCommand } from "./commands/export.js";
 import { testCommand } from "./commands/test.js";
+import { reviewCommand } from "./commands/review.js";
 import {
   githubStatusCommand,
   githubTestCommand,
@@ -240,6 +241,26 @@ program
   .action(async (options: TestCliOptions) => {
     await testCommand(options);
   });
+
+program
+  .command("review")
+  .description("Run code review on implementation artifacts")
+  .requiredOption("--run <runId>", "Target run ID")
+  .option("--security", "Run security review only")
+  .option("--coverage", "Run requirement coverage review only")
+  .option("--all", "Run all review types (default)")
+  .option("--regenerate", "Regenerate existing review")
+  .action(
+    async (options: {
+      run: string;
+      security?: boolean;
+      coverage?: boolean;
+      all?: boolean;
+      regenerate?: boolean;
+    }) => {
+      await reviewCommand(options);
+    },
+  );
 
 const githubProgram = program.command("github").description("GitHub integration (optional)");
 

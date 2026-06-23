@@ -17,6 +17,8 @@ import type {
   SlackStatus,
   SlackPostResult,
   ExportOptions,
+  ReviewOutput,
+  ReviewArtifacts,
 } from "../lib/types.js";
 import type { ReactElement } from "react";
 
@@ -75,6 +77,10 @@ export function RunDetail(): ReactElement {
   const [testLoading, setTestLoading] = useState(false);
   const [testError, setTestError] = useState<string | null>(null);
   const [testResultContent, setTestResultContent] = useState<string | null>(null);
+  const [reviewResult, setReviewResult] = useState<ReviewOutput | null>(null);
+  const [reviewArtifacts, setReviewArtifacts] = useState<ReviewArtifacts | null>(null);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   const [gitHubStatus, setGitHubStatus] = useState<GitHubStatus | null>(null);
   const [gitHubPRSummary, setGitHubPRSummary] = useState<GitHubPRSummary | null>(null);
@@ -230,6 +236,32 @@ export function RunDetail(): ReactElement {
       setTestError(e instanceof Error ? e.message : "Test execution failed");
     } finally {
       setTestLoading(false);
+    }
+  }, [id]);
+
+  const handleRunReview = useCallback(async () => {
+    if (!id) return;
+    setReviewLoading(true);
+    setReviewError(null);
+    try {
+      const result = await api.triggerReview(id);
+      setReviewResult(result);
+      const artifacts = await api.getReviewArtifacts(id);
+      setReviewArtifacts(artifacts);
+    } catch (e) {
+      setReviewError(e instanceof Error ? e.message : "Review failed");
+    } finally {
+      setReviewLoading(false);
+    }
+  }, [id]);
+
+  const handleLoadReview = useCallback(async () => {
+    if (!id) return;
+    try {
+      const artifacts = await api.getReviewArtifacts(id);
+      setReviewArtifacts(artifacts);
+    } catch {
+      setReviewArtifacts(null);
     }
   }, [id]);
 
@@ -1074,6 +1106,97 @@ export function RunDetail(): ReactElement {
           <p className="text-sm text-gray-400 italic">
             Click "Run Tests" to execute configured test commands or "Load Results" to view existing
             results.
+          </p>
+        )}
+      </section>
+
+      <section className="rounded-lg border bg-white p-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-gray-900">Review</h2>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                void handleLoadReview();
+              }}
+              className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Load Review
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                void handleRunReview();
+              }}
+              disabled={reviewLoading}
+              className="px-3 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {reviewLoading ? "Running..." : "Run Review"}
+            </button>
+          </div>
+        </div>
+
+        {reviewError && (
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 mb-3">
+            <p className="text-sm text-red-700">{reviewError}</p>
+          </div>
+        )}
+
+        {reviewResult && (
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-3">
+              <span
+                className={`inline-block w-3 h-3 rounded-full ${
+                  reviewResult.overallStatus === "APPROVED"
+                    ? "bg-green-500"
+                    : reviewResult.overallStatus === "APPROVED_WITH_WARNINGS"
+                      ? "bg-yellow-500"
+                      : "bg-red-500"
+                }`}
+              />
+              <span className="text-sm font-medium">Status: {reviewResult.overallStatus}</span>
+            </div>
+          </div>
+        )}
+
+        {reviewArtifacts && (
+          <div className="space-y-4">
+            {reviewArtifacts.requirementCoverage && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Requirement Coverage</h3>
+                <div className="rounded-md bg-gray-50 p-4 max-h-64 overflow-y-auto">
+                  <pre className="text-xs text-gray-700 whitespace-pre-wrap">
+                    {reviewArtifacts.requirementCoverage}
+                  </pre>
+                </div>
+              </div>
+            )}
+            {reviewArtifacts.reviewReport && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Review Report</h3>
+                <div className="rounded-md bg-gray-50 p-4 max-h-64 overflow-y-auto">
+                  <pre className="text-xs text-gray-700 whitespace-pre-wrap">
+                    {reviewArtifacts.reviewReport}
+                  </pre>
+                </div>
+              </div>
+            )}
+            {reviewArtifacts.securityReview && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Security Review</h3>
+                <div className="rounded-md bg-gray-50 p-4 max-h-64 overflow-y-auto">
+                  <pre className="text-xs text-gray-700 whitespace-pre-wrap">
+                    {reviewArtifacts.securityReview}
+                  </pre>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {!reviewArtifacts && !reviewLoading && !reviewError && (
+          <p className="text-sm text-gray-400 italic">
+            Click "Run Review" to generate a code review or "Load Review" to view existing results.
           </p>
         )}
       </section>

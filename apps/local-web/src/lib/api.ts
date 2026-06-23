@@ -19,6 +19,8 @@ import type {
   SlackPostResult,
   ExportOptions,
   ExportResult,
+  ReviewOutput,
+  ReviewArtifacts,
 } from "./types.js";
 
 const BASE = "/api";
@@ -263,6 +265,18 @@ export const api = {
 
   async getFailedTests(runId: string): Promise<{ failedTests: string }> {
     return request(`/runs/${runId}/failed-tests`);
+  },
+
+  async triggerReview(runId: string): Promise<ReviewOutput> {
+    const data = await request<{ review: ReviewOutput }>(`/runs/${runId}/review`, {
+      method: "POST",
+    });
+    return data.review;
+  },
+
+  async getReviewArtifacts(runId: string): Promise<ReviewArtifacts> {
+    const data = await request<{ review: ReviewArtifacts }>(`/runs/${runId}/review`);
+    return data.review;
   },
 
   async createGitHubPR(

@@ -168,6 +168,19 @@ export interface ExportOptions {
   author?: string;
 }
 
+export interface ReviewOutput {
+  overallStatus: "APPROVED" | "APPROVED_WITH_WARNINGS" | "CHANGES_REQUIRED";
+  reviewReportPath?: string;
+  securityReviewPath?: string;
+  requirementCoveragePath?: string;
+}
+
+export interface ReviewArtifacts {
+  reviewReport: string;
+  securityReview: string;
+  requirementCoverage: string;
+}
+
 export interface ExportResult {
   success: boolean;
   outputPath: string;

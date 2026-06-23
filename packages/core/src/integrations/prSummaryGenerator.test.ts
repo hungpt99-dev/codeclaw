@@ -28,6 +28,10 @@ const mockPaths = {
   snapshotDir: "/test/.ai-team/runs/run_123/snapshots",
   testResultPath: "/test/.ai-team/runs/run_123/tests/test-result.md",
   failedTestsPath: "/test/.ai-team/runs/run_123/tests/failed-tests.json",
+  reviewDir: "/test/.ai-team/runs/run_123/review",
+  reviewReportPath: "/test/.ai-team/runs/run_123/review/review-report.md",
+  securityReviewPath: "/test/.ai-team/runs/run_123/review/security-review.md",
+  requirementCoveragePath: "/test/.ai-team/runs/run_123/review/requirement-coverage.md",
 };
 
 const mockRun = {

@@ -20,6 +20,10 @@ export interface ArtifactPaths {
   snapshotDir: string;
   testResultPath: string;
   failedTestsPath: string;
+  reviewDir: string;
+  reviewReportPath: string;
+  securityReviewPath: string;
+  requirementCoveragePath: string;
 }
 
 export function getArtifactPaths(runId: string): ArtifactPaths {
@@ -43,6 +47,10 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
     snapshotDir: join(runDir, "snapshots"),
     testResultPath: join(runDir, "tests", "test-result.md"),
     failedTestsPath: join(runDir, "tests", "failed-tests.json"),
+    reviewDir: join(runDir, "review"),
+    reviewReportPath: join(runDir, "review", "review-report.md"),
+    securityReviewPath: join(runDir, "review", "security-review.md"),
+    requirementCoveragePath: join(runDir, "review", "requirement-coverage.md"),
   };
 }
 
@@ -56,6 +64,7 @@ export async function createArtifactDirs(runId: string): Promise<ArtifactPaths> 
   await mkdir(paths.implementationDir, { recursive: true });
   await mkdir(paths.reportDir, { recursive: true });
   await mkdir(paths.logsDir, { recursive: true });
+  await mkdir(paths.reviewDir, { recursive: true });
   return paths;
 }
 

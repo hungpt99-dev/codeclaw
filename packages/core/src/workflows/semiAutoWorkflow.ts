@@ -24,6 +24,7 @@ import { checkFileSafety, checkCommandSafety } from "../policies/safetyPolicy.js
 import type { SafetyPolicy, FileSafetyResult } from "../policies/safetyPolicy.js";
 import { buildReportReadyMessage } from "../integrations/slackMessageTemplates.js";
 import type { SlackMessageInput } from "../integrations/slackMessageTemplates.js";
+import { loadAndReview, persistReview } from "../review/reviewService.js";
 
 export interface SemiAutoWorkflowInput {
   requirement: string;
@@ -435,6 +436,20 @@ export async function runSemiAutoWorkflow(
       };
 
       finalStatus = testRun.overallStatus === "PASSED" ? "TEST_PASSED" : "TEST_FAILED";
+    }
+  }
+
+  if (codeResult.success && input.testCommands) {
+    const reviewResult = await loadAndReview(runId);
+    const persisted = await persistReview(runId, reviewResult);
+    artifacts.push(persisted.reviewReportPath);
+    artifacts.push(persisted.securityReviewPath);
+    artifacts.push(persisted.requirementCoveragePath);
+
+    if (reviewResult.overallStatus === "CHANGES_REQUIRED") {
+      finalStatus = "REVIEW_FAILED";
+    } else {
+      finalStatus = finalStatus === "TEST_PASSED" ? "REVIEW_PASSED" : finalStatus;
     }
   }
 

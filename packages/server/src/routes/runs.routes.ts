@@ -26,6 +26,8 @@ import {
   generateTraceability,
   getArtifactPaths,
   runTestsForRun,
+  loadAndReview,
+  persistReview,
 } from "@aiteam/core";
 
 interface ArtifactDef {
@@ -517,6 +519,53 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
       return { failedTests: content };
     } catch {
       return reply.status(404).send({ error: "Failed tests not found" });
+    }
+  });
+
+  app.post("/api/runs/:id/review", async (request, reply) => {
+    const params = request.params as { id: string };
+    const runRepo = createRunRepository(db);
+    const run = runRepo.findById(params.id);
+    if (!run) {
+      return reply.status(404).send({ error: "Run not found" });
+    }
+
+    const result = await loadAndReview(params.id);
+    const persisted = await persistReview(params.id, result);
+
+    runRepo.updateStatus(
+      params.id,
+      result.overallStatus === "CHANGES_REQUIRED" ? "REVIEW_FAILED" : "REVIEW_PASSED",
+    );
+
+    return {
+      review: {
+        overallStatus: result.overallStatus,
+        reviewReportPath: persisted.reviewReportPath,
+        securityReviewPath: persisted.securityReviewPath,
+        requirementCoveragePath: persisted.requirementCoveragePath,
+      },
+    };
+  });
+
+  app.get("/api/runs/:id/review", async (request, reply) => {
+    const params = request.params as { id: string };
+    const paths = getArtifactPaths(params.id);
+    try {
+      const { readFile: rf } = await import("node:fs/promises");
+      const [reviewReport, securityReview, requirementCoverage] = await Promise.all([
+        rf(paths.reviewReportPath, "utf-8").catch(() => ""),
+        rf(paths.securityReviewPath, "utf-8").catch(() => ""),
+        rf(paths.requirementCoveragePath, "utf-8").catch(() => ""),
+      ]);
+
+      if (!reviewReport && !securityReview && !requirementCoverage) {
+        return await reply.status(404).send({ error: "Review artifacts not found" });
+      }
+
+      return { review: { reviewReport, securityReview, requirementCoverage } };
+    } catch {
+      return await reply.status(404).send({ error: "Review artifacts not found" });
     }
   });
 
