@@ -17,6 +17,13 @@ import { traceCommand } from "./commands/trace.js";
 import { exportCommand } from "./commands/export.js";
 import { testCommand } from "./commands/test.js";
 import { reviewCommand } from "./commands/review.js";
+import { specCommand } from "./commands/spec.js";
+import { planCommand } from "./commands/plan.js";
+import { tasksCommand } from "./commands/tasks.js";
+import { testsPlanCommand } from "./commands/tests-plan.js";
+import { codeCommand } from "./commands/code.js";
+import { reportCommand } from "./commands/report.js";
+import { newCommand } from "./commands/new.js";
 import {
   githubStatusCommand,
   githubTestCommand,
@@ -86,9 +93,17 @@ program
 Examples:
   aiteam init                          Initialize .ai-team in the current directory
   aiteam doctor                        Check configuration
-  aiteam run "Add login page"          Run a docs-only workflow
+  aiteam new "Add login page"          Create a new run without executing stages
+  aiteam run "Add login page"          Run a full workflow
+  aiteam spec --run <runId>            Generate requirement specification
+  aiteam scope --run <runId>           Generate scope definition
+  aiteam plan --run <runId>            Generate technical design
+  aiteam tasks --run <runId>           Generate task breakdown
+  aiteam tests --run <runId>           Generate test matrix (plan)
+  aiteam code --run <runId>            Generate implementation prompt
+  aiteam report --run <runId>          Generate final report
   aiteam list                          Show recent runs
-  aiteam show run_20260623_120000      Show run details
+  aiteam show <runId>                  Show run details
   aiteam ui --open                     Start the local web UI
   aiteam approve <runId> --gate PLAN   Approve a pending gate
   aiteam reject <runId> --gate PLAN    Reject a pending gate
@@ -272,6 +287,94 @@ program
       await reviewCommand(options);
     },
   );
+
+program
+  .command("spec")
+  .description("Generate requirement specification for a run (BA Agent)")
+  .requiredOption("--run <runId>", "Run ID")
+  .option("--regenerate", "Regenerate requirement artifacts")
+  .option("--output-language <lang>", "Output language")
+  .action(async (options: { run: string; regenerate?: boolean; outputLanguage?: string }) => {
+    await specCommand(options);
+  });
+
+program
+  .command("plan")
+  .description("Generate technical design for a run (Architect Agent)")
+  .requiredOption("--run <runId>", "Run ID")
+  .option("--regenerate", "Regenerate design artifacts")
+  .option("--level <level>", "Detail level: simple, standard, detailed")
+  .action(async (options: { run: string; regenerate?: boolean; level?: string }) => {
+    await planCommand(options);
+  });
+
+program
+  .command("tasks")
+  .description("Generate task breakdown for a run (PM Agent)")
+  .requiredOption("--run <runId>", "Run ID")
+  .option("--regenerate", "Regenerate task breakdown")
+  .option("--format <format>", "Output format: markdown, json, jira", "markdown")
+  .action(async (options: { run: string; regenerate?: boolean; format?: string }) => {
+    await tasksCommand(options);
+  });
+
+program
+  .command("tests")
+  .description("Generate test matrix for a run (QA Agent, plan only)")
+  .requiredOption("--run <runId>", "Run ID")
+  .option("--regenerate", "Regenerate test matrix")
+  .option("--type <type>", "Test type: unit, integration, manual, all", "all")
+  .action(async (options: { run: string; regenerate?: boolean; type?: string }) => {
+    await testsPlanCommand(options);
+  });
+
+program
+  .command("code")
+  .description("Generate implementation prompt or run code (Developer Agent)")
+  .requiredOption("--run <runId>", "Run ID")
+  .option("--agent <name>", "AI coding agent (claude, codex, gemini, aider)")
+  .option("--prompt-only", "Generate prompt only, do not execute")
+  .option("--approve", "Auto-approve gates")
+  .option("--dry-run", "Show what would happen without executing")
+  .action(
+    async (options: {
+      run: string;
+      agent?: string;
+      promptOnly?: boolean;
+      approve?: boolean;
+      dryRun?: boolean;
+    }) => {
+      await codeCommand(options);
+    },
+  );
+
+program
+  .command("report")
+  .description("Generate final report for a run (Reporter Agent)")
+  .requiredOption("--run <runId>", "Run ID")
+  .option("--regenerate", "Regenerate report")
+  .option("--include-logs", "Include log files in report")
+  .option("--format <format>", "Output format: markdown, json", "markdown")
+  .action(
+    async (options: {
+      run: string;
+      regenerate?: boolean;
+      includeLogs?: boolean;
+      format?: string;
+    }) => {
+      await reportCommand(options);
+    },
+  );
+
+program
+  .command("new")
+  .description("Create a new run without executing stages")
+  .argument("<requirement>", "Raw requirement text")
+  .option("--title <title>", "Run title")
+  .option("--mode <mode>", "Workflow mode (docs-only, assisted, semi-auto)", "docs-only")
+  .action(async (requirement: string, options: { title?: string; mode?: string }) => {
+    await newCommand(requirement, options);
+  });
 
 const githubProgram = program.command("github").description("GitHub integration (optional)");
 
