@@ -23,6 +23,7 @@ export const configSchema = z.object({
     defaultArchitect: aiCliToolSchema.default("claude"),
     defaultPm: aiCliToolSchema.default("claude"),
     defaultQa: aiCliToolSchema.default("claude"),
+    defaultDeveloper: aiCliToolSchema.default("claude"),
     defaultReporter: aiCliToolSchema.default("claude"),
   }),
   cli: z.object({
@@ -46,9 +47,11 @@ export const configSchema = z.object({
   }),
   safety: z.object({
     requireApprovalBeforeCode: z.boolean(),
+    requireApprovalBeforeCommit: z.boolean(),
     maxIterations: z.number().int().positive(),
     commandTimeoutSeconds: z.number().int().positive(),
     denyFiles: z.array(z.string()),
+    warnFiles: z.array(z.string()),
     denyCommands: z.array(z.string()),
   }),
 });
@@ -69,6 +72,7 @@ export const defaultConfig: Config = {
     defaultArchitect: "claude",
     defaultPm: "claude",
     defaultQa: "claude",
+    defaultDeveloper: "claude",
     defaultReporter: "claude",
   },
   cli: {
@@ -92,9 +96,11 @@ export const defaultConfig: Config = {
   },
   safety: {
     requireApprovalBeforeCode: true,
+    requireApprovalBeforeCommit: true,
     maxIterations: 3,
     commandTimeoutSeconds: 900,
     denyFiles: [".env", ".env.*", "*.pem", "*.key", "credentials.json"],
+    warnFiles: ["pom.xml", "build.gradle", "package.json", "Dockerfile"],
     denyCommands: ["rm -rf /", "sudo", "chmod 777", "curl | sh", "wget | sh"],
   },
 };

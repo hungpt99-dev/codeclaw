@@ -2,7 +2,13 @@ import { access, readFile } from "node:fs/promises";
 import { join, basename, extname } from "node:path";
 import { createRunId, nowIso, configSchema } from "@aiteam/shared";
 import type { Config, RunMode, RunStatus } from "@aiteam/shared";
-import { runDocsOnlyWorkflow, runAssistedWorkflow, runWorkflowWithGates } from "@aiteam/core";
+import {
+  runDocsOnlyWorkflow,
+  runAssistedWorkflow,
+  runSemiAutoWorkflow,
+  runWorkflowWithGates,
+  defaultSafetyPolicy,
+} from "@aiteam/core";
 import {
   openDatabase,
   initializeSchema,
@@ -10,7 +16,7 @@ import {
   createArtifactRepository,
   createApprovalRepository,
 } from "@aiteam/storage";
-import type { ArtifactType } from "@aiteam/shared";
+import type { ArtifactType, AiAdapterName, ApprovalGate } from "@aiteam/shared";
 import { getMemoryStatus, addRunMemory } from "@aiteam/memory";
 
 interface RunOptions {
@@ -19,6 +25,8 @@ interface RunOptions {
   outputLanguage?: string;
   json?: boolean;
   approve?: boolean;
+  agent?: string;
+  timeout?: string;
 }
 
 function inferArtifactType(filePath: string): ArtifactType {
@@ -175,10 +183,50 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
     cliConfigs: config.cli,
   };
 
-  const result =
-    mode === "assisted"
-      ? await runAssistedWorkflow(workflowInput)
-      : await runDocsOnlyWorkflow(workflowInput);
+  let result: {
+    runId: string;
+    status: string;
+    artifacts: string[];
+    createdAt: string;
+    completedAt: string;
+    pendingGate?: {
+      gate: string;
+      status: string;
+      summary: string;
+      artifacts: string[];
+    };
+  };
+
+  if (mode === "semi-auto") {
+    const selectedAgent = (options.agent ?? config.agents.defaultDeveloper) as AiAdapterName;
+
+    const semiInput = {
+      ...workflowInput,
+      selectedAgent,
+      approvalConfig: {
+        requireCodeApproval: !options.approve,
+      },
+      safetyPolicy: {
+        ...defaultSafetyPolicy(),
+        denyFiles: config.safety.denyFiles,
+        warnFiles: config.safety.warnFiles,
+        denyCommands: config.safety.denyCommands,
+        maxIterations: config.safety.maxIterations,
+        commandTimeoutSeconds: options.timeout
+          ? Number(options.timeout)
+          : config.safety.commandTimeoutSeconds,
+      },
+      commandTimeoutSeconds: options.timeout
+        ? Number(options.timeout)
+        : config.safety.commandTimeoutSeconds,
+    };
+
+    result = await runSemiAutoWorkflow(semiInput);
+  } else if (mode === "assisted") {
+    result = await runAssistedWorkflow(workflowInput);
+  } else {
+    result = await runDocsOnlyWorkflow(workflowInput);
+  }
 
   if (memoryStatus.exists) {
     await addRunMemory(process.cwd(), runId, title, requirement);
@@ -198,15 +246,32 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
     });
   });
 
-  runRepo.updateStatus(runId, "REPORT_GENERATED");
-  db.close();
+  runRepo.updateStatus(runId, result.status as RunStatus);
 
-  if (options.json) {
+  if (result.pendingGate) {
+    const gate = result.pendingGate.gate as ApprovalGate;
+    const approvalId = `${runId}_approval_${gate.toLowerCase()}`;
+    approvalRepo.create({
+      id: approvalId,
+      runId,
+      gate,
+      status: "PENDING",
+    });
+
+    console.log(`\n⏸️ ${result.pendingGate.summary}`);
+    console.log(`   Gate: ${gate}`);
+    console.log(`   Artifacts created: ${String(result.artifacts.length)}`);
+    console.log(`\n   To approve:  aiteam approve ${runId} --gate ${gate}`);
+    console.log(`   To reject:   aiteam reject ${runId} --gate ${gate}`);
+    console.log(`   To resume:   aiteam resume ${runId}`);
+    console.log(`   Or open UI:  aiteam ui`);
+    console.log("");
+  } else if (options.json) {
     console.log(
       JSON.stringify(
         {
           runId,
-          status: "REPORT_GENERATED",
+          status: result.status,
           artifacts: artifactRecords.map((a) => ({
             type: a.type,
             name: a.name,
@@ -221,11 +286,13 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
     );
   } else {
     console.log(`\n🚀 Run completed: ${runId}`);
-    console.log(`   Status: REPORT_GENERATED`);
+    console.log(`   Status: ${result.status}`);
     console.log(`\n📄 Artifacts:`);
     for (const artifact of artifactRecords) {
       console.log(`   - [${artifact.type}] ${artifact.path}`);
     }
     console.log("");
   }
+
+  db.close();
 }

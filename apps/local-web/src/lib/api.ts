@@ -6,6 +6,7 @@ import type {
   PromptDetail,
   Approval,
   TraceabilityMatrix,
+  CodeGenerationResult,
 } from "./types.js";
 
 const BASE = "/api";
@@ -114,6 +115,35 @@ export const api = {
       { method: "POST" },
     );
     return data.traceability;
+  },
+
+  async triggerCodeGeneration(
+    runId: string,
+    agent: string,
+    approved?: boolean,
+  ): Promise<{ codeGeneration: CodeGenerationResult }> {
+    return request(`/runs/${runId}/code`, {
+      method: "POST",
+      body: JSON.stringify({ agent, approved }),
+    });
+  },
+
+  async getDiffPatch(runId: string): Promise<{ diffContent: string }> {
+    return request(`/runs/${runId}/diff`);
+  },
+
+  async getChangedFilesList(
+    runId: string,
+  ): Promise<{ changedFiles: { file: string; status: string }[] }> {
+    return request(`/runs/${runId}/changed-files`);
+  },
+
+  async getImplementationPrompt(runId: string): Promise<{ prompt: string }> {
+    return request(`/runs/${runId}/implementation-prompt`);
+  },
+
+  async getAgentLog(runId: string): Promise<{ log: string }> {
+    return request(`/runs/${runId}/agent-log`);
   },
 
   async updateApproval(

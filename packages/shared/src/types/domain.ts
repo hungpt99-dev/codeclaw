@@ -13,6 +13,10 @@ export const RunStatus = {
   WAITING_FOR_REQUIREMENT_APPROVAL: "WAITING_FOR_REQUIREMENT_APPROVAL",
   PLAN_GENERATED: "PLAN_GENERATED",
   WAITING_FOR_PLAN_APPROVAL: "WAITING_FOR_PLAN_APPROVAL",
+  WAITING_FOR_CODE_APPROVAL: "WAITING_FOR_CODE_APPROVAL",
+  CODING: "CODING",
+  CODE_GENERATED: "CODE_GENERATED",
+  CODE_FAILED: "CODE_FAILED",
   REPORT_GENERATED: "REPORT_GENERATED",
   FAILED: "FAILED",
   CANCELLED: "CANCELLED",
@@ -52,6 +56,9 @@ export const ArtifactType = {
   TASK_BREAKDOWN: "TASK_BREAKDOWN",
   TEST_MATRIX: "TEST_MATRIX",
   IMPLEMENTATION_PROMPT: "IMPLEMENTATION_PROMPT",
+  AGENT_LOG: "AGENT_LOG",
+  DIFF_PATCH: "DIFF_PATCH",
+  CHANGED_FILES: "CHANGED_FILES",
   FINAL_REPORT: "FINAL_REPORT",
 } as const;
 
@@ -180,6 +187,7 @@ export interface AiTeamConfig {
     defaultArchitect: AiCliTool;
     defaultPm: AiCliTool;
     defaultQa: AiCliTool;
+    defaultDeveloper: AiCliTool;
     defaultReporter: AiCliTool;
   };
   cli: {
@@ -203,9 +211,11 @@ export interface AiTeamConfig {
   };
   safety: {
     requireApprovalBeforeCode: boolean;
+    requireApprovalBeforeCommit: boolean;
     maxIterations: number;
     commandTimeoutSeconds: number;
     denyFiles: string[];
+    warnFiles: string[];
     denyCommands: string[];
   };
 }

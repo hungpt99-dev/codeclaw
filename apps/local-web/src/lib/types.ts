@@ -68,3 +68,15 @@ export interface TraceabilityMatrix {
     notCovered: number;
   };
 }
+
+export interface CodeGenerationResult {
+  success: boolean;
+  changedFiles: string[];
+  diffPatchPath: string;
+  agentLogPath: string;
+  fileSafety?: {
+    blocked: string[];
+    warnings: string[];
+    safe: string[];
+  };
+}

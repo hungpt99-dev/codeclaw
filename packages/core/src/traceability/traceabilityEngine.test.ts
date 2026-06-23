@@ -17,10 +17,15 @@ const mockPaths = {
   tasksDir: "/fake/runs/run-1/tasks",
   testsDir: "/fake/runs/run-1/tests",
   implementationDir: "/fake/runs/run-1/implementation",
+  implementationPromptPath: "/fake/runs/run-1/implementation/implementation-prompt.md",
+  agentLogPath: "/fake/runs/run-1/implementation/agent-output.log",
+  diffPatchPath: "/fake/runs/run-1/implementation/diff.patch",
+  changedFilesPath: "/fake/runs/run-1/implementation/changed-files.json",
   reportDir: "/fake/runs/run-1/report",
   logsDir: "/fake/runs/run-1/logs",
   traceabilityMd: "/fake/runs/run-1/report/traceability.md",
   traceabilityJson: "/fake/runs/run-1/report/traceability.json",
+  snapshotDir: "/fake/runs/run-1/snapshots",
 };
 
 describe("traceabilityEngine", () => {

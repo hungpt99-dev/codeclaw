@@ -23,6 +23,11 @@ export type {
   AssistedWorkflowInput,
   AssistedWorkflowOutput,
 } from "./workflows/assistedWorkflow.js";
+export { runSemiAutoWorkflow, continueSemiAutoWorkflow } from "./workflows/semiAutoWorkflow.js";
+export type {
+  SemiAutoWorkflowInput,
+  SemiAutoWorkflowOutput,
+} from "./workflows/semiAutoWorkflow.js";
 export { getAiToolConfig } from "./workflows/workflowHelpers.js";
 export type { AiToolConfig } from "./workflows/workflowHelpers.js";
 export { runWorkflowWithGates } from "./workflows/workflowRunner.js";
@@ -36,3 +41,9 @@ export type {
 } from "./workflows/workflowRunner.js";
 export { generateTraceability, traceabilityToMarkdown } from "./traceability/traceabilityEngine.js";
 export type { TraceabilityMatrix, TraceabilityItem, CoverageStatus } from "@aiteam/shared";
+export {
+  checkFileSafety,
+  checkCommandSafety,
+  defaultSafetyPolicy,
+} from "./policies/safetyPolicy.js";
+export type { SafetyPolicy, FileSafetyResult } from "./policies/safetyPolicy.js";

@@ -9,10 +9,15 @@ export interface ArtifactPaths {
   tasksDir: string;
   testsDir: string;
   implementationDir: string;
+  implementationPromptPath: string;
+  agentLogPath: string;
+  diffPatchPath: string;
+  changedFilesPath: string;
   reportDir: string;
   logsDir: string;
   traceabilityMd: string;
   traceabilityJson: string;
+  snapshotDir: string;
 }
 
 export function getArtifactPaths(runId: string): ArtifactPaths {
@@ -25,10 +30,15 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
     tasksDir: join(runDir, "tasks"),
     testsDir: join(runDir, "tests"),
     implementationDir: join(runDir, "implementation"),
+    implementationPromptPath: join(runDir, "implementation", "implementation-prompt.md"),
+    agentLogPath: join(runDir, "implementation", "agent-output.log"),
+    diffPatchPath: join(runDir, "implementation", "diff.patch"),
+    changedFilesPath: join(runDir, "implementation", "changed-files.json"),
     reportDir: join(runDir, "report"),
     logsDir: join(runDir, "logs"),
     traceabilityMd: join(runDir, "report", "traceability.md"),
     traceabilityJson: join(runDir, "report", "traceability.json"),
+    snapshotDir: join(runDir, "snapshots"),
   };
 }
 

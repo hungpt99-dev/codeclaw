@@ -26,6 +26,8 @@ interface RunCliOptions {
   outputLanguage?: string;
   json?: boolean;
   approve?: boolean;
+  agent?: string;
+  timeout?: string;
 }
 
 interface ApproveCliOptions {
@@ -94,6 +96,8 @@ program
   .option("--output-language <language>", "Output language")
   .option("--json", "Output as JSON")
   .option("--approve", "Auto-approve non-risky gates")
+  .option("--agent <name>", "Selected AI coding agent (claude, codex, gemini, aider)")
+  .option("--timeout <seconds>", "Override command timeout in seconds")
   .action(async (requirement: string, options: RunCliOptions) => {
     await runCommand(requirement, options);
   });

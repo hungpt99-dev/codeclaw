@@ -2,8 +2,15 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { StatusBadge } from "../components/StatusBadge.js";
 import { MarkdownViewer } from "../components/MarkdownViewer.js";
+import { DiffViewer } from "../components/DiffViewer.js";
 import { api } from "../lib/api.js";
-import type { Run, Artifact, Approval, TraceabilityMatrix } from "../lib/types.js";
+import type {
+  Run,
+  Artifact,
+  Approval,
+  TraceabilityMatrix,
+  CodeGenerationResult,
+} from "../lib/types.js";
 import type { ReactElement } from "react";
 
 const AGENT_FORMATS = [
@@ -51,6 +58,12 @@ export function RunDetail(): ReactElement {
   const [traceability, setTraceability] = useState<TraceabilityMatrix | null>(null);
   const [traceabilityLoading, setTraceabilityLoading] = useState(false);
   const [traceabilityError, setTraceabilityError] = useState<string | null>(null);
+  const [codeResult, setCodeResult] = useState<CodeGenerationResult | null>(null);
+  const [codeLoading, setCodeLoading] = useState(false);
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [diffContent, setDiffContent] = useState<string | null>(null);
+  const [agentLog, setAgentLog] = useState<string | null>(null);
+  const [implementationPrompt, setImplementationPrompt] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -148,6 +161,57 @@ export function RunDetail(): ReactElement {
       setTraceability(null);
     } finally {
       setTraceabilityLoading(false);
+    }
+  }, [id]);
+
+  const handleTriggerCode = useCallback(async () => {
+    if (!id) return;
+    setCodeLoading(true);
+    setCodeError(null);
+    try {
+      const agent = "claude";
+      const result = await api.triggerCodeGeneration(id, agent);
+      setCodeResult(result.codeGeneration);
+      if (result.codeGeneration.success) {
+        const diffData = await api.getDiffPatch(id).catch(() => ({ diffContent: "" }));
+        setDiffContent(diffData.diffContent);
+        const logData = await api.getAgentLog(id).catch(() => ({ log: "" }));
+        setAgentLog(logData.log);
+      }
+    } catch (e) {
+      setCodeError(e instanceof Error ? e.message : "Code generation failed");
+    } finally {
+      setCodeLoading(false);
+    }
+  }, [id]);
+
+  const handleLoadImplementationPrompt = useCallback(async () => {
+    if (!id) return;
+    try {
+      const data = await api.getImplementationPrompt(id);
+      setImplementationPrompt(data.prompt);
+    } catch {
+      setImplementationPrompt(null);
+    }
+  }, [id]);
+
+  const handleLoadDiff = useCallback(async () => {
+    if (!id) return;
+    try {
+      const data = await api.getDiffPatch(id);
+      setDiffContent(data.diffContent);
+    } catch {
+      setDiffContent(null);
+    }
+  }, [id]);
+
+  const handleLoadAgentLog = useCallback(async () => {
+    if (!id) return;
+    try {
+      const data = await api.getAgentLog(id);
+      setAgentLog(data.log);
+    } catch {
+      setAgentLog(null);
     }
   }, [id]);
 
@@ -535,6 +599,182 @@ export function RunDetail(): ReactElement {
             Click "Load" to view traceability or "Generate" to create it.
           </p>
         )}
+      </section>
+
+      <section className="rounded-lg border bg-white p-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-gray-900">Implementation</h2>
+          {run.mode === "semi-auto" && (
+            <button
+              type="button"
+              onClick={() => {
+                void handleTriggerCode();
+              }}
+              disabled={codeLoading}
+              className="px-3 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {codeLoading ? "Running..." : "Run Code Generation"}
+            </button>
+          )}
+        </div>
+
+        {codeError && (
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 mb-3">
+            <p className="text-sm text-red-700">{codeError}</p>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium text-gray-700">Implementation Prompt</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  void handleLoadImplementationPrompt();
+                }}
+                className="text-xs px-2 py-1 rounded border bg-white text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                Load
+              </button>
+            </div>
+            {implementationPrompt ? (
+              <div className="rounded-md bg-gray-50 p-4 max-h-64 overflow-y-auto">
+                <MarkdownViewer content={implementationPrompt} />
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 italic">
+                Click "Load" to view the implementation prompt.
+              </p>
+            )}
+          </div>
+
+          {codeResult && (
+            <div className="rounded-md border border-gray-200 p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-block w-2 h-2 rounded-full ${codeResult.success ? "bg-green-500" : "bg-red-500"}`}
+                />
+                <span className="text-sm font-medium">
+                  {codeResult.success ? "Code generation succeeded" : "Code generation failed"}
+                </span>
+              </div>
+
+              {codeResult.fileSafety && (
+                <>
+                  {codeResult.fileSafety.blocked.length > 0 && (
+                    <div className="rounded-md bg-red-50 border border-red-200 p-3">
+                      <p className="text-sm font-medium text-red-700 mb-1">Blocked Files:</p>
+                      <ul className="list-disc list-inside text-sm text-red-600">
+                        {codeResult.fileSafety.blocked.map((f) => (
+                          <li key={f}>{f}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {codeResult.fileSafety.warnings.length > 0 && (
+                    <div className="rounded-md bg-yellow-50 border border-yellow-200 p-3">
+                      <p className="text-sm font-medium text-yellow-700 mb-1">Warning Files:</p>
+                      <ul className="list-disc list-inside text-sm text-yellow-600">
+                        {codeResult.fileSafety.warnings.map((f) => (
+                          <li key={f}>{f}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium text-gray-700">
+                    Changed Files ({codeResult.changedFiles.length})
+                  </h4>
+                </div>
+                {codeResult.changedFiles.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-xs">
+                      <thead>
+                        <tr className="border-b text-left text-gray-500">
+                          <th className="pb-1 pr-4 font-medium">File</th>
+                          <th className="pb-1 font-medium">Risk</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {codeResult.changedFiles.map((f) => {
+                          const isBlocked = codeResult.fileSafety?.blocked.includes(f);
+                          const isWarned = codeResult.fileSafety?.warnings.includes(f);
+                          const riskClass = isBlocked
+                            ? "text-red-600"
+                            : isWarned
+                              ? "text-yellow-600"
+                              : "text-green-600";
+                          const riskLabel = isBlocked ? "Blocked" : isWarned ? "Warning" : "Safe";
+                          return (
+                            <tr key={f} className="border-b hover:bg-gray-50">
+                              <td className="py-1 pr-4 font-mono">{f}</td>
+                              <td className={`py-1 ${riskClass}`}>{riskLabel}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400 italic">No files changed.</p>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium text-gray-700">Diff Viewer</h4>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleLoadDiff();
+                    }}
+                    className="text-xs px-2 py-1 rounded border bg-white text-gray-500 hover:bg-gray-50 transition-colors"
+                  >
+                    {diffContent ? "Refresh" : "Load Diff"}
+                  </button>
+                </div>
+                {diffContent ? (
+                  <div className="max-h-96 overflow-y-auto">
+                    <DiffViewer diffContent={diffContent} />
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400 italic">
+                    Click "Load Diff" to view the generated patch.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium text-gray-700">Agent Output Log</h4>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleLoadAgentLog();
+                    }}
+                    className="text-xs px-2 py-1 rounded border bg-white text-gray-500 hover:bg-gray-50 transition-colors"
+                  >
+                    {agentLog ? "Refresh" : "Load Log"}
+                  </button>
+                </div>
+                {agentLog ? (
+                  <pre className="rounded-md bg-gray-900 text-green-400 p-4 text-xs max-h-48 overflow-y-auto whitespace-pre-wrap">
+                    {agentLog}
+                  </pre>
+                ) : (
+                  <p className="text-sm text-gray-400 italic">
+                    Click "Load Log" to view agent output.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </section>
 
       {GROUPS.map((group) => {

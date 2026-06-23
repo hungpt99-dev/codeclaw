@@ -200,6 +200,24 @@ export async function doctorCommand(): Promise<void> {
           status: "pass",
           message: mapping || "No mapping configured",
         });
+
+        const devAgent = agents.defaultDeveloper;
+        if (devAgent && cli) {
+          const devCliConfig = cli[devAgent];
+          if (devCliConfig && !devCliConfig.enabled) {
+            results.push({
+              name: `Default developer agent (${devAgent})`,
+              status: "warn",
+              message: `Agent ${devAgent} is configured but disabled in CLI settings`,
+            });
+          } else if (devCliConfig?.enabled) {
+            results.push({
+              name: `Default developer agent (${devAgent})`,
+              status: "pass",
+              message: "Enabled and configured",
+            });
+          }
+        }
       }
       if (cli) {
         const enabledTools = Object.entries(cli)

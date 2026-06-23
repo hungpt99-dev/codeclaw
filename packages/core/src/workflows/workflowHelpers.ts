@@ -16,6 +16,7 @@ const AGENT_TO_CONFIG_KEY: Record<string, string> = {
   ARCHITECT: "defaultArchitect",
   PROJECT_MANAGER: "defaultPm",
   QA: "defaultQa",
+  DEVELOPER: "defaultDeveloper",
   REPORTER: "defaultReporter",
 };
 

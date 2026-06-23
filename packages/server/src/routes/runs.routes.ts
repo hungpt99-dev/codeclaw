@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import type { FastifyInstance } from "fastify";
 import type { DbConnection } from "@aiteam/storage";
 import {
@@ -6,11 +7,19 @@ import {
   createApprovalRepository,
   createTraceabilityRepository,
 } from "@aiteam/storage";
-import type { ArtifactType, RunMode, ApprovalGate, ApprovalStatus } from "@aiteam/shared";
+import type {
+  ArtifactType,
+  RunMode,
+  RunStatus,
+  ApprovalGate,
+  ApprovalStatus,
+  AiAdapterName,
+} from "@aiteam/shared";
 import { createRunId, ArtifactTypeValues } from "@aiteam/shared";
 import {
   runDocsOnlyWorkflow,
   runAssistedWorkflow,
+  runSemiAutoWorkflow,
   analyzeRepository,
   generateTraceability,
   getArtifactPaths,
@@ -249,6 +258,120 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
     }
 
     return { approval };
+  });
+
+  app.post("/api/runs/:id/code", async (request, reply) => {
+    const params = request.params as { id: string };
+    const body = request.body as
+      | {
+          agent?: string;
+          approved?: boolean;
+        }
+      | undefined;
+
+    const runRepo = createRunRepository(db);
+    const run = runRepo.findById(params.id);
+    if (!run) {
+      return reply.status(404).send({ error: "Run not found" });
+    }
+
+    const agent: AiAdapterName = (body?.agent ?? "claude") as AiAdapterName;
+
+    const approvalRepo = createApprovalRepository(db);
+    const existingApproval = approvalRepo.findByRunIdAndGate(params.id, "CODE_GENERATION");
+
+    if (body?.approved || existingApproval?.status === "APPROVED") {
+      runRepo.updateStatus(params.id, "CODING");
+
+      const result = await runSemiAutoWorkflow({
+        requirement: run.rawRequirement,
+        projectRoot: process.cwd(),
+        selectedAgent: agent,
+        memoryContext: undefined,
+        approvalConfig: { requireCodeApproval: false },
+      });
+
+      runRepo.updateStatus(params.id, result.status as RunStatus);
+
+      return {
+        codeGeneration: result.codeGenerationResult ?? {
+          success: false,
+          changedFiles: [],
+          diffPatchPath: "",
+          agentLogPath: "",
+        },
+      };
+    }
+
+    if (existingApproval) {
+      return reply.status(400).send({
+        error: "Approval already exists",
+        approval: existingApproval,
+      });
+    }
+
+    const approvalId = `${params.id}_approval_code_generation`;
+    approvalRepo.create({
+      id: approvalId,
+      runId: params.id,
+      gate: "CODE_GENERATION",
+      status: "PENDING",
+    });
+
+    runRepo.updateStatus(params.id, "WAITING_FOR_CODE_APPROVAL");
+
+    return {
+      message: "Code generation approval required",
+      gate: "CODE_GENERATION",
+      approval: { id: approvalId, gate: "CODE_GENERATION", status: "PENDING" },
+    };
+  });
+
+  app.get("/api/runs/:id/diff", async (request, reply) => {
+    const params = request.params as { id: string };
+    const paths = getArtifactPaths(params.id);
+    try {
+      const content = await readFile(paths.diffPatchPath, "utf-8");
+      return { diffContent: content };
+    } catch {
+      return reply.status(404).send({ error: "Diff patch not found" });
+    }
+  });
+
+  app.get("/api/runs/:id/changed-files", async (request, reply) => {
+    const params = request.params as { id: string };
+    const paths = getArtifactPaths(params.id);
+    try {
+      const content = await readFile(paths.changedFilesPath, "utf-8");
+      const parsed: { files: string[] } = JSON.parse(content) as { files: string[] };
+      return {
+        changedFiles: parsed.files.map((f: string) => ({ file: f, status: "modified" })),
+      };
+    } catch {
+      return reply.status(404).send({ error: "Changed files not found" });
+    }
+  });
+
+  app.get("/api/runs/:id/implementation-prompt", async (request, reply) => {
+    const params = request.params as { id: string };
+    const paths = getArtifactPaths(params.id);
+    try {
+      const content = await readFile(paths.implementationPromptPath, "utf-8");
+      return { prompt: content };
+    } catch {
+      return reply.status(404).send({ error: "Implementation prompt not found" });
+    }
+  });
+
+  app.get("/api/runs/:id/agent-log", async (request, reply) => {
+    const params = request.params as { id: string };
+    const paths = getArtifactPaths(params.id);
+    try {
+      const content = await readFile(paths.agentLogPath, "utf-8");
+      return { log: content };
+    } catch {
+      return reply.status(404).send({ error: "Agent log not found" });
+    }
   });
 
   app.get("/api/runs/:id/traceability", async (request, reply) => {
