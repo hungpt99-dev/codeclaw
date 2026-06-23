@@ -43,6 +43,8 @@ export default tseslint.config(
       "**/node_modules/**",
       "**/vitest.config.ts",
       "**/vite.config.ts",
+      "**/tailwind.config.ts",
+      "**/postcss.config.js",
       "eslint.config.js",
       "commitlint.config.cjs",
       ".dependency-cruiser.cjs",

@@ -3,8 +3,8 @@ import { App } from "./App.js";
 import { render, screen } from "@testing-library/react";
 
 describe("App", () => {
-  it("renders a run ID", () => {
+  it("renders the dashboard heading", () => {
     render(<App />);
-    expect(screen.getByText(/Run ID:/)).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Dashboard" })).toBeDefined();
   });
 });

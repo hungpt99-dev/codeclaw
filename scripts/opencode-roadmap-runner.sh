@@ -20,7 +20,7 @@ STATE_FILE="$AUTOMATION_DIR/state"
 # -----------------------------------------------------------------------------
 # Environment variables with defaults
 # -----------------------------------------------------------------------------
-MAX_FIX_ATTEMPTS="${MAX_FIX_ATTEMPTS:-2}"
+MAX_FIX_ATTEMPTS="${MAX_FIX_ATTEMPTS:-5}"
 SKIP_COMMIT="${SKIP_COMMIT:-0}"
 START_STEP="${START_STEP:-}"
 QUALITY_COMMAND="${QUALITY_COMMAND:-}"
