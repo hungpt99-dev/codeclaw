@@ -38,6 +38,32 @@ import {
   jiraCommentCommand,
 } from "./commands/jira.js";
 import { slackStatusCommand, slackTestCommand, slackPostCommand } from "./commands/slack.js";
+import {
+  configListCommand,
+  configGetCommand,
+  configSetCommand,
+  configValidateCommand,
+  configPathCommand,
+} from "./commands/config.js";
+import { statusCommand } from "./commands/status.js";
+import {
+  promptsListCommand,
+  promptsShowCommand,
+  promptsEditCommand,
+  promptsResetCommand,
+  promptsValidateCommand,
+} from "./commands/prompts.js";
+import { artifactsCommand } from "./commands/artifacts.js";
+import {
+  openUiCommand,
+  openRunCommand,
+  openReportCommand,
+  openDiffCommand,
+  openConfigCommand,
+  openLogsCommand,
+} from "./commands/open.js";
+import { cleanCommand } from "./commands/clean.js";
+import { rollbackCommand } from "./commands/rollback.js";
 
 interface InitCliOptions {
   force?: boolean;
@@ -110,6 +136,33 @@ Examples:
   aiteam resume <runId>                Resume a paused workflow
   aiteam cancel <runId>                Cancel a workflow run
   aiteam memory status                 Show runtime memory status
+  aiteam config list                    Show all config
+  aiteam config get <key>              Get specific config key
+  aiteam config set <key> <value>      Set config key
+  aiteam config validate               Validate config.json
+  aiteam config path                   Show config file path
+  aiteam status                        Project status overview
+  aiteam status --run <runId>          Detailed status for a run
+  aiteam status --json                 JSON output
+  aiteam prompts list                  List prompt templates
+  aiteam prompts show <name>           Show template content
+  aiteam prompts edit <name>           Edit template in $EDITOR
+  aiteam prompts reset <name>          Reset template to default
+  aiteam prompts validate              Validate all templates
+  aiteam artifacts <runId>             List run artifacts
+  aiteam artifacts <runId> --type <t>  Filter artifacts by type
+  aiteam artifacts <runId> --json      JSON output
+  aiteam open ui                       Open browser UI
+  aiteam open run <runId>              Open run in browser
+  aiteam open report <runId>           Open final report
+  aiteam open diff <runId>             Open diff
+  aiteam open config                   Open config.json in editor
+  aiteam open logs <runId>             Open logs folder
+  aiteam clean --runs --older-than 30d Clean old runs
+  aiteam clean --all --older-than 90d  Clean everything
+  aiteam clean --dry-run               Preview without deleting
+  aiteam rollback <runId>              Rollback code changes
+  aiteam rollback <runId> --dry-run    Preview changes
 `,
   );
 
@@ -506,5 +559,184 @@ program
       await exportCommand(runId, options);
     },
   );
+
+const configProgram = program.command("config").description("Manage configuration");
+
+configProgram
+  .command("list")
+  .description("Show all configuration values")
+  .action(async () => {
+    await configListCommand();
+  });
+
+configProgram
+  .command("get")
+  .description("Get a specific config key (dot notation)")
+  .argument("<key>", "Config key (e.g. project.name)")
+  .action(async (key: string) => {
+    await configGetCommand(key);
+  });
+
+configProgram
+  .command("set")
+  .description("Set a config key (dot notation)")
+  .argument("<key>", "Config key (e.g. project.name)")
+  .argument("<value>", "Config value")
+  .action(async (key: string, value: string) => {
+    await configSetCommand(key, value);
+  });
+
+configProgram
+  .command("validate")
+  .description("Validate configuration against schema")
+  .action(async () => {
+    await configValidateCommand();
+  });
+
+configProgram
+  .command("path")
+  .description("Show config file path")
+  .action(async () => {
+    await configPathCommand();
+  });
+
+program
+  .command("status")
+  .description("Show project status overview")
+  .option("--run <runId>", "Show detailed status for a specific run")
+  .option("--json", "Output as JSON")
+  .action(async (options: { run?: string; json?: boolean }) => {
+    await statusCommand(options);
+  });
+
+const promptsProgram = program.command("prompts").description("Manage prompt templates");
+
+promptsProgram
+  .command("list")
+  .description("List available prompt templates")
+  .action(async () => {
+    await promptsListCommand();
+  });
+
+promptsProgram
+  .command("show")
+  .description("Show prompt template content")
+  .argument("<name>", "Template name (without .md extension)")
+  .action(async (name: string) => {
+    await promptsShowCommand(name);
+  });
+
+promptsProgram
+  .command("edit")
+  .description("Open prompt template in default editor")
+  .argument("<name>", "Template name (without .md extension)")
+  .action(async (name: string) => {
+    await promptsEditCommand(name);
+  });
+
+promptsProgram
+  .command("reset")
+  .description("Reset prompt template to default")
+  .argument("<name>", "Template name (without .md extension)")
+  .action(async (name: string) => {
+    await promptsResetCommand(name);
+  });
+
+promptsProgram
+  .command("validate")
+  .description("Validate all prompt templates for correct variables")
+  .action(async () => {
+    await promptsValidateCommand();
+  });
+
+program
+  .command("artifacts")
+  .description("List artifacts for a run")
+  .argument("<runId>", "Run ID")
+  .option("--type <type>", "Filter by artifact type (e.g. design, report)")
+  .option("--json", "Output as JSON")
+  .action(async (runId: string, options: { type?: string; json?: boolean }) => {
+    await artifactsCommand(runId, options);
+  });
+
+const openProgram = program.command("open").description("Open files and UI");
+
+openProgram
+  .command("ui")
+  .description("Open browser to localhost:4317")
+  .action(() => {
+    openUiCommand();
+  });
+
+openProgram
+  .command("run")
+  .description("Open run in browser")
+  .argument("<runId>", "Run ID")
+  .action((runId: string) => {
+    openRunCommand(runId);
+  });
+
+openProgram
+  .command("report")
+  .description("Open final report in browser")
+  .argument("<runId>", "Run ID")
+  .action((runId: string) => {
+    openReportCommand(runId);
+  });
+
+openProgram
+  .command("diff")
+  .description("Open diff in browser")
+  .argument("<runId>", "Run ID")
+  .action((runId: string) => {
+    openDiffCommand(runId);
+  });
+
+openProgram
+  .command("config")
+  .description("Open config.json in editor")
+  .action(async () => {
+    await openConfigCommand();
+  });
+
+openProgram
+  .command("logs")
+  .description("Open logs folder")
+  .argument("<runId>", "Run ID")
+  .action(async (runId: string) => {
+    await openLogsCommand(runId);
+  });
+
+program
+  .command("clean")
+  .description("Clean old runs and logs")
+  .option("--runs", "Clean old run directories")
+  .option("--logs", "Clean old log directories")
+  .option("--all", "Clean everything")
+  .option("--older-than <days>", 'Age threshold (e.g. "30d")')
+  .option("--dry-run", "Preview without deleting")
+  .option("--yes", "Skip confirmation prompt")
+  .action(
+    async (options: {
+      runs?: boolean;
+      logs?: boolean;
+      all?: boolean;
+      olderThan?: string;
+      dryRun?: boolean;
+      yes?: boolean;
+    }) => {
+      await cleanCommand(options);
+    },
+  );
+
+program
+  .command("rollback")
+  .description("Rollback code changes for a run")
+  .argument("<runId>", "Run ID")
+  .option("--dry-run", "Preview changes without applying")
+  .option("--yes", "Skip confirmation prompt")
+  .action(async (runId: string, options: { dryRun?: boolean; yes?: boolean }) => {
+    await rollbackCommand(runId, options);
+  });
 
 program.parse();
