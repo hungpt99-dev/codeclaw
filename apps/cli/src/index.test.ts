@@ -364,7 +364,7 @@ describe("uiCommand", () => {
   it("starts server and prints URL", async () => {
     await initCommand({});
 
-    const { createApp } = await import("@aiteam/local-server");
+    const { createApp } = await import("@aiteam/server");
     const app = createApp({
       dbPath: join(cwd, ".ai-team", "database.sqlite"),
       promptsDir: join(cwd, ".ai-team", "prompts"),
@@ -383,7 +383,7 @@ describe("uiCommand", () => {
   it("uses custom port option", async () => {
     await initCommand({});
 
-    const { createApp } = await import("@aiteam/local-server");
+    const { createApp } = await import("@aiteam/server");
     const app = createApp({
       dbPath: join(cwd, ".ai-team", "database.sqlite"),
       promptsDir: join(cwd, ".ai-team", "prompts"),
@@ -401,7 +401,7 @@ describe("uiCommand", () => {
   it("reports error when port is already in use", async () => {
     await initCommand({});
 
-    const { createApp } = await import("@aiteam/local-server");
+    const { createApp } = await import("@aiteam/server");
     const app1 = createApp({
       dbPath: join(cwd, ".ai-team", "database.sqlite"),
       promptsDir: join(cwd, ".ai-team", "prompts"),

@@ -1,8 +1,8 @@
 import { access } from "node:fs/promises";
 import { join } from "node:path";
-import { createApp, getDefaultDbPath, getDefaultPromptsDir } from "@aiteam/local-server";
+import { createApp, getDefaultDbPath, getDefaultPromptsDir } from "@aiteam/server";
 
-export interface UiOptions {
+interface UiOptions {
   host?: string;
   port?: string;
   open?: boolean;

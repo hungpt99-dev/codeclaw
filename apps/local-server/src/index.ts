@@ -1,4 +1,4 @@
-import { createApp, getDefaultDbPath, getDefaultPromptsDir } from "./server.js";
+import { createApp, getDefaultDbPath, getDefaultPromptsDir } from "@aiteam/server";
 
 async function start(): Promise<void> {
   const app = createApp({

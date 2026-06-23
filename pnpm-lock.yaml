@@ -59,12 +59,12 @@ importers:
       '@aiteam/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@aiteam/local-server':
-        specifier: workspace:*
-        version: link:../local-server
       '@aiteam/memory':
         specifier: workspace:*
         version: link:../../packages/memory
+      '@aiteam/server':
+        specifier: workspace:*
+        version: link:../../packages/server
       '@aiteam/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -77,15 +77,9 @@ importers:
 
   apps/local-server:
     dependencies:
-      '@aiteam/core':
+      '@aiteam/server':
         specifier: workspace:*
-        version: link:../../packages/core
-      '@aiteam/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      '@aiteam/storage':
-        specifier: workspace:*
-        version: link:../../packages/storage
+        version: link:../../packages/server
       fastify:
         specifier: ^5.4.0
         version: 5.8.5
@@ -137,6 +131,21 @@ importers:
       '@aiteam/storage':
         specifier: workspace:*
         version: link:../storage
+
+  packages/server:
+    dependencies:
+      '@aiteam/core':
+        specifier: workspace:*
+        version: link:../core
+      '@aiteam/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@aiteam/storage':
+        specifier: workspace:*
+        version: link:../storage
+      fastify:
+        specifier: ^5.4.0
+        version: 5.8.5
 
   packages/shared:
     dependencies:

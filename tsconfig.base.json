@@ -24,7 +24,8 @@
       "@aiteam/storage": ["packages/storage/src/index.ts"],
       "@aiteam/adapters": ["packages/adapters/src/index.ts"],
       "@aiteam/memory": ["packages/memory/src/index.ts"],
-      "@aiteam/local-server": ["apps/local-server/src/server.ts"]
+      "@aiteam/local-server": ["apps/local-server/src/index.ts"],
+      "@aiteam/server": ["packages/server/src/index.ts"]
     }
   }
 }

@@ -8,7 +8,8 @@
     "packages/shared": {},
     "packages/storage": {},
     "packages/adapters": {},
-    "packages/memory": {}
+    "packages/memory": {},
+    "packages/server": {}
   },
   "ignoreBinaries": ["dot"]
 }

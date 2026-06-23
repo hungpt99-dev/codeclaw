@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { mkdir, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
-import { createApp } from "./server.js";
+import { createApp } from "@aiteam/server";
 import type { FastifyInstance } from "fastify";
 
 const TEST_DIR = join(".ai-team", "test-server");
