@@ -12,6 +12,7 @@ import type {
   CodeGenerationResult,
   GitHubStatus,
   GitHubPRSummary,
+  JiraStatus,
 } from "../lib/types.js";
 import type { ReactElement } from "react";
 
@@ -70,6 +71,10 @@ export function RunDetail(): ReactElement {
   const [gitHubPRSummary, setGitHubPRSummary] = useState<GitHubPRSummary | null>(null);
   const [gitHubPRLoading, setGitHubPRLoading] = useState(false);
   const [gitHubPRResult, setGitHubPRResult] = useState<string | null>(null);
+  const [jiraStatus, setJiraStatus] = useState<JiraStatus | null>(null);
+  const [jiraMarkdown, setJiraMarkdown] = useState<string | null>(null);
+  const [jiraCreateResult, setJiraCreateResult] = useState<string | null>(null);
+  const [jiraLoading, setJiraLoading] = useState(false);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -942,6 +947,131 @@ export function RunDetail(): ReactElement {
               className={`text-sm px-3 py-2 rounded-md ${gitHubPRResult.startsWith("PR created") ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}
             >
               {gitHubPRResult}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-lg border bg-white p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Jira</h2>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={(): void => {
+                void (async () => {
+                  try {
+                    const status = await api.getJiraStatus();
+                    setJiraStatus(status);
+                  } catch {
+                    setJiraStatus(null);
+                  }
+                })();
+              }}
+              className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Check Jira Status
+            </button>
+            <button
+              type="button"
+              onClick={(): void => {
+                void (async () => {
+                  if (!id) return;
+                  setJiraLoading(true);
+                  try {
+                    const result = await api.getJiraExport(id);
+                    if (result.success) {
+                      setJiraMarkdown(result.markdown);
+                    }
+                  } catch {
+                    setJiraMarkdown(null);
+                  } finally {
+                    setJiraLoading(false);
+                  }
+                })();
+              }}
+              disabled={jiraLoading}
+              className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            >
+              {jiraLoading ? "Loading..." : "Jira Export"}
+            </button>
+            <button
+              type="button"
+              onClick={(): void => {
+                void (async () => {
+                  if (!id) return;
+                  setJiraLoading(true);
+                  setJiraCreateResult(null);
+                  try {
+                    const result = await api.createJiraIssues(id);
+                    if (result.success) {
+                      setJiraCreateResult("Jira issues created successfully!");
+                    } else {
+                      setJiraCreateResult("Approval required. Use --approve or approve via CLI.");
+                    }
+                  } catch (e) {
+                    setJiraCreateResult(`Error: ${e instanceof Error ? e.message : "Unknown"}`);
+                  } finally {
+                    setJiraLoading(false);
+                  }
+                })();
+              }}
+              disabled={jiraLoading}
+              className="px-3 py-1.5 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
+            >
+              {jiraLoading ? "Creating..." : "Create Jira Issues"}
+            </button>
+          </div>
+
+          {jiraStatus && (
+            <div className="text-sm space-y-1 text-gray-700">
+              <p>
+                <span className="font-medium">Enabled:</span> {jiraStatus.enabled ? "Yes" : "No"}
+              </p>
+              {jiraStatus.siteUrl && (
+                <p>
+                  <span className="font-medium">Site:</span> {jiraStatus.siteUrl}
+                </p>
+              )}
+              {jiraStatus.projectKey && (
+                <p>
+                  <span className="font-medium">Project:</span> {jiraStatus.projectKey}
+                </p>
+              )}
+              <p>
+                <span className="font-medium">Token:</span>{" "}
+                {jiraStatus.hasToken ? "Set" : "Not set"}
+              </p>
+              <p>
+                <span className="font-medium">Status:</span> {jiraStatus.overall}
+              </p>
+            </div>
+          )}
+
+          {jiraMarkdown && (
+            <div className="rounded-md border border-gray-200 p-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Jira-ready Markdown</h3>
+              <pre className="text-xs text-gray-600 whitespace-pre-wrap max-h-64 overflow-y-auto bg-gray-50 p-3 rounded">
+                {jiraMarkdown.slice(0, 2000)}
+                {jiraMarkdown.length > 2000 && "..."}
+              </pre>
+              <button
+                type="button"
+                onClick={(): void => {
+                  void navigator.clipboard.writeText(jiraMarkdown);
+                }}
+                className="mt-2 text-xs px-2 py-1 rounded border bg-white text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                Copy Markdown
+              </button>
+            </div>
+          )}
+
+          {jiraCreateResult && (
+            <div
+              className={`text-sm px-3 py-2 rounded-md ${jiraCreateResult.startsWith("Error") ? "bg-red-50 text-red-700" : jiraCreateResult.includes("successfully") ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}
+            >
+              {jiraCreateResult}
             </div>
           )}
         </div>

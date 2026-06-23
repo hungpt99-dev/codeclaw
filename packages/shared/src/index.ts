@@ -37,6 +37,7 @@ export type {
   TraceabilityItem,
   TraceabilityMatrix,
   GitHubIntegrationConfig,
+  JiraIntegrationConfig,
 } from "./types/domain.js";
 export { MemoryScope, MemoryFormat, AgentRole } from "./types/memory.js";
 export type {

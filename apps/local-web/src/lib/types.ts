@@ -107,3 +107,19 @@ export interface GitHubCIRun {
   status: string;
   conclusion: string;
 }
+
+export interface JiraStatus {
+  configured: boolean;
+  enabled: boolean;
+  hasToken: boolean;
+  siteUrl?: string;
+  projectKey?: string;
+  overall: string;
+}
+
+export interface JiraTestResult {
+  success: boolean;
+  message: string;
+  accountId?: string;
+  displayName?: string;
+}

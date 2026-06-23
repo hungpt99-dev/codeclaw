@@ -143,6 +143,7 @@ export async function runDocsOnlyWorkflow(
     {
       requirement: input.requirement,
       technicalDesign: architectOutput.technicalDesign,
+      acceptanceCriteria: baOutput.acceptanceCriteria,
     },
     { templateDir, aiTool: pmTool },
   );
@@ -152,6 +153,11 @@ export async function runDocsOnlyWorkflow(
 
   await writeArtifact(join(paths.tasksDir, "task-breakdown.json"), pmOutput.taskBreakdownJson);
   artifacts.push(join(paths.tasksDir, "task-breakdown.json"));
+
+  if (pmOutput.jiraReadyMd) {
+    await writeArtifact(join(paths.tasksDir, "jira-ready-tasks.md"), pmOutput.jiraReadyMd);
+    artifacts.push(join(paths.tasksDir, "jira-ready-tasks.md"));
+  }
 
   const qaOutput = await runQaAgent(
     {

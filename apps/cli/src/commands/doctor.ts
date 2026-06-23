@@ -10,6 +10,7 @@ import {
   createCodexAdapter,
   isGhCliAvailable,
   isGhAuthenticated,
+  getJiraStatus,
 } from "@aiteam/adapters";
 
 interface CheckResult {
@@ -248,7 +249,10 @@ export async function doctorCommand(): Promise<void> {
       }
 
       const integrations = parsed.integrations as
-        | { github?: { enabled?: boolean; owner?: string; repo?: string } }
+        | {
+            github?: { enabled?: boolean; owner?: string; repo?: string };
+            jira?: Record<string, unknown>;
+          }
         | undefined;
       if (integrations?.github?.enabled) {
         results.push({
@@ -259,6 +263,37 @@ export async function doctorCommand(): Promise<void> {
               ? `Enabled (${integrations.github.owner ?? "?"}/${integrations.github.repo ?? "?"})`
               : "Enabled but not authenticated"
             : "Enabled but gh CLI not found",
+        });
+      }
+
+      const jiraCfg = integrations?.jira as
+        | {
+            enabled?: boolean;
+            siteUrl?: string;
+            email?: string;
+            projectKey?: string;
+            tokenEnvRef?: string;
+          }
+        | undefined;
+      if (jiraCfg?.enabled) {
+        const status = getJiraStatus({
+          enabled: true,
+          siteUrl: jiraCfg.siteUrl,
+          email: jiraCfg.email,
+          projectKey: jiraCfg.projectKey,
+          defaultIssueType: "task",
+          tokenEnvRef: jiraCfg.tokenEnvRef ?? "AITEAM_JIRA_TOKEN",
+        });
+        results.push({
+          name: "Jira integration",
+          status:
+            status.overall === "ok" ? "pass" : status.overall === "missing_token" ? "warn" : "fail",
+          message:
+            status.overall === "ok"
+              ? `Enabled (${status.siteUrl ?? "?"})`
+              : status.overall === "missing_token"
+                ? "Enabled but token missing"
+                : `Enabled but incomplete config (${status.overall})`,
         });
       }
     } catch {

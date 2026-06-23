@@ -11,6 +11,8 @@ import type {
   GitHubPRSummary,
   GitHubPRInfo,
   GitHubCIRun,
+  JiraStatus,
+  JiraTestResult,
 } from "./types.js";
 
 const BASE = "/api";
@@ -180,6 +182,35 @@ export const api = {
   async getGitHubActions(): Promise<GitHubCIRun[]> {
     const data = await request<{ runs: GitHubCIRun[] }>("/integrations/github/actions");
     return data.runs;
+  },
+
+  async getJiraStatus(): Promise<JiraStatus> {
+    const data = await request<{ status: JiraStatus }>("/integrations/jira/status");
+    return data.status;
+  },
+
+  async testJiraConnection(): Promise<JiraTestResult> {
+    return request("/integrations/jira/test", { method: "POST" });
+  },
+
+  async getJiraExport(runId: string): Promise<{ success: boolean; markdown: string }> {
+    return request("/integrations/jira/export", {
+      method: "POST",
+      body: JSON.stringify({ runId }),
+    });
+  },
+
+  async createJiraIssues(
+    runId: string,
+    approve?: boolean,
+  ): Promise<{
+    success: boolean;
+    results?: { success: boolean; key?: string; url?: string; error?: string }[];
+  }> {
+    return request("/integrations/jira/create", {
+      method: "POST",
+      body: JSON.stringify({ runId, approve }),
+    });
   },
 
   async createGitHubPR(

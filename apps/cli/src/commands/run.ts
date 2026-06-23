@@ -42,6 +42,7 @@ function inferArtifactType(filePath: string): ArtifactType {
     "api-design": "API_DESIGN",
     "db-design": "DB_DESIGN",
     "task-breakdown": "TASK_BREAKDOWN",
+    "jira-ready-tasks": "JIRA_READY_TASKS",
     "test-matrix": "TEST_MATRIX",
     "implementation-prompt": "IMPLEMENTATION_PROMPT",
     "final-report": "FINAL_REPORT",

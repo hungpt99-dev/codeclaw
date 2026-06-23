@@ -8,8 +8,15 @@ import {
   readCIRun,
   readPRStatus,
   readPRDetail,
+  getJiraStatus,
+  testJiraConnection,
+  createIssuesFromRun,
 } from "@aiteam/adapters";
+import type { JiraConfig } from "@aiteam/adapters";
 import { generatePRSummary, getArtifactPaths } from "@aiteam/core";
+import { configSchema } from "@aiteam/shared";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 export function registerIntegrationRoutes(app: FastifyInstance, _db: DbConnection): void {
   app.get("/api/integrations", async (_request, _reply) => {
@@ -60,6 +67,124 @@ export function registerIntegrationRoutes(app: FastifyInstance, _db: DbConnectio
   app.get("/api/integrations/github/actions", async (_request, _reply) => {
     const runs = await readCIRun();
     return { runs };
+  });
+
+  app.post("/api/integrations/jira/test", async (_request, reply) => {
+    try {
+      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const raw = await readFile(configPath, "utf-8");
+      const parsed: unknown = JSON.parse(raw);
+      const cfg = configSchema.parse(parsed);
+      const jiraConfig = cfg.integrations.jira as JiraConfig;
+      const result = await testJiraConnection(jiraConfig);
+      return result;
+    } catch {
+      return reply.status(400).send({ success: false, message: "Jira not configured" });
+    }
+  });
+
+  app.get("/api/integrations/jira/status", async (_request, _reply) => {
+    try {
+      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const rawContent = await readFile(configPath, "utf-8");
+      const parsedConfig: unknown = JSON.parse(rawContent);
+      const cfg = configSchema.parse(parsedConfig);
+      const jiraConfig = cfg.integrations.jira as JiraConfig;
+      const status = getJiraStatus(jiraConfig);
+      return { status };
+    } catch {
+      return {
+        status: { enabled: false, configured: false, hasToken: false, overall: "not_configured" },
+      };
+    }
+  });
+
+  app.post("/api/integrations/jira/create", async (request, reply) => {
+    const body = request.body as { runId?: string; approve?: boolean } | undefined;
+    if (!body?.runId) {
+      return reply.status(400).send({ error: "runId is required" });
+    }
+    if (!body.approve) {
+      return reply.send({ message: "Approval required", gate: "EXTERNAL_UPDATE" });
+    }
+    try {
+      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const rawConfig = await readFile(configPath, "utf-8");
+      const parsedConfig: unknown = JSON.parse(rawConfig);
+      const cfg = configSchema.parse(parsedConfig);
+      const jiraConfig = cfg.integrations.jira as JiraConfig;
+
+      const paths = getArtifactPaths(body.runId);
+      const requirement = await readFile(
+        join(paths.requirementDir, "clarified-requirement.md"),
+        "utf-8",
+      ).catch(() => "");
+      const acceptanceCriteria = await readFile(
+        join(paths.requirementDir, "acceptance-criteria.md"),
+        "utf-8",
+      ).catch(() => "");
+      const taskBreakdown = await readFile(
+        join(paths.tasksDir, "task-breakdown.md"),
+        "utf-8",
+      ).catch(() => "");
+
+      const results = await createIssuesFromRun(
+        {
+          title: `Run: ${body.runId}`,
+          requirementSummary: requirement.slice(0, 500),
+          taskBreakdown,
+          acceptanceCriteria,
+        },
+        jiraConfig,
+      );
+
+      return { success: true, results };
+    } catch (e) {
+      return reply
+        .status(500)
+        .send({ success: false, error: e instanceof Error ? e.message : String(e) });
+    }
+  });
+
+  app.post("/api/integrations/jira/export", async (request, reply) => {
+    const body = request.body as { runId?: string } | undefined;
+    if (!body?.runId) {
+      return reply.status(400).send({ error: "runId is required" });
+    }
+    try {
+      const paths = getArtifactPaths(body.runId);
+      const requirement = await readFile(
+        join(paths.requirementDir, "clarified-requirement.md"),
+        "utf-8",
+      ).catch(() => "");
+      const acceptanceCriteria = await readFile(
+        join(paths.requirementDir, "acceptance-criteria.md"),
+        "utf-8",
+      ).catch(() => "");
+      const taskBreakdown = await readFile(
+        join(paths.tasksDir, "task-breakdown.md"),
+        "utf-8",
+      ).catch(() => "");
+      const technicalDesign = await readFile(
+        join(paths.designDir, "technical-design.md"),
+        "utf-8",
+      ).catch(() => "");
+
+      const { generateJiraReadyMarkdown } = await import("@aiteam/core");
+      const markdown = generateJiraReadyMarkdown({
+        title: `Run: ${body.runId}`,
+        requirementSummary: requirement.slice(0, 500),
+        taskBreakdown,
+        acceptanceCriteria,
+        technicalDesign,
+      });
+
+      return { success: true, markdown };
+    } catch (e) {
+      return reply
+        .status(500)
+        .send({ success: false, error: e instanceof Error ? e.message : String(e) });
+    }
   });
 
   app.post("/api/integrations/github/pr", async (request, reply) => {

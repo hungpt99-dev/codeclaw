@@ -19,6 +19,13 @@ import {
   githubPRCommand,
   githubActionsCommand,
 } from "./commands/github.js";
+import {
+  jiraStatusCommand,
+  jiraTestCommand,
+  jiraExportCommand,
+  jiraCreateCommand,
+  jiraCommentCommand,
+} from "./commands/jira.js";
 
 interface InitCliOptions {
   force?: boolean;
@@ -241,6 +248,49 @@ githubProgram
   .description("Read CI/CD status")
   .action(async () => {
     await githubActionsCommand();
+  });
+
+const jiraProgram = program.command("jira").description("Jira integration (optional)");
+
+jiraProgram
+  .command("status")
+  .description("Check Jira integration status")
+  .action(() => {
+    jiraStatusCommand();
+  });
+
+jiraProgram
+  .command("test")
+  .description("Test Jira API connection")
+  .action(async () => {
+    await jiraTestCommand();
+  });
+
+jiraProgram
+  .command("export")
+  .description("Generate Jira-ready markdown from run artifacts")
+  .option("--run <runId>", "Run ID")
+  .action((options: { run?: string }) => {
+    jiraExportCommand(options);
+  });
+
+jiraProgram
+  .command("create")
+  .description("Create Jira issues from run artifacts")
+  .option("--run <runId>", "Run ID")
+  .option("--approve", "Skip approval prompt")
+  .action(async (options: { run?: string; approve?: boolean }) => {
+    await jiraCreateCommand(options);
+  });
+
+jiraProgram
+  .command("comment")
+  .description("Add comment to Jira issue with run summary")
+  .option("--run <runId>", "Run ID")
+  .option("--issue <issueKey>", "Jira issue key")
+  .option("--approve", "Skip approval prompt")
+  .action(async (options: { run?: string; issue?: string; approve?: boolean }) => {
+    await jiraCommentCommand(options);
   });
 
 program.parse();

@@ -31,6 +31,8 @@ export type {
 export { getAiToolConfig } from "./workflows/workflowHelpers.js";
 export { generatePRSummary } from "./integrations/prSummaryGenerator.js";
 export type { PRSummary } from "./integrations/prSummaryGenerator.js";
+export { generateJiraReadyMarkdown } from "./integrations/jiraMarkdownGenerator.js";
+export type { JiraExportInput } from "./integrations/jiraMarkdownGenerator.js";
 export type { AiToolConfig } from "./workflows/workflowHelpers.js";
 export { runWorkflowWithGates } from "./workflows/workflowRunner.js";
 export { analyzeRepository, analysisToMarkdown } from "./repoAnalyzer/repoAnalyzer.js";

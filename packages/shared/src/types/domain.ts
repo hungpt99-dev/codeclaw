@@ -54,6 +54,7 @@ export const ArtifactType = {
   API_DESIGN: "API_DESIGN",
   DB_DESIGN: "DB_DESIGN",
   TASK_BREAKDOWN: "TASK_BREAKDOWN",
+  JIRA_READY_TASKS: "JIRA_READY_TASKS",
   TEST_MATRIX: "TEST_MATRIX",
   IMPLEMENTATION_PROMPT: "IMPLEMENTATION_PROMPT",
   AGENT_LOG: "AGENT_LOG",
@@ -180,6 +181,15 @@ export interface GitHubIntegrationConfig {
   repo?: string;
 }
 
+export interface JiraIntegrationConfig {
+  enabled: boolean;
+  siteUrl?: string;
+  email?: string;
+  projectKey?: string;
+  defaultIssueType: "epic" | "story" | "task" | "subtask";
+  tokenEnvRef: string;
+}
+
 export interface AiTeamConfig {
   version: string;
   project: {
@@ -227,5 +237,6 @@ export interface AiTeamConfig {
   };
   integrations: {
     github: GitHubIntegrationConfig;
+    jira: JiraIntegrationConfig;
   };
 }

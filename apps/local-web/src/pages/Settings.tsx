@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactElement } from "react";
 import { api } from "../lib/api.js";
-import type { GitHubStatus } from "../lib/types.js";
+import type { GitHubStatus, JiraStatus, JiraTestResult } from "../lib/types.js";
 
 interface SettingsForm {
   project_name: string;
@@ -85,6 +85,9 @@ export function Settings(): ReactElement {
   const [gitHubStatus, setGitHubStatus] = useState<GitHubStatus | null>(null);
   const [ghStatusLoading, setGhStatusLoading] = useState(false);
   const [ghTestResult, setGhTestResult] = useState<string | null>(null);
+  const [jiraStatus, setJiraStatus] = useState<JiraStatus | null>(null);
+  const [jiraTestResult, setJiraTestResult] = useState<JiraTestResult | null>(null);
+  const [jiraStatusLoading, setJiraStatusLoading] = useState(false);
 
   const loadSettings = useCallback(async () => {
     setLoading(true);
@@ -315,6 +318,89 @@ export function Settings(): ReactElement {
             className={`text-sm px-3 py-2 rounded-md ${ghTestResult.startsWith("OK") ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
           >
             {ghTestResult}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-lg border bg-white p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-gray-900">Jira Integration</h2>
+        <p className="text-sm text-gray-500">
+          Optional Jira integration using API tokens. Configure in .ai-team/config.json.
+        </p>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={(): void => {
+              void (async () => {
+                setJiraStatusLoading(true);
+                setJiraTestResult(null);
+                try {
+                  const status = await api.getJiraStatus();
+                  setJiraStatus(status);
+                } catch {
+                  setJiraStatus(null);
+                } finally {
+                  setJiraStatusLoading(false);
+                }
+              })();
+            }}
+            disabled={jiraStatusLoading}
+            className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          >
+            {jiraStatusLoading ? "Checking..." : "Check Status"}
+          </button>
+          <button
+            type="button"
+            onClick={(): void => {
+              void (async () => {
+                setJiraTestResult(null);
+                try {
+                  const result = await api.testJiraConnection();
+                  setJiraTestResult(result);
+                } catch (e) {
+                  setJiraTestResult({
+                    success: false,
+                    message: `Error: ${e instanceof Error ? e.message : "Unknown"}`,
+                  });
+                }
+              })();
+            }}
+            className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            Test Connection
+          </button>
+        </div>
+
+        {jiraStatus && (
+          <div className="text-sm space-y-1 text-gray-700">
+            <p>
+              <span className="font-medium">Enabled:</span> {jiraStatus.enabled ? "Yes" : "No"}
+            </p>
+            {jiraStatus.siteUrl && (
+              <p>
+                <span className="font-medium">Site URL:</span> {jiraStatus.siteUrl}
+              </p>
+            )}
+            {jiraStatus.projectKey && (
+              <p>
+                <span className="font-medium">Project Key:</span> {jiraStatus.projectKey}
+              </p>
+            )}
+            <p>
+              <span className="font-medium">Token:</span> {jiraStatus.hasToken ? "Set" : "Not set"}
+            </p>
+            <p>
+              <span className="font-medium">Status:</span> {jiraStatus.overall}
+            </p>
+          </div>
+        )}
+
+        {jiraTestResult && (
+          <div
+            className={`text-sm px-3 py-2 rounded-md ${jiraTestResult.success ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
+          >
+            {jiraTestResult.message}
           </div>
         )}
       </div>

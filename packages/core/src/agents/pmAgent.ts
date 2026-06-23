@@ -3,15 +3,18 @@ import { join } from "node:path";
 import { runAgent, renderPrompt } from "@aiteam/adapters";
 import type { AiCliTool } from "@aiteam/adapters";
 import { parsePmOutput } from "./parsers/pmOutputParser.js";
+import { generateJiraReadyMarkdown } from "../integrations/jiraMarkdownGenerator.js";
 
 export interface PmAgentInput {
   requirement: string;
   technicalDesign: string;
+  acceptanceCriteria?: string;
 }
 
 export interface PmAgentOutput {
   taskBreakdownMd: string;
   taskBreakdownJson: string;
+  jiraReadyMd?: string | undefined;
 }
 
 const TASK_BREAKDOWN_TEMPLATE = `# Task Breakdown
@@ -220,5 +223,15 @@ export async function runPmAgent(
     2,
   );
 
-  return { taskBreakdownMd, taskBreakdownJson };
+  const jiraReadyMd = input.acceptanceCriteria
+    ? generateJiraReadyMarkdown({
+        title: `Implement: ${input.requirement.slice(0, 80)}`,
+        requirementSummary: input.requirement,
+        taskBreakdown: taskBreakdownMd,
+        acceptanceCriteria: input.acceptanceCriteria,
+        technicalDesign: input.technicalDesign,
+      })
+    : undefined;
+
+  return { taskBreakdownMd, taskBreakdownJson, jiraReadyMd };
 }

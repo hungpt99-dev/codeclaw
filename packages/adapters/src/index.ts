@@ -52,3 +52,20 @@ export {
   getCIRuns,
   getGhCliVersion,
 } from "./integrations/gitHubCliService.js";
+
+export {
+  getJiraStatus,
+  testConnection as testJiraConnection,
+  createIssue as createJiraIssue,
+  createIssuesFromRun,
+} from "./integrations/jiraAdapter.js";
+export type {
+  JiraConfig,
+  JiraIssueInput,
+  JiraIssueResult,
+  JiraTestConnectionResult,
+  JiraStatus,
+  CreateIssuesFromRunInput,
+} from "./integrations/jiraAdapter.js";
+
+export { jiraRequest, JiraApiError } from "./integrations/jiraApiService.js";

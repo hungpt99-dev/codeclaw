@@ -61,6 +61,14 @@ export const configSchema = z.object({
       owner: z.string().optional(),
       repo: z.string().optional(),
     }),
+    jira: z.object({
+      enabled: z.boolean().default(false),
+      siteUrl: z.string().optional(),
+      email: z.string().optional(),
+      projectKey: z.string().optional(),
+      defaultIssueType: z.enum(["epic", "story", "task", "subtask"]).default("task"),
+      tokenEnvRef: z.string().default("AITEAM_JIRA_TOKEN"),
+    }),
   }),
 });
 
@@ -84,17 +92,17 @@ export const defaultConfig: Config = {
     defaultReporter: "claude",
   },
   cli: {
-    claude: { enabled: true, command: "claude", timeoutSeconds: 900 },
-    codex: { enabled: true, command: "codex", timeoutSeconds: 900 },
-    gemini: { enabled: true, command: "gemini", timeoutSeconds: 900 },
+    claude: { enabled: false, command: "claude", timeoutSeconds: 900 },
+    codex: { enabled: false, command: "codex", timeoutSeconds: 900 },
+    gemini: { enabled: false, command: "gemini", timeoutSeconds: 900 },
     aider: { enabled: false, command: "aider", timeoutSeconds: 900 },
   },
   workflow: {
     defaultMode: "docs-only",
     defaultOutputLanguage: "bilingual",
     generateTraceability: false,
-    requireRequirementApproval: true,
-    requirePlanApproval: true,
+    requireRequirementApproval: false,
+    requirePlanApproval: false,
   },
   commands: {
     build: "",
@@ -115,6 +123,11 @@ export const defaultConfig: Config = {
     github: {
       enabled: false,
       mode: "gh-cli",
+    },
+    jira: {
+      enabled: false,
+      defaultIssueType: "task",
+      tokenEnvRef: "AITEAM_JIRA_TOKEN",
     },
   },
 };

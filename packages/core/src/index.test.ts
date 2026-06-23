@@ -123,10 +123,10 @@ describe("docsOnlyWorkflow", () => {
     expect(Array.isArray(result.artifacts)).toBe(true);
   });
 
-  it("creates exactly 16 artifact files", async () => {
+  it("creates exactly 17 artifact files", async () => {
     const result = await runDocsOnlyWorkflow(defaultInput);
 
-    expect(result.artifacts).toHaveLength(16);
+    expect(result.artifacts).toHaveLength(17);
   });
 
   it("creates all expected artifact paths", async () => {

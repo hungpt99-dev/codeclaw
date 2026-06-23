@@ -122,6 +122,11 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
       { type: ArtifactTypeValues.DB_DESIGN, name: "db-design.md", format: "markdown" },
       { type: ArtifactTypeValues.TASK_BREAKDOWN, name: "task-breakdown.md", format: "markdown" },
       { type: ArtifactTypeValues.TASK_BREAKDOWN, name: "task-breakdown.json", format: "json" },
+      {
+        type: ArtifactTypeValues.JIRA_READY_TASKS,
+        name: "jira-ready-tasks.md",
+        format: "markdown",
+      },
       { type: ArtifactTypeValues.TEST_MATRIX, name: "test-matrix.md", format: "markdown" },
       { type: ArtifactTypeValues.TEST_MATRIX, name: "test-matrix.json", format: "json" },
       { type: ArtifactTypeValues.FINAL_REPORT, name: "final-report.md", format: "markdown" },
