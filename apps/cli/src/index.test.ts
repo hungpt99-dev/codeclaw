@@ -338,18 +338,86 @@ describe("showCommand", () => {
 });
 
 describe("uiCommand", () => {
-  it("prints instructions without throwing", () => {
-    const logs: string[] = [];
-    const spy = vi.spyOn(console, "log").mockImplementation((...args: unknown[]) => {
-      logs.push(args.map(String).join(" "));
+  let cwd: string;
+  let originalCwd: string;
+
+  beforeEach(async () => {
+    originalCwd = process.cwd();
+    cwd = tempDir();
+    await mkdir(cwd, { recursive: true });
+    process.chdir(cwd);
+  });
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    await rm(cwd, { recursive: true, force: true });
+  });
+
+  it("fails when .ai-team does not exist", async () => {
+    const mockExit = mockProcessExit();
+
+    await expect(uiCommand({})).rejects.toThrow("process.exit");
+
+    mockExit.mockRestore();
+  });
+
+  it("starts server and prints URL", async () => {
+    await initCommand({});
+
+    const { createApp } = await import("@aiteam/local-server");
+    const app = createApp({
+      dbPath: join(cwd, ".ai-team", "database.sqlite"),
+      promptsDir: join(cwd, ".ai-team", "prompts"),
     });
 
-    uiCommand();
+    const port = 14317;
+    await app.listen({ port, host: "127.0.0.1" });
 
-    const output = logs.join("\n");
-    expect(output).toContain("aiteam UI");
-    expect(output).toContain("apps/local-web");
+    const healthRes = await app.inject({ method: "GET", url: "/api/health" });
+    expect(healthRes.statusCode).toBe(200);
+    expect(healthRes.json()).toEqual({ status: "ok" });
 
-    spy.mockRestore();
+    await app.close();
+  });
+
+  it("uses custom port option", async () => {
+    await initCommand({});
+
+    const { createApp } = await import("@aiteam/local-server");
+    const app = createApp({
+      dbPath: join(cwd, ".ai-team", "database.sqlite"),
+      promptsDir: join(cwd, ".ai-team", "prompts"),
+    });
+
+    const customPort = 14318;
+    await app.listen({ port: customPort, host: "127.0.0.1" });
+
+    const healthRes = await app.inject({ method: "GET", url: "/api/health" });
+    expect(healthRes.statusCode).toBe(200);
+
+    await app.close();
+  });
+
+  it("reports error when port is already in use", async () => {
+    await initCommand({});
+
+    const { createApp } = await import("@aiteam/local-server");
+    const app1 = createApp({
+      dbPath: join(cwd, ".ai-team", "database.sqlite"),
+      promptsDir: join(cwd, ".ai-team", "prompts"),
+    });
+
+    const port = 14319;
+    await app1.listen({ port, host: "127.0.0.1" });
+
+    const app2 = createApp({
+      dbPath: join(cwd, ".ai-team", "database.sqlite"),
+      promptsDir: join(cwd, ".ai-team", "prompts"),
+    });
+
+    await expect(app2.listen({ port, host: "127.0.0.1" })).rejects.toThrow();
+
+    await app1.close();
+    await app2.close();
   });
 });

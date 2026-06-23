@@ -69,9 +69,12 @@ program
 
 program
   .command("ui")
-  .description("Start or show info about the web UI")
-  .action(() => {
-    uiCommand();
+  .description("Start the local web UI server")
+  .option("--host <host>", "Server host", "127.0.0.1")
+  .option("--port <port>", "Server port", "4317")
+  .option("--open", "Open browser on start")
+  .action(async (options: { host?: string; port?: string; open?: boolean }) => {
+    await uiCommand(options);
   });
 
 const memoryProgram = program.command("memory").description("Manage runtime memory");

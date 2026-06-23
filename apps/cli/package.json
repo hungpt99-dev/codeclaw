@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@aiteam/core": "workspace:*",
+    "@aiteam/local-server": "workspace:*",
     "@aiteam/memory": "workspace:*",
     "@aiteam/shared": "workspace:*",
     "@aiteam/storage": "workspace:*",

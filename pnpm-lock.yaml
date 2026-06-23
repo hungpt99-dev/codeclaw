@@ -59,6 +59,9 @@ importers:
       '@aiteam/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@aiteam/local-server':
+        specifier: workspace:*
+        version: link:../local-server
       '@aiteam/memory':
         specifier: workspace:*
         version: link:../../packages/memory
