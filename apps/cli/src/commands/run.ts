@@ -2,7 +2,7 @@ import { access, readFile } from "node:fs/promises";
 import { join, basename, extname } from "node:path";
 import { createRunId, nowIso, configSchema } from "@aiteam/shared";
 import type { Config, RunMode } from "@aiteam/shared";
-import { runDocsOnlyWorkflow } from "@aiteam/core";
+import { runDocsOnlyWorkflow, runAssistedWorkflow } from "@aiteam/core";
 import {
   openDatabase,
   initializeSchema,
@@ -14,6 +14,7 @@ import { getMemoryStatus, addRunMemory } from "@aiteam/memory";
 
 interface RunOptions {
   title?: string;
+  mode?: string;
   outputLanguage?: string;
   json?: boolean;
 }
@@ -32,6 +33,7 @@ function inferArtifactType(filePath: string): ArtifactType {
     "db-design": "DB_DESIGN",
     "task-breakdown": "TASK_BREAKDOWN",
     "test-matrix": "TEST_MATRIX",
+    "implementation-prompt": "IMPLEMENTATION_PROMPT",
     "final-report": "FINAL_REPORT",
   };
   return typeMap[name] ?? "RAW_REQUIREMENT";
@@ -70,11 +72,13 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
   const runRepo = createRunRepository(db);
   const artifactRepo = createArtifactRepository(db);
 
+  const mode = (options.mode ?? config.workflow.defaultMode) as RunMode;
+
   runRepo.create({
     id: runId,
     title,
     rawRequirement: requirement,
-    mode: config.workflow.defaultMode as RunMode,
+    mode,
     outputLanguage: options.outputLanguage ?? "English",
   });
 
@@ -82,7 +86,7 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
 
   const templateDir = join(aiTeamDir, "prompts");
 
-  const result = await runDocsOnlyWorkflow({
+  const workflowInput = {
     requirement,
     projectRoot: process.cwd(),
     memoryContext: memoryStatus.exists
@@ -95,7 +99,12 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
     templateDir,
     agentMapping: config.agents,
     cliConfigs: config.cli,
-  });
+  };
+
+  const result =
+    mode === "assisted"
+      ? await runAssistedWorkflow(workflowInput)
+      : await runDocsOnlyWorkflow(workflowInput);
 
   if (memoryStatus.exists) {
     await addRunMemory(process.cwd(), runId, title, requirement);

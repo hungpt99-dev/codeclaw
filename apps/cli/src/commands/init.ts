@@ -65,6 +65,7 @@ export async function initCommand(options: InitOptions): Promise<void> {
     "pm-agent.md",
     "qa-agent.md",
     "reporter-agent.md",
+    "developer-agent.md",
   ];
 
   for (const file of templateFiles) {

@@ -8,6 +8,7 @@ export interface ArtifactPaths {
   designDir: string;
   tasksDir: string;
   testsDir: string;
+  implementationDir: string;
   reportDir: string;
   logsDir: string;
 }
@@ -21,6 +22,7 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
     designDir: join(runDir, "design"),
     tasksDir: join(runDir, "tasks"),
     testsDir: join(runDir, "tests"),
+    implementationDir: join(runDir, "implementation"),
     reportDir: join(runDir, "report"),
     logsDir: join(runDir, "logs"),
   };
@@ -33,6 +35,7 @@ export async function createArtifactDirs(runId: string): Promise<ArtifactPaths> 
   await mkdir(paths.designDir, { recursive: true });
   await mkdir(paths.tasksDir, { recursive: true });
   await mkdir(paths.testsDir, { recursive: true });
+  await mkdir(paths.implementationDir, { recursive: true });
   await mkdir(paths.reportDir, { recursive: true });
   await mkdir(paths.logsDir, { recursive: true });
   return paths;

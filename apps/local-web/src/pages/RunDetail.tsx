@@ -6,11 +6,20 @@ import { api } from "../lib/api.js";
 import type { Run, Artifact } from "../lib/types.js";
 import type { ReactElement } from "react";
 
+const AGENT_FORMATS = [
+  { value: "generic", label: "Generic" },
+  { value: "claude-code", label: "Claude Code" },
+  { value: "codex", label: "Codex CLI" },
+  { value: "gemini", label: "Gemini CLI" },
+  { value: "aider", label: "Aider" },
+] as const;
+
 const GROUPS = [
   { key: "requirement", title: "Requirement", prefix: "requirement/" },
   { key: "design", title: "Design", prefix: "design/" },
   { key: "tasks", title: "Tasks", prefix: "tasks/" },
   { key: "tests", title: "Tests", prefix: "tests/" },
+  { key: "implementation", title: "Implementation", prefix: "implementation/" },
   { key: "report", title: "Report", prefix: "report/" },
 ];
 
@@ -21,6 +30,7 @@ export function RunDetail(): ReactElement {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [agentFormat, setAgentFormat] = useState("generic");
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -148,9 +158,30 @@ export function RunDetail(): ReactElement {
 
       {GROUPS.map((group) => {
         const groupArtifacts = grouped[group.key];
+        const isImplementation = group.key === "implementation";
         return (
           <section key={group.key} className="rounded-lg border bg-white p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">{group.title}</h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-900">{group.title}</h2>
+              {isImplementation && groupArtifacts && groupArtifacts.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500">Format:</span>
+                  <select
+                    value={agentFormat}
+                    onChange={(e) => {
+                      setAgentFormat(e.target.value);
+                    }}
+                    className="text-xs rounded border border-gray-300 px-2 py-1 bg-white text-gray-700"
+                  >
+                    {AGENT_FORMATS.map((fmt) => (
+                      <option key={fmt.value} value={fmt.value}>
+                        {fmt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
             {groupArtifacts && groupArtifacts.length > 0 ? (
               <div className="space-y-4">
                 {groupArtifacts.map((a) => (
@@ -159,15 +190,20 @@ export function RunDetail(): ReactElement {
                       <h3 className="text-sm font-medium text-gray-700">
                         {a.name.replace(/\.(md|json)$/, "")}
                       </h3>
-                      <button
-                        type="button"
-                        onClick={(): void => {
-                          handleCopy(a.content ?? "", a.id);
-                        }}
-                        className="text-xs px-2 py-1 rounded border bg-white text-gray-500 hover:bg-gray-50 transition-colors"
-                      >
-                        {copiedId === a.id ? "Copied!" : "Copy"}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {isImplementation && (
+                          <span className="text-xs text-gray-400">Agent: {agentFormat}</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(): void => {
+                            handleCopy(a.content ?? "", a.id);
+                          }}
+                          className="text-xs px-2 py-1 rounded border bg-white text-gray-500 hover:bg-gray-50 transition-colors"
+                        >
+                          {copiedId === a.id ? "Copied!" : "Copy to Clipboard"}
+                        </button>
+                      </div>
                     </div>
                     {a.content ? (
                       <div className="rounded-md bg-gray-50 p-4">
@@ -181,7 +217,8 @@ export function RunDetail(): ReactElement {
               </div>
             ) : (
               <p className="text-sm text-gray-400 italic">
-                No {group.title.toLowerCase()} artifacts yet.
+                No {group.title.toLowerCase()} artifacts yet. Run an assisted workflow to generate
+                an implementation prompt.
               </p>
             )}
           </section>

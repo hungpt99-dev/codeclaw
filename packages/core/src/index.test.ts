@@ -9,6 +9,8 @@ import { runArchitectAgent } from "./agents/architectAgent.js";
 import { runPmAgent } from "./agents/pmAgent.js";
 import { runQaAgent } from "./agents/qaAgent.js";
 import { runReporterAgent } from "./agents/reporterAgent.js";
+import { runDeveloperAgent } from "./agents/developerAgent.js";
+import { runAssistedWorkflow } from "./workflows/assistedWorkflow.js";
 import { readFile, access } from "node:fs/promises";
 
 const TEST_RUN_ID = "run_20250101_000000_test_requirement";
@@ -284,5 +286,125 @@ describe("agents", () => {
     expect(output).toHaveProperty("finalReport");
     expect(output.finalReport).toContain("Test requirement");
     expect(output.finalReport).toContain("Docs-only");
+  });
+
+  it("developerAgent returns implementation prompt with all inputs", async () => {
+    const output = await runDeveloperAgent({
+      requirement: "Build a login page",
+      clarifiedRequirement: "The system should allow users to log in with email and password",
+      businessRules: "Passwords must be at least 8 characters",
+      acceptanceCriteria: "AC-001: User can log in with valid credentials",
+      technicalDesign: "Use JWT token authentication",
+      apiDesign: "POST /api/auth/login",
+      dbDesign: "Users table with email and password_hash",
+      taskBreakdownMd: "T-001: Create login endpoint",
+      testMatrixMd: "TC-001: Valid login returns token",
+    });
+    expect(output).toHaveProperty("implementationPrompt");
+    expect(output.implementationPrompt).toContain("Build a login page");
+    expect(output.implementationPrompt).toContain("POST /api/auth/login");
+    expect(output.implementationPrompt).toContain("Implementation Prompt");
+  });
+
+  it("developerAgent targetAgent parameter does not affect deterministic output", async () => {
+    const output = await runDeveloperAgent({
+      requirement: "Test",
+      clarifiedRequirement: "Clarified",
+      businessRules: "Rules",
+      acceptanceCriteria: "Criteria",
+      technicalDesign: "Design",
+      apiDesign: "API",
+      dbDesign: "DB",
+      taskBreakdownMd: "Tasks",
+      testMatrixMd: "Tests",
+      targetAgent: "claude-code",
+    });
+    expect(output).toHaveProperty("implementationPrompt");
+    expect(output.implementationPrompt).toContain("Implementation Prompt");
+  });
+});
+
+describe("assistedWorkflow", () => {
+  afterEach(async () => {
+    try {
+      await rm(join(".ai-team", "runs"), { recursive: true, force: true });
+    } catch {
+      // ignore
+    }
+  });
+
+  const defaultInput = {
+    requirement: "Build a login page",
+    projectRoot: undefined as string | undefined,
+    memoryContext: undefined as
+      | { projectMemoryCount: number; decisionMemoryCount: number; agentMemoryCount: number }
+      | undefined,
+  };
+
+  it("returns output with runId, status, artifacts, and timestamps", async () => {
+    const result = await runAssistedWorkflow(defaultInput);
+
+    expect(result.runId).toMatch(/^run_\d{8}_\d{6}_build_a_login_page$/);
+    expect(result.status).toBe("REPORT_GENERATED");
+    expect(result.createdAt).toBeTruthy();
+    expect(result.completedAt).toBeTruthy();
+    expect(Array.isArray(result.artifacts)).toBe(true);
+  });
+
+  it("creates more artifacts than docs-only workflow (includes implementation-prompt.md)", async () => {
+    const result = await runAssistedWorkflow(defaultInput);
+
+    expect(result.artifacts.length).toBeGreaterThan(14);
+  });
+
+  it("generates implementation-prompt.md artifact", async () => {
+    const result = await runAssistedWorkflow(defaultInput);
+
+    const implPromptArtifact = result.artifacts.find((a) => a.endsWith("implementation-prompt.md"));
+    expect(implPromptArtifact).toBeTruthy();
+
+    if (implPromptArtifact) {
+      const content = await readFile(implPromptArtifact, "utf-8");
+      expect(content).toContain("Build a login page");
+      expect(content.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("generates all standard artifacts plus implementation prompt", async () => {
+    const result = await runAssistedWorkflow(defaultInput);
+
+    const expectedPaths = [
+      ".ai-team/runs/" + result.runId + "/input.md",
+      ".ai-team/runs/" + result.runId + "/requirement/clarified-requirement.md",
+      ".ai-team/runs/" + result.runId + "/requirement/business-rules.md",
+      ".ai-team/runs/" + result.runId + "/requirement/acceptance-criteria.md",
+      ".ai-team/runs/" + result.runId + "/requirement/open-questions.md",
+      ".ai-team/runs/" + result.runId + "/requirement/assumptions.md",
+      ".ai-team/runs/" + result.runId + "/design/technical-design.md",
+      ".ai-team/runs/" + result.runId + "/design/api-design.md",
+      ".ai-team/runs/" + result.runId + "/design/db-design.md",
+      ".ai-team/runs/" + result.runId + "/tasks/task-breakdown.md",
+      ".ai-team/runs/" + result.runId + "/tasks/task-breakdown.json",
+      ".ai-team/runs/" + result.runId + "/tests/test-matrix.md",
+      ".ai-team/runs/" + result.runId + "/tests/test-matrix.json",
+      ".ai-team/runs/" + result.runId + "/implementation/implementation-prompt.md",
+      ".ai-team/runs/" + result.runId + "/report/final-report.md",
+    ];
+
+    for (const expectedPath of expectedPaths) {
+      expect(result.artifacts).toContain(expectedPath);
+    }
+  });
+
+  it("writes non-empty content to implementation-prompt.md", async () => {
+    const result = await runAssistedWorkflow(defaultInput);
+
+    const implPromptArtifact = result.artifacts.find((a) => a.endsWith("implementation-prompt.md"));
+    expect(implPromptArtifact).toBeTruthy();
+
+    if (implPromptArtifact) {
+      const content = await readFile(implPromptArtifact, "utf-8");
+      expect(content.length).toBeGreaterThan(100);
+    }
   });
 });

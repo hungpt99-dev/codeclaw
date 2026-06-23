@@ -7,7 +7,7 @@ const OUTPUT_LANGUAGES = ["English", "Vietnamese", "Bilingual"] as const;
 export function NewRequirement(): ReactElement {
   const [rawRequirement, setRawRequirement] = useState("");
   const [outputLanguage, setOutputLanguage] = useState<string>("English");
-  const [mode] = useState("docs-only");
+  const [mode, setMode] = useState("docs-only");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -89,10 +89,13 @@ export function NewRequirement(): ReactElement {
           <select
             id="mode"
             value={mode}
-            disabled
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+            onChange={(e) => {
+              setMode(e.target.value);
+            }}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="docs-only">Docs-only</option>
+            <option value="assisted">Assisted</option>
           </select>
         </div>
         {error && (

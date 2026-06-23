@@ -16,6 +16,7 @@ interface InitCliOptions {
 
 interface RunCliOptions {
   title?: string;
+  mode?: string;
   outputLanguage?: string;
   json?: boolean;
 }
@@ -61,8 +62,9 @@ program
 
 program
   .command("run")
-  .description("Run a docs-only workflow from a raw requirement")
+  .description("Run a workflow from a raw requirement")
   .argument("<requirement>", "Raw requirement text")
+  .option("--mode <mode>", "Workflow mode (docs-only, assisted)", "docs-only")
   .option("--title <title>", "Run title")
   .option("--output-language <language>", "Output language")
   .option("--json", "Output as JSON")

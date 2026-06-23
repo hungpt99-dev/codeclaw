@@ -3,7 +3,7 @@ import type { DbConnection } from "@aiteam/storage";
 import { createRunRepository, createArtifactRepository } from "@aiteam/storage";
 import type { ArtifactType, RunMode } from "@aiteam/shared";
 import { createRunId, ArtifactTypeValues } from "@aiteam/shared";
-import { runDocsOnlyWorkflow } from "@aiteam/core";
+import { runDocsOnlyWorkflow, runAssistedWorkflow } from "@aiteam/core";
 
 interface ArtifactDef {
   type: ArtifactType;
@@ -62,14 +62,23 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
 
     runRepo.updateStatus(runId, "SPEC_GENERATED");
 
-    const workflowResult = await runDocsOnlyWorkflow({
-      requirement: rawRequirement,
-      projectRoot: undefined,
-      memoryContext: undefined,
-    });
+    const isAssisted = mode === "assisted";
+
+    const workflowResult = isAssisted
+      ? await runAssistedWorkflow({
+          requirement: rawRequirement,
+          projectRoot: undefined,
+          memoryContext: undefined,
+        })
+      : await runDocsOnlyWorkflow({
+          requirement: rawRequirement,
+          projectRoot: undefined,
+          memoryContext: undefined,
+        });
 
     const artifactRepo = createArtifactRepository(db);
-    const artifactDefs: ArtifactDef[] = [
+
+    const docsArtifactDefs: ArtifactDef[] = [
       { type: ArtifactTypeValues.RAW_REQUIREMENT, name: "input.md", format: "markdown" },
       {
         type: ArtifactTypeValues.CLARIFIED_REQUIREMENT,
@@ -97,6 +106,18 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
       { type: ArtifactTypeValues.TEST_MATRIX, name: "test-matrix.json", format: "json" },
       { type: ArtifactTypeValues.FINAL_REPORT, name: "final-report.md", format: "markdown" },
     ];
+
+    const assistedArtifactDefs: ArtifactDef[] = [
+      {
+        type: ArtifactTypeValues.IMPLEMENTATION_PROMPT,
+        name: "implementation-prompt.md",
+        format: "markdown",
+      },
+    ];
+
+    const artifactDefs = isAssisted
+      ? [...docsArtifactDefs, ...assistedArtifactDefs]
+      : docsArtifactDefs;
 
     for (let i = 0; i < artifactDefs.length; i++) {
       const def = artifactDefs[i];
