@@ -13,6 +13,8 @@ import type {
   GitHubStatus,
   GitHubPRSummary,
   JiraStatus,
+  SlackStatus,
+  SlackPostResult,
 } from "../lib/types.js";
 import type { ReactElement } from "react";
 
@@ -75,6 +77,9 @@ export function RunDetail(): ReactElement {
   const [jiraMarkdown, setJiraMarkdown] = useState<string | null>(null);
   const [jiraCreateResult, setJiraCreateResult] = useState<string | null>(null);
   const [jiraLoading, setJiraLoading] = useState(false);
+  const [slackStatus, setSlackStatus] = useState<SlackStatus | null>(null);
+  const [slackPostResult, setSlackPostResult] = useState<SlackPostResult | null>(null);
+  const [slackLoading, setSlackLoading] = useState(false);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -1072,6 +1077,95 @@ export function RunDetail(): ReactElement {
               className={`text-sm px-3 py-2 rounded-md ${jiraCreateResult.startsWith("Error") ? "bg-red-50 text-red-700" : jiraCreateResult.includes("successfully") ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}
             >
               {jiraCreateResult}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-lg border bg-white p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Slack</h2>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={(): void => {
+                void (async () => {
+                  try {
+                    const status = await api.getSlackStatus();
+                    setSlackStatus(status);
+                  } catch {
+                    setSlackStatus(null);
+                  }
+                })();
+              }}
+              className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Check Slack Status
+            </button>
+            <button
+              type="button"
+              onClick={(): void => {
+                void (async () => {
+                  if (!id) return;
+                  setSlackLoading(true);
+                  setSlackPostResult(null);
+                  try {
+                    const result = await api.postSlackMessage(id, "report_ready");
+                    setSlackPostResult(result);
+                    if (result.success) {
+                      setSlackPostResult(
+                        result.ts ? { success: true, ts: result.ts } : { success: true },
+                      );
+                    } else if (result.error === "Approval required") {
+                      setSlackPostResult({
+                        success: false,
+                        error: "Approval required. Use --approve or approve via CLI.",
+                      });
+                    }
+                  } catch (e) {
+                    setSlackPostResult({
+                      success: false,
+                      error: `Error: ${e instanceof Error ? e.message : "Unknown"}`,
+                    });
+                  } finally {
+                    setSlackLoading(false);
+                  }
+                })();
+              }}
+              disabled={slackLoading}
+              className="px-3 py-1.5 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
+            >
+              {slackLoading ? "Posting..." : "Post to Slack"}
+            </button>
+          </div>
+
+          {slackStatus && (
+            <div className="text-sm space-y-1 text-gray-700">
+              <p>
+                <span className="font-medium">Enabled:</span> {slackStatus.enabled ? "Yes" : "No"}
+              </p>
+              {slackStatus.channelId && (
+                <p>
+                  <span className="font-medium">Channel:</span> {slackStatus.channelId}
+                </p>
+              )}
+              <p>
+                <span className="font-medium">Token:</span>{" "}
+                {slackStatus.hasToken ? "Set" : "Not set"}
+              </p>
+              <p>
+                <span className="font-medium">Status:</span> {slackStatus.overall}
+              </p>
+            </div>
+          )}
+
+          {slackPostResult && (
+            <div
+              className={`text-sm px-3 py-2 rounded-md ${slackPostResult.success ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}
+            >
+              {slackPostResult.success
+                ? `Message posted to Slack!`
+                : (slackPostResult.error ?? "Unknown")}
             </div>
           )}
         </div>

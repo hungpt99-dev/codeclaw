@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { createRunId, nowIso } from "@aiteam/shared";
+import type { SlackIntegrationConfig } from "@aiteam/shared";
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
 import { runBaAgent } from "../agents/baAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
@@ -13,6 +14,8 @@ import {
   generateTraceability,
   traceabilityToMarkdown,
 } from "../traceability/traceabilityEngine.js";
+import { buildReportReadyMessage } from "../integrations/slackMessageTemplates.js";
+import type { SlackMessageInput } from "../integrations/slackMessageTemplates.js";
 
 export interface DocsOnlyWorkflowInput {
   requirement: string;
@@ -27,6 +30,7 @@ export interface DocsOnlyWorkflowInput {
   templateDir?: string;
   agentMapping?: Record<string, string>;
   cliConfigs?: Record<string, { enabled: boolean; command: string; timeoutSeconds: number }>;
+  slackConfig?: SlackIntegrationConfig;
 }
 
 export interface DocsOnlyWorkflowOutput {
@@ -201,6 +205,21 @@ export async function runDocsOnlyWorkflow(
 
   await writeArtifact(join(paths.reportDir, "final-report.md"), reporterOutput.finalReport);
   artifacts.push(join(paths.reportDir, "final-report.md"));
+
+  if (input.slackConfig?.enabled && input.slackConfig.notifyOn.includes("report_ready")) {
+    const slackInput: SlackMessageInput = {
+      runTitle: input.requirement,
+      runId,
+      status: "REPORT_GENERATED",
+    };
+    const slackText = buildReportReadyMessage(slackInput);
+    try {
+      const { notifySlack } = await import("@aiteam/adapters");
+      await notifySlack(input.slackConfig, "report_ready", slackText, true);
+    } catch {
+      // Slack notification is optional; failure should not fail the workflow
+    }
+  }
 
   const memoryUsed = input.memoryContext
     ? {

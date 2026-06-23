@@ -69,3 +69,20 @@ export type {
 } from "./integrations/jiraAdapter.js";
 
 export { jiraRequest, JiraApiError } from "./integrations/jiraApiService.js";
+
+export {
+  getSlackStatus,
+  testConnection as testSlackConnection,
+  postMessage as postSlackMessage,
+} from "./integrations/slackAdapter.js";
+export type {
+  SlackConfig,
+  SlackMessage,
+  SlackResult,
+  SlackStatus,
+  AuthTestResult,
+} from "./integrations/slackAdapter.js";
+
+export { slackRequest, SlackApiError } from "./integrations/slackApiService.js";
+
+export { notifySlack } from "./integrations/slackNotifier.js";

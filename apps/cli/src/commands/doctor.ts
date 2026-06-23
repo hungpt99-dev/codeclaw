@@ -11,6 +11,7 @@ import {
   isGhCliAvailable,
   isGhAuthenticated,
   getJiraStatus,
+  getSlackStatus,
 } from "@aiteam/adapters";
 
 interface CheckResult {
@@ -252,6 +253,7 @@ export async function doctorCommand(): Promise<void> {
         | {
             github?: { enabled?: boolean; owner?: string; repo?: string };
             jira?: Record<string, unknown>;
+            slack?: { enabled?: boolean; channelId?: string; tokenEnvRef?: string };
           }
         | undefined;
       if (integrations?.github?.enabled) {
@@ -263,6 +265,33 @@ export async function doctorCommand(): Promise<void> {
               ? `Enabled (${integrations.github.owner ?? "?"}/${integrations.github.repo ?? "?"})`
               : "Enabled but not authenticated"
             : "Enabled but gh CLI not found",
+        });
+      }
+
+      const slackCfg = integrations?.slack as
+        | {
+            enabled?: boolean;
+            channelId?: string;
+            tokenEnvRef?: string;
+          }
+        | undefined;
+      if (slackCfg?.enabled) {
+        const status = getSlackStatus({
+          enabled: true,
+          channelId: slackCfg.channelId,
+          tokenEnvRef: slackCfg.tokenEnvRef ?? "AITEAM_SLACK_TOKEN",
+          notifyOn: ["report_ready"],
+        });
+        results.push({
+          name: "Slack integration",
+          status:
+            status.overall === "ok" ? "pass" : status.overall === "missing_token" ? "warn" : "fail",
+          message:
+            status.overall === "ok"
+              ? `Enabled (channel: ${status.channelId ?? "?"})`
+              : status.overall === "missing_token"
+                ? "Enabled but token missing"
+                : `Enabled but incomplete config (${status.overall})`,
         });
       }
 

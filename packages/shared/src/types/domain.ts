@@ -190,6 +190,19 @@ export interface JiraIntegrationConfig {
   tokenEnvRef: string;
 }
 
+export interface SlackIntegrationConfig {
+  enabled: boolean;
+  channelId?: string;
+  tokenEnvRef: string;
+  notifyOn: (
+    | "docs_generated"
+    | "code_generated"
+    | "test_passed"
+    | "test_failed"
+    | "report_ready"
+  )[];
+}
+
 export interface AiTeamConfig {
   version: string;
   project: {
@@ -238,5 +251,6 @@ export interface AiTeamConfig {
   integrations: {
     github: GitHubIntegrationConfig;
     jira: JiraIntegrationConfig;
+    slack: SlackIntegrationConfig;
   };
 }

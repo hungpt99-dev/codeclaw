@@ -23,7 +23,7 @@ export {
 } from "./types/domain.js";
 
 export { configSchema, defaultConfig } from "./schemas/config.schema.js";
-export type { Config } from "./schemas/config.schema.js";
+export type { Config, SlackNotifyEvent } from "./schemas/config.schema.js";
 
 export { runSchema } from "./schemas/run.schema.js";
 export type { RunSchema } from "./schemas/run.schema.js";
@@ -38,6 +38,7 @@ export type {
   TraceabilityMatrix,
   GitHubIntegrationConfig,
   JiraIntegrationConfig,
+  SlackIntegrationConfig,
 } from "./types/domain.js";
 export { MemoryScope, MemoryFormat, AgentRole } from "./types/memory.js";
 export type {

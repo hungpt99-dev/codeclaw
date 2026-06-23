@@ -13,6 +13,9 @@ import type {
   GitHubCIRun,
   JiraStatus,
   JiraTestResult,
+  SlackStatus,
+  SlackTestResult,
+  SlackPostResult,
 } from "./types.js";
 
 const BASE = "/api";
@@ -210,6 +213,26 @@ export const api = {
     return request("/integrations/jira/create", {
       method: "POST",
       body: JSON.stringify({ runId, approve }),
+    });
+  },
+
+  async getSlackStatus(): Promise<SlackStatus> {
+    const data = await request<{ status: SlackStatus }>("/integrations/slack/status");
+    return data.status;
+  },
+
+  async testSlackConnection(): Promise<SlackTestResult> {
+    return request("/integrations/slack/test", { method: "POST" });
+  },
+
+  async postSlackMessage(
+    runId: string,
+    event?: string,
+    approve?: boolean,
+  ): Promise<SlackPostResult> {
+    return request("/integrations/slack/post", {
+      method: "POST",
+      body: JSON.stringify({ runId, event, approve }),
     });
   },
 

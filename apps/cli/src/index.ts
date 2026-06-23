@@ -26,6 +26,7 @@ import {
   jiraCreateCommand,
   jiraCommentCommand,
 } from "./commands/jira.js";
+import { slackStatusCommand, slackTestCommand, slackPostCommand } from "./commands/slack.js";
 
 interface InitCliOptions {
   force?: boolean;
@@ -291,6 +292,32 @@ jiraProgram
   .option("--approve", "Skip approval prompt")
   .action(async (options: { run?: string; issue?: string; approve?: boolean }) => {
     await jiraCommentCommand(options);
+  });
+
+const slackProgram = program.command("slack").description("Slack integration (optional)");
+
+slackProgram
+  .command("status")
+  .description("Check Slack integration status")
+  .action(() => {
+    slackStatusCommand();
+  });
+
+slackProgram
+  .command("test")
+  .description("Test Slack API connection")
+  .action(async () => {
+    await slackTestCommand();
+  });
+
+slackProgram
+  .command("post")
+  .description("Post a message to Slack")
+  .option("--run <runId>", "Run ID")
+  .option("--event <event>", "Event type (report_ready, docs_generated, etc.)", "report_ready")
+  .option("--approve", "Skip approval prompt")
+  .action(async (options: { run?: string; event?: string; approve?: boolean }) => {
+    await slackPostCommand(options);
   });
 
 program.parse();

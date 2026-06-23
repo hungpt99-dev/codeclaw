@@ -11,9 +11,20 @@ import {
   getJiraStatus,
   testJiraConnection,
   createIssuesFromRun,
+  getSlackStatus,
+  testSlackConnection,
+  notifySlack,
 } from "@aiteam/adapters";
 import type { JiraConfig } from "@aiteam/adapters";
-import { generatePRSummary, getArtifactPaths } from "@aiteam/core";
+import {
+  generatePRSummary,
+  getArtifactPaths,
+  buildReportReadyMessage,
+  buildDocsGeneratedMessage,
+  buildCodeGeneratedMessage,
+  buildTestResultMessage,
+} from "@aiteam/core";
+import type { SlackMessageInput } from "@aiteam/core";
 import { configSchema } from "@aiteam/shared";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -252,5 +263,123 @@ export function registerIntegrationRoutes(app: FastifyInstance, _db: DbConnectio
         status: "PENDING",
       },
     };
+  });
+
+  app.post("/api/integrations/slack/test", async (_request, reply) => {
+    try {
+      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const raw = await readFile(configPath, "utf-8");
+      const parsed: unknown = JSON.parse(raw);
+      const cfg = configSchema.parse(parsed);
+      const slackConfig = cfg.integrations.slack;
+      const result = await testSlackConnection(slackConfig);
+      return result;
+    } catch {
+      return reply.status(400).send({ success: false, message: "Slack not configured" });
+    }
+  });
+
+  app.get("/api/integrations/slack/status", async (_request, _reply) => {
+    try {
+      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const rawContent = await readFile(configPath, "utf-8");
+      const parsedConfig: unknown = JSON.parse(rawContent);
+      const cfg = configSchema.parse(parsedConfig);
+      const slackConfig = cfg.integrations.slack;
+      const status = getSlackStatus(slackConfig);
+      return { status };
+    } catch {
+      return {
+        status: { enabled: false, configured: false, hasToken: false, overall: "not_configured" },
+      };
+    }
+  });
+
+  app.post("/api/integrations/slack/post", async (request, reply) => {
+    const body = request.body as
+      | {
+          runId?: string;
+          event?: string;
+          approve?: boolean;
+        }
+      | undefined;
+
+    if (!body?.runId) {
+      return reply.status(400).send({ error: "runId is required" });
+    }
+
+    try {
+      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const rawConfig = await readFile(configPath, "utf-8");
+      const parsedConfig: unknown = JSON.parse(rawConfig);
+      const cfg = configSchema.parse(parsedConfig);
+      const slackConfig = cfg.integrations.slack;
+
+      if (!slackConfig.enabled) {
+        return await reply.status(400).send({ success: false, error: "Slack not enabled" });
+      }
+
+      if (!slackConfig.channelId) {
+        return await reply
+          .status(400)
+          .send({ success: false, error: "Slack channel not configured" });
+      }
+
+      const event = (body.event ?? "report_ready") as
+        | "docs_generated"
+        | "code_generated"
+        | "test_passed"
+        | "test_failed"
+        | "report_ready";
+
+      if (!body.approve) {
+        return await reply.send({
+          success: false,
+          error: "Approval required",
+          gate: "EXTERNAL_UPDATE",
+        });
+      }
+
+      const paths = getArtifactPaths(body.runId);
+      const reportContent = await readFile(join(paths.reportDir, "final-report.md"), "utf-8").catch(
+        () => "",
+      );
+
+      const input: SlackMessageInput = {
+        runTitle: `Run: ${body.runId}`,
+        runId: body.runId,
+        status: "REPORT_GENERATED",
+        artifactSummary: reportContent
+          ? `Final report generated with ${String(reportContent.length)} characters`
+          : undefined,
+      };
+
+      let text = "";
+      switch (event) {
+        case "docs_generated":
+          text = buildDocsGeneratedMessage(input);
+          break;
+        case "code_generated":
+          text = buildCodeGeneratedMessage(input);
+          break;
+        case "test_passed":
+          text = buildTestResultMessage(input);
+          break;
+        case "test_failed":
+          text = buildTestResultMessage(input);
+          break;
+        case "report_ready":
+        default:
+          text = buildReportReadyMessage(input);
+          break;
+      }
+
+      const result = await notifySlack(slackConfig, event, text, true);
+      return result;
+    } catch (e) {
+      return reply
+        .status(500)
+        .send({ success: false, error: e instanceof Error ? e.message : String(e) });
+    }
   });
 }

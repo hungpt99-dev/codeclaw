@@ -9,6 +9,16 @@ const aiCliToolConfigSchema = z.object({
   timeoutSeconds: z.number().int().positive(),
 });
 
+const slackNotifyEnum = z.enum([
+  "docs_generated",
+  "code_generated",
+  "test_passed",
+  "test_failed",
+  "report_ready",
+]);
+
+export type SlackNotifyEvent = z.infer<typeof slackNotifyEnum>;
+
 export const configSchema = z.object({
   version: z.string(),
   project: z.object({
@@ -69,6 +79,12 @@ export const configSchema = z.object({
       defaultIssueType: z.enum(["epic", "story", "task", "subtask"]).default("task"),
       tokenEnvRef: z.string().default("AITEAM_JIRA_TOKEN"),
     }),
+    slack: z.object({
+      enabled: z.boolean().default(false),
+      channelId: z.string().optional(),
+      tokenEnvRef: z.string().default("AITEAM_SLACK_TOKEN"),
+      notifyOn: z.array(slackNotifyEnum).default(["report_ready"]),
+    }),
   }),
 });
 
@@ -128,6 +144,11 @@ export const defaultConfig: Config = {
       enabled: false,
       defaultIssueType: "task",
       tokenEnvRef: "AITEAM_JIRA_TOKEN",
+    },
+    slack: {
+      enabled: false,
+      notifyOn: ["report_ready"],
+      tokenEnvRef: "AITEAM_SLACK_TOKEN",
     },
   },
 };

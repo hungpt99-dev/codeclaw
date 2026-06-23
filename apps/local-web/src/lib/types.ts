@@ -123,3 +123,24 @@ export interface JiraTestResult {
   accountId?: string;
   displayName?: string;
 }
+
+export interface SlackStatus {
+  configured: boolean;
+  enabled: boolean;
+  hasToken: boolean;
+  channelId?: string;
+  overall: string;
+}
+
+export interface SlackTestResult {
+  success: boolean;
+  message: string;
+  team?: string;
+  user?: string;
+}
+
+export interface SlackPostResult {
+  success: boolean;
+  ts?: string | undefined;
+  error?: string | undefined;
+}

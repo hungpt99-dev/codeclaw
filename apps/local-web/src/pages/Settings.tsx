@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState, type ReactElement } from "react";
 import { api } from "../lib/api.js";
-import type { GitHubStatus, JiraStatus, JiraTestResult } from "../lib/types.js";
+import type {
+  GitHubStatus,
+  JiraStatus,
+  JiraTestResult,
+  SlackStatus,
+  SlackTestResult,
+} from "../lib/types.js";
 
 interface SettingsForm {
   project_name: string;
@@ -404,6 +410,97 @@ export function Settings(): ReactElement {
           </div>
         )}
       </div>
+
+      <div className="rounded-lg border bg-white p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-gray-900">Slack Integration</h2>
+        <p className="text-sm text-gray-500">
+          Optional Slack integration using a bot token. Configure in .ai-team/config.json. Token
+          stored in AITEAM_SLACK_TOKEN environment variable.
+        </p>
+
+        <SlackSection />
+      </div>
+    </div>
+  );
+}
+
+function SlackSection(): ReactElement {
+  const [slackStatus, setSlackStatus] = useState<SlackStatus | null>(null);
+  const [slackTestResult, setSlackTestResult] = useState<SlackTestResult | null>(null);
+  const [slackStatusLoading, setSlackStatusLoading] = useState(false);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={(): void => {
+            void (async () => {
+              setSlackStatusLoading(true);
+              setSlackTestResult(null);
+              try {
+                const status = await api.getSlackStatus();
+                setSlackStatus(status);
+              } catch {
+                setSlackStatus(null);
+              } finally {
+                setSlackStatusLoading(false);
+              }
+            })();
+          }}
+          disabled={slackStatusLoading}
+          className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+        >
+          {slackStatusLoading ? "Checking..." : "Check Status"}
+        </button>
+        <button
+          type="button"
+          onClick={(): void => {
+            void (async () => {
+              setSlackTestResult(null);
+              try {
+                const result = await api.testSlackConnection();
+                setSlackTestResult(result);
+              } catch (e) {
+                setSlackTestResult({
+                  success: false,
+                  message: `Error: ${e instanceof Error ? e.message : "Unknown"}`,
+                });
+              }
+            })();
+          }}
+          className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+        >
+          Test Connection
+        </button>
+      </div>
+
+      {slackStatus && (
+        <div className="text-sm space-y-1 text-gray-700">
+          <p>
+            <span className="font-medium">Enabled:</span> {slackStatus.enabled ? "Yes" : "No"}
+          </p>
+          {slackStatus.channelId && (
+            <p>
+              <span className="font-medium">Channel ID:</span> {slackStatus.channelId}
+            </p>
+          )}
+          <p>
+            <span className="font-medium">Token:</span> {slackStatus.hasToken ? "Set" : "Not set"}
+          </p>
+          <p>
+            <span className="font-medium">Status:</span> {slackStatus.overall}
+          </p>
+        </div>
+      )}
+
+      {slackTestResult && (
+        <div
+          className={`text-sm px-3 py-2 rounded-md ${slackTestResult.success ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
+        >
+          {slackTestResult.message}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { createRunId, nowIso } from "@aiteam/shared";
-import type { ApprovalGate, AiAdapterName } from "@aiteam/shared";
+import type { ApprovalGate, AiAdapterName, SlackIntegrationConfig } from "@aiteam/shared";
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
 import { runBaAgent } from "../agents/baAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
@@ -17,6 +17,8 @@ import {
 } from "../traceability/traceabilityEngine.js";
 import { checkFileSafety, checkCommandSafety } from "../policies/safetyPolicy.js";
 import type { SafetyPolicy, FileSafetyResult } from "../policies/safetyPolicy.js";
+import { buildReportReadyMessage } from "../integrations/slackMessageTemplates.js";
+import type { SlackMessageInput } from "../integrations/slackMessageTemplates.js";
 
 export interface SemiAutoWorkflowInput {
   requirement: string;
@@ -37,6 +39,7 @@ export interface SemiAutoWorkflowInput {
   };
   safetyPolicy?: SafetyPolicy;
   commandTimeoutSeconds?: number;
+  slackConfig?: SlackIntegrationConfig;
 }
 
 export interface SemiAutoWorkflowOutput {
@@ -401,6 +404,21 @@ export async function runSemiAutoWorkflow(
     : undefined;
 
   const completedStatus = codeResult.success ? "REPORT_GENERATED" : "CODE_FAILED";
+
+  if (input.slackConfig?.enabled && input.slackConfig.notifyOn.includes("report_ready")) {
+    const slackInput: SlackMessageInput = {
+      runTitle: input.requirement,
+      runId,
+      status: completedStatus,
+    };
+    const slackText = buildReportReadyMessage(slackInput);
+    try {
+      const { notifySlack } = await import("@aiteam/adapters");
+      await notifySlack(input.slackConfig, "report_ready", slackText, true);
+    } catch {
+      // Slack notification is optional
+    }
+  }
 
   return {
     runId,
