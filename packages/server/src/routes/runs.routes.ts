@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { DbConnection } from "@aiteam/storage";
 import { createRunRepository, createArtifactRepository } from "@aiteam/storage";
-import type { ArtifactType } from "@aiteam/shared";
+import type { ArtifactType, RunMode } from "@aiteam/shared";
 import { createRunId, ArtifactTypeValues } from "@aiteam/shared";
 import { runDocsOnlyWorkflow } from "@aiteam/core";
 
@@ -29,13 +29,21 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
   });
 
   app.post("/api/runs", async (request, reply) => {
-    const body = request.body as { requirement?: string } | undefined;
+    const body = request.body as
+      | {
+          requirement?: string;
+          outputLanguage?: string;
+          mode?: string;
+        }
+      | undefined;
     if (!body?.requirement || typeof body.requirement !== "string" || !body.requirement.trim()) {
       return reply.status(400).send({ error: "Requirement is required" });
     }
 
-    const requirement = body.requirement.trim();
-    const runId = createRunId(requirement);
+    const rawRequirement = body.requirement.trim();
+    const outputLanguage = body.outputLanguage ?? "English";
+    const mode = body.mode ?? "docs-only";
+    const runId = createRunId(rawRequirement);
 
     const runRepo = createRunRepository(db);
     const existing = runRepo.findById(runId);
@@ -43,18 +51,19 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
       return reply.status(409).send({ error: "Run already exists", runId });
     }
 
-    const title = requirement.length > 80 ? requirement.slice(0, 80) + "..." : requirement;
+    const title = rawRequirement.length > 80 ? rawRequirement.slice(0, 80) + "..." : rawRequirement;
     runRepo.create({
       id: runId,
       title,
-      rawRequirement: requirement,
-      mode: "docs-only",
+      rawRequirement,
+      mode: mode as RunMode,
+      outputLanguage,
     });
 
     runRepo.updateStatus(runId, "SPEC_GENERATED");
 
     const workflowResult = await runDocsOnlyWorkflow({
-      requirement,
+      requirement: rawRequirement,
       projectRoot: undefined,
       memoryContext: undefined,
     });

@@ -43,6 +43,7 @@ describe("index barrel exports", () => {
       id: "run-1",
       title: "Test",
       rawRequirement: "req",
+      outputLanguage: "English",
       mode: "semi-auto",
     });
     expect(run.id).toBe("run-1");

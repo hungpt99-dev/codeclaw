@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS runs (
   title TEXT NOT NULL,
   raw_requirement TEXT NOT NULL,
   mode TEXT NOT NULL,
+  output_language TEXT NOT NULL DEFAULT 'English',
   status TEXT NOT NULL,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL

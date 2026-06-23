@@ -3,6 +3,7 @@ export interface Run {
   title: string;
   rawRequirement: string;
   mode: string;
+  outputLanguage: string;
   status: string;
   createdAt: string;
   updatedAt: string;

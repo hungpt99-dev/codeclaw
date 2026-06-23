@@ -35,10 +35,14 @@ export const api = {
     return data.run;
   },
 
-  async createRun(requirement: string): Promise<Run> {
+  async createRun(params: {
+    rawRequirement: string;
+    outputLanguage: string;
+    mode: string;
+  }): Promise<Run> {
     const data = await request<{ run: Run }>("/runs", {
       method: "POST",
-      body: JSON.stringify({ requirement }),
+      body: JSON.stringify(params),
     });
     return data.run;
   },

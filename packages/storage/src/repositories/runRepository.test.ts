@@ -19,6 +19,7 @@ describe("RunRepository", () => {
         id: "run-1",
         title: "Test Run",
         rawRequirement: "Build a todo app",
+        outputLanguage: "English",
         mode: "semi-auto",
       });
 
@@ -39,6 +40,7 @@ describe("RunRepository", () => {
         id: "run-1",
         title: "Test Run",
         rawRequirement: "Build a todo app",
+        outputLanguage: "English",
         mode: "semi-auto",
       });
 
@@ -61,6 +63,7 @@ describe("RunRepository", () => {
         id: "run-1",
         title: "First",
         rawRequirement: "req 1",
+        outputLanguage: "English",
         mode: "docs-only",
       });
       await new Promise((r) => setTimeout(r, 2));
@@ -68,6 +71,7 @@ describe("RunRepository", () => {
         id: "run-2",
         title: "Second",
         rawRequirement: "req 2",
+        outputLanguage: "English",
         mode: "assisted",
       });
 
@@ -84,12 +88,14 @@ describe("RunRepository", () => {
         id: "run-1",
         title: "First",
         rawRequirement: "req 1",
+        outputLanguage: "English",
         mode: "docs-only",
       });
       repo.create({
         id: "run-2",
         title: "Second",
         rawRequirement: "req 2",
+        outputLanguage: "English",
         mode: "docs-only",
       });
 
@@ -109,6 +115,7 @@ describe("RunRepository", () => {
         id: "run-1",
         title: "Test Run",
         rawRequirement: "Build a todo app",
+        outputLanguage: "English",
         mode: "semi-auto",
       });
 

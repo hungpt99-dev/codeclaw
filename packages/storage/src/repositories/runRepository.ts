@@ -7,6 +7,7 @@ interface RunRow {
   title: string;
   raw_requirement: string;
   mode: string;
+  output_language: string;
   status: string;
   created_at: string;
   updated_at: string;
@@ -17,6 +18,7 @@ export interface RunRecord {
   title: string;
   rawRequirement: string;
   mode: RunMode;
+  outputLanguage: string;
   status: RunStatus;
   createdAt: string;
   updatedAt: string;
@@ -28,6 +30,7 @@ function rowToRecord(row: RunRow): RunRecord {
     title: row.title,
     rawRequirement: row.raw_requirement,
     mode: row.mode as RunMode,
+    outputLanguage: row.output_language,
     status: row.status as RunStatus,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -39,14 +42,24 @@ export interface CreateRunInput {
   title: string;
   rawRequirement: string;
   mode: RunMode;
+  outputLanguage: string;
 }
 
 export function createRunRepository(db: DbConnection) {
   const create = (input: CreateRunInput): RunRecord => {
     const now = nowIso();
     db.prepare(
-      "INSERT INTO runs (id, title, raw_requirement, mode, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    ).run(input.id, input.title, input.rawRequirement, input.mode, "CREATED", now, now);
+      "INSERT INTO runs (id, title, raw_requirement, mode, output_language, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    ).run(
+      input.id,
+      input.title,
+      input.rawRequirement,
+      input.mode,
+      input.outputLanguage,
+      "CREATED",
+      now,
+      now,
+    );
     const record = findById(input.id);
     if (!record) {
       throw new Error("Failed to create run");

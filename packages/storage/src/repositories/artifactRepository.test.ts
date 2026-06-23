@@ -18,6 +18,7 @@ describe("ArtifactRepository", () => {
       id: "run-1",
       title: "Test Run",
       rawRequirement: "Build a todo app",
+      outputLanguage: "English",
       mode: "semi-auto",
     });
   });

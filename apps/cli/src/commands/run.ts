@@ -75,6 +75,7 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
     title,
     rawRequirement: requirement,
     mode: config.workflow.defaultMode as RunMode,
+    outputLanguage: options.outputLanguage ?? "English",
   });
 
   const memoryStatus = await getMemoryStatus(process.cwd());
