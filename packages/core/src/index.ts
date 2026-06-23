@@ -16,3 +16,5 @@ export type {
   DocsOnlyWorkflowInput,
   DocsOnlyWorkflowOutput,
 } from "./workflows/docsOnlyWorkflow.js";
+export { getAiToolConfig } from "./workflows/workflowHelpers.js";
+export type { AiToolConfig } from "./workflows/workflowHelpers.js";

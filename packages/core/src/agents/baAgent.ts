@@ -1,4 +1,8 @@
-import { renderPrompt } from "../prompts/promptRenderer.js";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { runAgent, renderPrompt } from "@aiteam/adapters";
+import type { AiCliTool } from "@aiteam/adapters";
+import { parseBaOutput } from "./parsers/baOutputParser.js";
 
 export interface BaAgentInput {
   requirement: string;
@@ -131,7 +135,39 @@ const ASSUMPTIONS_TEMPLATE = `# Assumptions
 3. No sensitive data requires special handling beyond standard encryption.
 `;
 
-export function runBaAgent(input: BaAgentInput): BaAgentOutput {
+const FALLBACK_TEMPLATES = `${CLARIFIED_REQUIREMENT_TEMPLATE}\n\n${BUSINESS_RULES_TEMPLATE}\n\n${ACCEPTANCE_CRITERIA_TEMPLATE}\n\n${OPEN_QUESTIONS_TEMPLATE}\n\n${ASSUMPTIONS_TEMPLATE}`;
+
+async function loadTemplate(templateDir: string | undefined): Promise<string | null> {
+  if (!templateDir) return null;
+  try {
+    return await readFile(join(templateDir, "ba-agent.md"), "utf-8");
+  } catch {
+    return null;
+  }
+}
+
+export async function runBaAgent(
+  input: BaAgentInput,
+  options?: {
+    templateDir?: string | undefined;
+    aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+  },
+): Promise<BaAgentOutput> {
+  const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
+
+  if (options?.aiTool) {
+    const result = await runAgent({
+      role: "BA",
+      promptTemplate: template,
+      context: { rawRequirement: input.requirement },
+      aiToolConfig: options.aiTool,
+    });
+
+    if (result.success && result.usedAi) {
+      return parseBaOutput(result.output, input.requirement);
+    }
+  }
+
   const context = { requirement: input.requirement };
 
   return {

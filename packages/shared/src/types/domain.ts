@@ -52,6 +52,25 @@ export interface Artifact {
   createdAt: string;
 }
 
+export type AiCliTool = "claude" | "codex" | "gemini" | "aider";
+
+export type AgentRole =
+  | "BA"
+  | "PRODUCT_OWNER"
+  | "PROJECT_MANAGER"
+  | "ARCHITECT"
+  | "DEVELOPER"
+  | "QA"
+  | "CODE_REVIEWER"
+  | "SECURITY_REVIEWER"
+  | "REPORTER";
+
+export interface AiCliToolConfig {
+  enabled: boolean;
+  command: string;
+  timeoutSeconds: number;
+}
+
 export interface AiTeamConfig {
   version: string;
   project: {
@@ -60,6 +79,19 @@ export interface AiTeamConfig {
     language: string;
     framework: string;
     workingDir: string;
+  };
+  agents: {
+    defaultBa: AiCliTool;
+    defaultArchitect: AiCliTool;
+    defaultPm: AiCliTool;
+    defaultQa: AiCliTool;
+    defaultReporter: AiCliTool;
+  };
+  cli: {
+    claude: AiCliToolConfig;
+    codex: AiCliToolConfig;
+    gemini: AiCliToolConfig;
+    aider: AiCliToolConfig;
   };
   workflow: {
     defaultMode: RunMode;

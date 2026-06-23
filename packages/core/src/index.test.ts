@@ -211,8 +211,8 @@ describe("docsOnlyWorkflow", () => {
 });
 
 describe("agents", () => {
-  it("baAgent returns all expected output fields", () => {
-    const output = runBaAgent({ requirement: "Test requirement" });
+  it("baAgent returns all expected output fields", async () => {
+    const output = await runBaAgent({ requirement: "Test requirement" });
     expect(output).toHaveProperty("clarifiedRequirement");
     expect(output).toHaveProperty("businessRules");
     expect(output).toHaveProperty("acceptanceCriteria");
@@ -225,8 +225,8 @@ describe("agents", () => {
     expect(output.assumptions).toContain("Test requirement");
   });
 
-  it("architectAgent returns all expected output fields", () => {
-    const output = runArchitectAgent({
+  it("architectAgent returns all expected output fields", async () => {
+    const output = await runArchitectAgent({
       requirement: "Test requirement",
       clarifiedRequirement: "Clarified",
     });
@@ -238,8 +238,8 @@ describe("agents", () => {
     expect(output.dbDesign).toContain("Test requirement");
   });
 
-  it("pmAgent returns markdown and JSON task breakdown", () => {
-    const output = runPmAgent({
+  it("pmAgent returns markdown and JSON task breakdown", async () => {
+    const output = await runPmAgent({
       requirement: "Test requirement",
       technicalDesign: "Design",
     });
@@ -253,8 +253,8 @@ describe("agents", () => {
     expect(parsed.totalTasks).toBe(13);
   });
 
-  it("qaAgent returns markdown and JSON test matrix", () => {
-    const output = runQaAgent({
+  it("qaAgent returns markdown and JSON test matrix", async () => {
+    const output = await runQaAgent({
       requirement: "Test requirement",
       acceptanceCriteria: "Criteria",
       taskBreakdownJson: "{}",
@@ -269,8 +269,8 @@ describe("agents", () => {
     expect(parsed.unitTests).toHaveLength(6);
   });
 
-  it("reporterAgent returns final report", () => {
-    const output = runReporterAgent({
+  it("reporterAgent returns final report", async () => {
+    const output = await runReporterAgent({
       requirement: "Test requirement",
       clarifiedRequirement: "Clarified",
       businessRules: "Rules",

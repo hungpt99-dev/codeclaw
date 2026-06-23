@@ -6,6 +6,8 @@ import { runArchitectAgent } from "../agents/architectAgent.js";
 import { runPmAgent } from "../agents/pmAgent.js";
 import { runQaAgent } from "../agents/qaAgent.js";
 import { runReporterAgent } from "../agents/reporterAgent.js";
+import { getAiToolConfig } from "./workflowHelpers.js";
+import type { AiToolConfig } from "./workflowHelpers.js";
 
 export interface DocsOnlyWorkflowInput {
   requirement: string;
@@ -17,6 +19,9 @@ export interface DocsOnlyWorkflowInput {
         agentMemoryCount: number;
       }
     | undefined;
+  templateDir?: string;
+  agentMapping?: Record<string, string>;
+  cliConfigs?: Record<string, { enabled: boolean; command: string; timeoutSeconds: number }>;
 }
 
 export interface DocsOnlyWorkflowOutput {
@@ -42,10 +47,40 @@ export async function runDocsOnlyWorkflow(
   const paths = await createArtifactDirs(runId);
   const artifacts: string[] = [];
 
+  const templateDir = input.templateDir;
+
+  const baTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("BA", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const architectTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("ARCHITECT", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const pmTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("PROJECT_MANAGER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const qaTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("QA", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const reporterTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("REPORTER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
   await writeArtifact(paths.inputFile, `# Raw Requirement\n\n${input.requirement}\n`);
   artifacts.push(paths.inputFile);
 
-  const baOutput = runBaAgent({ requirement: input.requirement });
+  const baOutput = await runBaAgent(
+    { requirement: input.requirement },
+    { templateDir, aiTool: baTool },
+  );
 
   await writeArtifact(
     join(paths.requirementDir, "clarified-requirement.md"),
@@ -68,10 +103,13 @@ export async function runDocsOnlyWorkflow(
   await writeArtifact(join(paths.requirementDir, "assumptions.md"), baOutput.assumptions);
   artifacts.push(join(paths.requirementDir, "assumptions.md"));
 
-  const architectOutput = runArchitectAgent({
-    requirement: input.requirement,
-    clarifiedRequirement: baOutput.clarifiedRequirement,
-  });
+  const architectOutput = await runArchitectAgent(
+    {
+      requirement: input.requirement,
+      clarifiedRequirement: baOutput.clarifiedRequirement,
+    },
+    { templateDir, aiTool: architectTool },
+  );
 
   await writeArtifact(
     join(paths.designDir, "technical-design.md"),
@@ -85,10 +123,13 @@ export async function runDocsOnlyWorkflow(
   await writeArtifact(join(paths.designDir, "db-design.md"), architectOutput.dbDesign);
   artifacts.push(join(paths.designDir, "db-design.md"));
 
-  const pmOutput = runPmAgent({
-    requirement: input.requirement,
-    technicalDesign: architectOutput.technicalDesign,
-  });
+  const pmOutput = await runPmAgent(
+    {
+      requirement: input.requirement,
+      technicalDesign: architectOutput.technicalDesign,
+    },
+    { templateDir, aiTool: pmTool },
+  );
 
   await writeArtifact(join(paths.tasksDir, "task-breakdown.md"), pmOutput.taskBreakdownMd);
   artifacts.push(join(paths.tasksDir, "task-breakdown.md"));
@@ -96,11 +137,14 @@ export async function runDocsOnlyWorkflow(
   await writeArtifact(join(paths.tasksDir, "task-breakdown.json"), pmOutput.taskBreakdownJson);
   artifacts.push(join(paths.tasksDir, "task-breakdown.json"));
 
-  const qaOutput = runQaAgent({
-    requirement: input.requirement,
-    acceptanceCriteria: baOutput.acceptanceCriteria,
-    taskBreakdownJson: pmOutput.taskBreakdownJson,
-  });
+  const qaOutput = await runQaAgent(
+    {
+      requirement: input.requirement,
+      acceptanceCriteria: baOutput.acceptanceCriteria,
+      taskBreakdownJson: pmOutput.taskBreakdownJson,
+    },
+    { templateDir, aiTool: qaTool },
+  );
 
   await writeArtifact(join(paths.testsDir, "test-matrix.md"), qaOutput.testMatrixMd);
   artifacts.push(join(paths.testsDir, "test-matrix.md"));
@@ -108,17 +152,20 @@ export async function runDocsOnlyWorkflow(
   await writeArtifact(join(paths.testsDir, "test-matrix.json"), qaOutput.testMatrixJson);
   artifacts.push(join(paths.testsDir, "test-matrix.json"));
 
-  const reporterOutput = runReporterAgent({
-    requirement: input.requirement,
-    clarifiedRequirement: baOutput.clarifiedRequirement,
-    businessRules: baOutput.businessRules,
-    acceptanceCriteria: baOutput.acceptanceCriteria,
-    technicalDesign: architectOutput.technicalDesign,
-    apiDesign: architectOutput.apiDesign,
-    dbDesign: architectOutput.dbDesign,
-    taskBreakdownMd: pmOutput.taskBreakdownMd,
-    testMatrixMd: qaOutput.testMatrixMd,
-  });
+  const reporterOutput = await runReporterAgent(
+    {
+      requirement: input.requirement,
+      clarifiedRequirement: baOutput.clarifiedRequirement,
+      businessRules: baOutput.businessRules,
+      acceptanceCriteria: baOutput.acceptanceCriteria,
+      technicalDesign: architectOutput.technicalDesign,
+      apiDesign: architectOutput.apiDesign,
+      dbDesign: architectOutput.dbDesign,
+      taskBreakdownMd: pmOutput.taskBreakdownMd,
+      testMatrixMd: qaOutput.testMatrixMd,
+    },
+    { templateDir, aiTool: reporterTool },
+  );
 
   await writeArtifact(join(paths.reportDir, "final-report.md"), reporterOutput.finalReport);
   artifacts.push(join(paths.reportDir, "final-report.md"));

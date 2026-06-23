@@ -17,5 +17,7 @@
     "test:coverage": "vitest run --coverage",
     "build": "tsc"
   },
-  "dependencies": {}
+  "dependencies": {
+    "execa": "^9.5.2"
+  }
 }

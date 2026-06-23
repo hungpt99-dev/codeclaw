@@ -1,4 +1,8 @@
-import { renderPrompt } from "../prompts/promptRenderer.js";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { runAgent, renderPrompt } from "@aiteam/adapters";
+import type { AiCliTool } from "@aiteam/adapters";
+import { parsePmOutput } from "./parsers/pmOutputParser.js";
 
 export interface PmAgentInput {
   requirement: string;
@@ -51,7 +55,42 @@ const TASK_BREAKDOWN_TEMPLATE = `# Task Breakdown
 - **Critical Path**: T-001 → T-002 → T-003 → T-004 → T-007 → T-009 → T-011
 `;
 
-export function runPmAgent(input: PmAgentInput): PmAgentOutput {
+const FALLBACK_TEMPLATES = TASK_BREAKDOWN_TEMPLATE;
+
+async function loadTemplate(templateDir: string | undefined): Promise<string | null> {
+  if (!templateDir) return null;
+  try {
+    return await readFile(join(templateDir, "pm-agent.md"), "utf-8");
+  } catch {
+    return null;
+  }
+}
+
+export async function runPmAgent(
+  input: PmAgentInput,
+  options?: {
+    templateDir?: string | undefined;
+    aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+  },
+): Promise<PmAgentOutput> {
+  const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
+
+  if (options?.aiTool) {
+    const result = await runAgent({
+      role: "PROJECT_MANAGER",
+      promptTemplate: template,
+      context: {
+        requirement: input.requirement,
+        technicalDesign: input.technicalDesign,
+      },
+      aiToolConfig: options.aiTool,
+    });
+
+    if (result.success && result.usedAi) {
+      return parsePmOutput(result.output, input.requirement);
+    }
+  }
+
   const context = { requirement: input.requirement };
 
   const taskBreakdownMd = renderPrompt(TASK_BREAKDOWN_TEMPLATE, context);

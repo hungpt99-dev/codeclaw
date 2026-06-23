@@ -1,4 +1,8 @@
-import { renderPrompt } from "../prompts/promptRenderer.js";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { runAgent, renderPrompt } from "@aiteam/adapters";
+import type { AiCliTool } from "@aiteam/adapters";
+import { parseQaOutput } from "./parsers/qaOutputParser.js";
 
 export interface QaAgentInput {
   requirement: string;
@@ -53,7 +57,43 @@ This document defines the testing approach for verifying the requirement.
 | NFT-003 | Load | Handle 1000 req/min | Gradual ramp-up test |
 `;
 
-export function runQaAgent(input: QaAgentInput): QaAgentOutput {
+const FALLBACK_TEMPLATES = TEST_MATRIX_TEMPLATE;
+
+async function loadTemplate(templateDir: string | undefined): Promise<string | null> {
+  if (!templateDir) return null;
+  try {
+    return await readFile(join(templateDir, "qa-agent.md"), "utf-8");
+  } catch {
+    return null;
+  }
+}
+
+export async function runQaAgent(
+  input: QaAgentInput,
+  options?: {
+    templateDir?: string | undefined;
+    aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+  },
+): Promise<QaAgentOutput> {
+  const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
+
+  if (options?.aiTool) {
+    const result = await runAgent({
+      role: "QA",
+      promptTemplate: template,
+      context: {
+        requirement: input.requirement,
+        acceptanceCriteria: input.acceptanceCriteria,
+        taskBreakdown: input.taskBreakdownJson,
+      },
+      aiToolConfig: options.aiTool,
+    });
+
+    if (result.success && result.usedAi) {
+      return parseQaOutput(result.output, input.requirement);
+    }
+  }
+
   const context = { requirement: input.requirement };
 
   const testMatrixMd = renderPrompt(TEST_MATRIX_TEMPLATE, context);

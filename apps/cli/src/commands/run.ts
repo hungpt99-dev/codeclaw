@@ -80,6 +80,8 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
 
   const memoryStatus = await getMemoryStatus(process.cwd());
 
+  const templateDir = join(aiTeamDir, "prompts");
+
   const result = await runDocsOnlyWorkflow({
     requirement,
     projectRoot: process.cwd(),
@@ -90,6 +92,9 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
           agentMemoryCount: memoryStatus.agentMemoryCount,
         }
       : undefined,
+    templateDir,
+    agentMapping: config.agents,
+    cliConfigs: config.cli,
   });
 
   if (memoryStatus.exists) {

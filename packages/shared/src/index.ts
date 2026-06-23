@@ -5,6 +5,9 @@ export type {
   Run,
   Artifact,
   AiTeamConfig,
+  AiCliTool,
+  AgentRole as AgentRoleName,
+  AiCliToolConfig,
 } from "./types/domain.js";
 export {
   RunMode as RunModeValues,

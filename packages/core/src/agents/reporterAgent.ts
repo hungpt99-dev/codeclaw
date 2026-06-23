@@ -1,4 +1,8 @@
-import { renderPrompt } from "../prompts/promptRenderer.js";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { runAgent, renderPrompt } from "@aiteam/adapters";
+import type { AiCliTool } from "@aiteam/adapters";
+import { parseReporterOutput } from "./parsers/reporterOutputParser.js";
 
 export interface ReporterAgentInput {
   requirement: string;
@@ -116,7 +120,46 @@ No AI calls were made during this workflow.
 | Critical path | The sequence of dependent tasks that determines the minimum project duration |
 `;
 
-export function runReporterAgent(input: ReporterAgentInput): ReporterAgentOutput {
+const FALLBACK_TEMPLATES = FINAL_REPORT_TEMPLATE;
+
+async function loadTemplate(templateDir: string | undefined): Promise<string | null> {
+  if (!templateDir) return null;
+  try {
+    return await readFile(join(templateDir, "reporter-agent.md"), "utf-8");
+  } catch {
+    return null;
+  }
+}
+
+export async function runReporterAgent(
+  input: ReporterAgentInput,
+  options?: {
+    templateDir?: string | undefined;
+    aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+  },
+): Promise<ReporterAgentOutput> {
+  const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
+
+  if (options?.aiTool) {
+    const result = await runAgent({
+      role: "REPORTER",
+      promptTemplate: template,
+      context: {
+        rawRequirement: input.requirement,
+        clarifiedRequirement: input.clarifiedRequirement,
+        acceptanceCriteria: input.acceptanceCriteria,
+        technicalDesign: input.technicalDesign,
+        taskBreakdown: input.taskBreakdownMd,
+        testMatrix: input.testMatrixMd,
+      },
+      aiToolConfig: options.aiTool,
+    });
+
+    if (result.success && result.usedAi) {
+      return parseReporterOutput(result.output);
+    }
+  }
+
   const context = {
     requirement: input.requirement,
     generatedAt: new Date().toISOString(),

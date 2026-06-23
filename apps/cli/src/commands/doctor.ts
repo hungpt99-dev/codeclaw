@@ -149,6 +149,55 @@ export async function doctorCommand(): Promise<void> {
     });
   }
 
+  const aiTools = ["claude", "codex", "gemini", "aider"];
+  for (const tool of aiTools) {
+    try {
+      execSync(`which ${tool}`, { stdio: "pipe" });
+      results.push({
+        name: `${tool} CLI`,
+        status: "pass",
+        message: "Available",
+      });
+    } catch {
+      results.push({
+        name: `${tool} CLI`,
+        status: "warn",
+        message: "Not found in PATH",
+      });
+    }
+  }
+
+  if (configExists) {
+    try {
+      const raw = await readFile(configPath, "utf-8");
+      const parsed: Record<string, unknown> = JSON.parse(raw) as Record<string, unknown>;
+      const agents = parsed.agents as Record<string, string> | undefined;
+      const cli = parsed.cli as Record<string, { enabled: boolean }> | undefined;
+      if (agents) {
+        const mapping = Object.entries(agents)
+          .map(([key, val]) => `${key.replace("default", "")} → ${val}`)
+          .join(", ");
+        results.push({
+          name: "Agent-to-tool mapping",
+          status: "pass",
+          message: mapping || "No mapping configured",
+        });
+      }
+      if (cli) {
+        const enabledTools = Object.entries(cli)
+          .filter(([, cfg]) => cfg.enabled)
+          .map(([name]) => name);
+        results.push({
+          name: "Enabled AI CLI tools",
+          status: enabledTools.length > 0 ? "pass" : "warn",
+          message: enabledTools.length > 0 ? enabledTools.join(", ") : "None enabled",
+        });
+      }
+    } catch {
+      // config already validated above
+    }
+  }
+
   const memoryStatus = await getMemoryStatus(process.cwd());
   if (memoryStatus.exists) {
     results.push({

@@ -18,6 +18,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@aiteam/adapters": "workspace:*",
     "@aiteam/shared": "workspace:*"
   }
 }

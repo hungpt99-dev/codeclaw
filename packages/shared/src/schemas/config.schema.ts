@@ -1,6 +1,14 @@
 import { z } from "zod";
 import { RunMode } from "../types/domain.js";
 
+const aiCliToolSchema = z.enum(["claude", "codex", "gemini", "aider"] as const);
+
+const aiCliToolConfigSchema = z.object({
+  enabled: z.boolean(),
+  command: z.string(),
+  timeoutSeconds: z.number().int().positive(),
+});
+
 export const configSchema = z.object({
   version: z.string(),
   project: z.object({
@@ -9,6 +17,19 @@ export const configSchema = z.object({
     language: z.string(),
     framework: z.string(),
     workingDir: z.string(),
+  }),
+  agents: z.object({
+    defaultBa: aiCliToolSchema.default("claude"),
+    defaultArchitect: aiCliToolSchema.default("claude"),
+    defaultPm: aiCliToolSchema.default("claude"),
+    defaultQa: aiCliToolSchema.default("claude"),
+    defaultReporter: aiCliToolSchema.default("claude"),
+  }),
+  cli: z.object({
+    claude: aiCliToolConfigSchema,
+    codex: aiCliToolConfigSchema,
+    gemini: aiCliToolConfigSchema,
+    aider: aiCliToolConfigSchema,
   }),
   workflow: z.object({
     defaultMode: z.enum(Object.values(RunMode) as [string, ...string[]]),
@@ -32,6 +53,8 @@ export const configSchema = z.object({
 
 export type Config = z.infer<typeof configSchema>;
 
+const defaultCliToolConfig = { enabled: false, command: "", timeoutSeconds: 300 };
+
 export const defaultConfig: Config = {
   version: "0.1.0",
   project: {
@@ -40,6 +63,19 @@ export const defaultConfig: Config = {
     language: "",
     framework: "",
     workingDir: ".",
+  },
+  agents: {
+    defaultBa: "claude",
+    defaultArchitect: "claude",
+    defaultPm: "claude",
+    defaultQa: "claude",
+    defaultReporter: "claude",
+  },
+  cli: {
+    claude: { ...defaultCliToolConfig, command: "claude" },
+    codex: { ...defaultCliToolConfig, command: "codex" },
+    gemini: { ...defaultCliToolConfig, command: "gemini" },
+    aider: { ...defaultCliToolConfig, command: "aider" },
   },
   workflow: {
     defaultMode: "docs-only",

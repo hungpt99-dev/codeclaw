@@ -1,4 +1,8 @@
-import { renderPrompt } from "../prompts/promptRenderer.js";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { runAgent, renderPrompt } from "@aiteam/adapters";
+import type { AiCliTool } from "@aiteam/adapters";
+import { parseArchitectOutput } from "./parsers/architectOutputParser.js";
 
 export interface ArchitectAgentInput {
   requirement: string;
@@ -176,7 +180,42 @@ const DB_DESIGN_TEMPLATE = `# Database Design
 - Main entities: retained indefinitely unless archiving policy applies.
 `;
 
-export function runArchitectAgent(input: ArchitectAgentInput): ArchitectAgentOutput {
+const FALLBACK_TEMPLATES = `${TECHNICAL_DESIGN_TEMPLATE}\n\n${API_DESIGN_TEMPLATE}\n\n${DB_DESIGN_TEMPLATE}`;
+
+async function loadTemplate(templateDir: string | undefined): Promise<string | null> {
+  if (!templateDir) return null;
+  try {
+    return await readFile(join(templateDir, "architect-agent.md"), "utf-8");
+  } catch {
+    return null;
+  }
+}
+
+export async function runArchitectAgent(
+  input: ArchitectAgentInput,
+  options?: {
+    templateDir?: string | undefined;
+    aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+  },
+): Promise<ArchitectAgentOutput> {
+  const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
+
+  if (options?.aiTool) {
+    const result = await runAgent({
+      role: "ARCHITECT",
+      promptTemplate: template,
+      context: {
+        requirement: input.requirement,
+        clarifiedRequirement: input.clarifiedRequirement,
+      },
+      aiToolConfig: options.aiTool,
+    });
+
+    if (result.success && result.usedAi) {
+      return parseArchitectOutput(result.output, input.requirement);
+    }
+  }
+
   const context = { requirement: input.requirement };
 
   return {
