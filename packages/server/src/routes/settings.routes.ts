@@ -15,9 +15,24 @@ export function registerSettingsRoutes(app: FastifyInstance, db: DbConnection): 
     if (!body || typeof body !== "object") {
       return reply.status(400).send({ error: "Invalid request body" });
     }
+
+    if (body.max_iterations !== undefined) {
+      const n = Number(body.max_iterations);
+      if (!Number.isInteger(n) || n < 1) {
+        return reply.status(400).send({ error: "Max iterations must be a positive integer" });
+      }
+    }
+
+    if (body.command_timeout !== undefined) {
+      const n = Number(body.command_timeout);
+      if (!Number.isInteger(n) || n < 1) {
+        return reply.status(400).send({ error: "Command timeout must be a positive integer" });
+      }
+    }
+
     for (const [key, value] of Object.entries(body)) {
-      if (typeof value === "string") {
-        repo.set(key, value);
+      if (typeof value === "string" || typeof value === "number") {
+        repo.set(key, String(value));
       }
     }
     const settings = repo.getAll();

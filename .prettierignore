@@ -3,6 +3,7 @@ dist
 build
 coverage
 .ai-team
+.automation
 pnpm-lock.yaml
 docs/codegraph/*.svg
 docs/codegraph/*.html
