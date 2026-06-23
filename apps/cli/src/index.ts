@@ -11,6 +11,7 @@ import { approveCommand } from "./commands/approve.js";
 import { rejectCommand } from "./commands/reject.js";
 import { resumeCommand } from "./commands/resume.js";
 import { cancelCommand } from "./commands/cancel.js";
+import { analyzeCommand } from "./commands/analyze.js";
 
 interface InitCliOptions {
   force?: boolean;
@@ -172,6 +173,17 @@ program
   .option("--reason <reason>", "Cancellation reason")
   .action(async (runId: string, options: CancelCliOptions) => {
     await cancelCommand(runId, options);
+  });
+
+program
+  .command("analyze")
+  .description("Analyze repository context (language, framework, build tool, etc.)")
+  .option("--run <runId>", "Save analysis to existing run's design dir")
+  .option("--json", "Output as JSON")
+  .option("--include <glob>", "Include file pattern")
+  .option("--exclude <glob>", "Exclude file pattern")
+  .action(async (options: { run?: string; json?: boolean; include?: string; exclude?: string }) => {
+    await analyzeCommand(options);
   });
 
 program.parse();

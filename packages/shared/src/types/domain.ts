@@ -93,6 +93,29 @@ export interface AiCliToolConfig {
   timeoutSeconds: number;
 }
 
+export type ProjectType =
+  | "java-spring-boot"
+  | "node-nestjs"
+  | "react-vite"
+  | "node-express"
+  | "generic";
+
+export interface RepositoryAnalysis {
+  projectType: ProjectType | null;
+  language: string | null;
+  framework: string | null;
+  buildTool: string | null;
+  testFramework: string | null;
+  migrationTool: string | null;
+  sourceDirs: string[];
+  testDirs: string[];
+  configFiles: string[];
+  detectedPatterns: string[];
+  packageManager: string | null;
+  nodeVersion: string | null;
+  javaVersion: string | null;
+}
+
 export interface AiTeamConfig {
   version: string;
   project: {

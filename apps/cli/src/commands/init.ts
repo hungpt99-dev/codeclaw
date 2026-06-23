@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { defaultConfig } from "@aiteam/shared";
 import { openDatabase, initializeSchema } from "@aiteam/storage";
 import { initializeRuntimeMemory } from "@aiteam/memory";
+import { analyzeRepository } from "@aiteam/core";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -89,6 +90,25 @@ export async function initCommand(options: InitOptions): Promise<void> {
   console.log(
     `✅ Created .ai-team/memory/ (${String(memoryResult.filesCreated.length)} files created, ${String(memoryResult.filesSkipped.length)} skipped)`,
   );
+
+  const initAnalysis = await analyzeRepository(process.cwd());
+  if (initAnalysis.projectType !== "generic") {
+    console.log(`\n📋 Detected project type: ${String(initAnalysis.projectType)}`);
+    console.log(`   Language: ${initAnalysis.language ?? "Unknown"}`);
+    console.log(`   Framework: ${initAnalysis.framework ?? "Unknown"}`);
+    console.log(`   Build tool: ${initAnalysis.buildTool ?? "Unknown"}`);
+    if (initAnalysis.testFramework) {
+      console.log(`   Test framework: ${initAnalysis.testFramework}`);
+    }
+    if (initAnalysis.sourceDirs.length > 0) {
+      console.log(`   Source dirs: ${initAnalysis.sourceDirs.join(", ")}`);
+    }
+    if (initAnalysis.testDirs.length > 0) {
+      console.log(`   Test dirs: ${initAnalysis.testDirs.join(", ")}`);
+    }
+  } else {
+    console.log("\n📋 No specific project type detected.");
+  }
 
   console.log("\n🎉 aiteam initialized successfully!");
 }

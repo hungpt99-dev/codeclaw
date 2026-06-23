@@ -26,6 +26,8 @@ export type {
 export { getAiToolConfig } from "./workflows/workflowHelpers.js";
 export type { AiToolConfig } from "./workflows/workflowHelpers.js";
 export { runWorkflowWithGates } from "./workflows/workflowRunner.js";
+export { analyzeRepository, analysisToMarkdown } from "./repoAnalyzer/repoAnalyzer.js";
+export type { RepositoryAnalysis } from "@aiteam/shared";
 export type {
   WorkflowInput,
   WorkflowResult,

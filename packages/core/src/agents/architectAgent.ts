@@ -2,11 +2,13 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@aiteam/adapters";
 import type { AiCliTool } from "@aiteam/adapters";
+import type { RepositoryAnalysis } from "@aiteam/shared";
 import { parseArchitectOutput } from "./parsers/architectOutputParser.js";
 
 export interface ArchitectAgentInput {
   requirement: string;
   clarifiedRequirement: string;
+  repositoryAnalysis?: RepositoryAnalysis;
 }
 
 export interface ArchitectAgentOutput {
@@ -191,6 +193,34 @@ async function loadTemplate(templateDir: string | undefined): Promise<string | n
   }
 }
 
+function buildProjectContext(input: ArchitectAgentInput): string {
+  const analysis = input.repositoryAnalysis;
+  if (!analysis) return "";
+
+  const lines = [
+    "## Project Context",
+    `- Type: ${analysis.projectType ?? "Unknown"}`,
+    `- Language: ${analysis.language ?? "Unknown"}`,
+    `- Framework: ${analysis.framework ?? "Unknown"}`,
+    `- Build Tool: ${analysis.buildTool ?? "Unknown"}`,
+    `- Test Framework: ${analysis.testFramework ?? "Unknown"}`,
+    `- Source: ${analysis.sourceDirs.join(", ") || "None"}`,
+    `- Test: ${analysis.testDirs.join(", ") || "None"}`,
+    `- Detected Patterns: ${analysis.detectedPatterns.join(", ") || "None"}`,
+    "",
+  ];
+  return lines.join("\n");
+}
+
+function buildDesignWithContext(
+  template: string,
+  context: Record<string, string>,
+  projectContext: string,
+): string {
+  if (!projectContext) return renderPrompt(template, context);
+  return `${renderPrompt(template, context)}\n\n${projectContext}`;
+}
+
 export async function runArchitectAgent(
   input: ArchitectAgentInput,
   options?: {
@@ -200,14 +230,18 @@ export async function runArchitectAgent(
 ): Promise<ArchitectAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
 
+  const projectContext = buildProjectContext(input);
+
   if (options?.aiTool) {
+    const context = {
+      requirement: input.requirement,
+      clarifiedRequirement: input.clarifiedRequirement,
+    };
+
     const result = await runAgent({
       role: "ARCHITECT",
-      promptTemplate: template,
-      context: {
-        requirement: input.requirement,
-        clarifiedRequirement: input.clarifiedRequirement,
-      },
+      promptTemplate: projectContext ? `${template}\n\n${projectContext}` : template,
+      context,
       aiToolConfig: options.aiTool,
     });
 
@@ -219,8 +253,8 @@ export async function runArchitectAgent(
   const context = { requirement: input.requirement };
 
   return {
-    technicalDesign: renderPrompt(TECHNICAL_DESIGN_TEMPLATE, context),
-    apiDesign: renderPrompt(API_DESIGN_TEMPLATE, context),
-    dbDesign: renderPrompt(DB_DESIGN_TEMPLATE, context),
+    technicalDesign: buildDesignWithContext(TECHNICAL_DESIGN_TEMPLATE, context, projectContext),
+    apiDesign: buildDesignWithContext(API_DESIGN_TEMPLATE, context, projectContext),
+    dbDesign: buildDesignWithContext(DB_DESIGN_TEMPLATE, context, projectContext),
   };
 }

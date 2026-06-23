@@ -23,6 +23,19 @@ const GROUPS = [
   { key: "report", title: "Report", prefix: "report/" },
 ];
 
+interface RepoAnalysisData {
+  projectType: string | null;
+  language: string | null;
+  framework: string | null;
+  buildTool: string | null;
+  testFramework: string | null;
+  migrationTool: string | null;
+  sourceDirs: string[];
+  testDirs: string[];
+  configFiles: string[];
+  detectedPatterns: string[];
+}
+
 export function RunDetail(): ReactElement {
   const { id } = useParams<{ id: string }>();
   const [run, setRun] = useState<Run | null>(null);
@@ -34,6 +47,7 @@ export function RunDetail(): ReactElement {
   const [approvals, setApprovals] = useState<Approval[]>([]);
   const [approvalNote, setApprovalNote] = useState("");
   const [approvalAction, setApprovalAction] = useState<string | null>(null);
+  const [repoAnalysis, setRepoAnalysis] = useState<RepoAnalysisData | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -55,6 +69,16 @@ export function RunDetail(): ReactElement {
       setError(e instanceof Error ? e.message : "Failed to load run details");
     } finally {
       setLoading(false);
+    }
+  }, [id]);
+
+  const handleAnalyze = useCallback(async () => {
+    if (!id) return;
+    try {
+      const data = await api.analyzeRun(id);
+      setRepoAnalysis(data.analysis as RepoAnalysisData);
+    } catch {
+      // ignore
     }
   }, [id]);
 
@@ -242,6 +266,69 @@ export function RunDetail(): ReactElement {
           </div>
         </section>
       )}
+
+      <section className="rounded-lg border bg-white p-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-gray-900">Repository Analysis</h2>
+          <button
+            type="button"
+            onClick={() => {
+              void handleAnalyze();
+            }}
+            className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            Analyze
+          </button>
+        </div>
+        {repoAnalysis ? (
+          <div className="space-y-2 text-sm text-gray-700">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="font-medium">Project Type:</span>{" "}
+                {repoAnalysis.projectType ?? "Unknown"}
+              </div>
+              <div>
+                <span className="font-medium">Language:</span> {repoAnalysis.language ?? "Unknown"}
+              </div>
+              <div>
+                <span className="font-medium">Framework:</span>{" "}
+                {repoAnalysis.framework ?? "Unknown"}
+              </div>
+              <div>
+                <span className="font-medium">Build Tool:</span>{" "}
+                {repoAnalysis.buildTool ?? "Unknown"}
+              </div>
+              <div>
+                <span className="font-medium">Test Framework:</span>{" "}
+                {repoAnalysis.testFramework ?? "Unknown"}
+              </div>
+              <div>
+                <span className="font-medium">Migration Tool:</span>{" "}
+                {repoAnalysis.migrationTool ?? "Not detected"}
+              </div>
+            </div>
+            {repoAnalysis.sourceDirs.length > 0 && (
+              <div>
+                <span className="font-medium">Source Dirs:</span>{" "}
+                {repoAnalysis.sourceDirs.join(", ")}
+              </div>
+            )}
+            {repoAnalysis.testDirs.length > 0 && (
+              <div>
+                <span className="font-medium">Test Dirs:</span> {repoAnalysis.testDirs.join(", ")}
+              </div>
+            )}
+            {repoAnalysis.detectedPatterns.length > 0 && (
+              <div>
+                <span className="font-medium">Patterns:</span>{" "}
+                {repoAnalysis.detectedPatterns.join(", ")}
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-400 italic">Click "Analyze" to detect project context.</p>
+        )}
+      </section>
 
       <section className="rounded-lg border bg-white p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Input</h2>

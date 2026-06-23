@@ -91,6 +91,10 @@ export const api = {
     return data.approvals;
   },
 
+  async analyzeRun(runId: string): Promise<{ analysis: unknown }> {
+    return request(`/runs/${runId}/analyze`, { method: "POST" });
+  },
+
   async updateApproval(
     runId: string,
     gate: string,

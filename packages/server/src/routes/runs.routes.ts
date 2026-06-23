@@ -7,7 +7,7 @@ import {
 } from "@aiteam/storage";
 import type { ArtifactType, RunMode, ApprovalGate, ApprovalStatus } from "@aiteam/shared";
 import { createRunId, ArtifactTypeValues } from "@aiteam/shared";
-import { runDocsOnlyWorkflow, runAssistedWorkflow } from "@aiteam/core";
+import { runDocsOnlyWorkflow, runAssistedWorkflow, analyzeRepository } from "@aiteam/core";
 
 interface ArtifactDef {
   type: ArtifactType;
@@ -142,6 +142,18 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
 
     const run = runRepo.findById(runId);
     return { run };
+  });
+
+  app.post("/api/runs/:id/analyze", async (request, reply) => {
+    const params = request.params as { id: string };
+    const runRepo = createRunRepository(db);
+    const run = runRepo.findById(params.id);
+    if (!run) {
+      return reply.status(404).send({ error: "Run not found" });
+    }
+
+    const analysis = await analyzeRepository(process.cwd());
+    return { analysis };
   });
 
   app.get("/api/runs/:id/approvals", async (request, _reply) => {

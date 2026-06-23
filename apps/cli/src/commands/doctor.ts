@@ -4,6 +4,7 @@ import { execSync } from "node:child_process";
 import { configSchema } from "@aiteam/shared";
 import { openDatabase } from "@aiteam/storage";
 import { getMemoryStatus } from "@aiteam/memory";
+import { analyzeRepository } from "@aiteam/core";
 
 interface CheckResult {
   name: string;
@@ -195,6 +196,26 @@ export async function doctorCommand(): Promise<void> {
       }
     } catch {
       // config already validated above
+    }
+  }
+
+  const analysis = await analyzeRepository(process.cwd());
+  if (analysis.projectType !== "generic") {
+    if (analysis.buildTool) {
+      try {
+        execSync(`which ${analysis.buildTool}`, { stdio: "pipe" });
+        results.push({
+          name: `${analysis.buildTool} (${analysis.framework ?? "build tool"})`,
+          status: "pass",
+          message: "Available",
+        });
+      } catch {
+        results.push({
+          name: `${analysis.buildTool} (${analysis.framework ?? "build tool"})`,
+          status: "warn",
+          message: "Not found in PATH",
+        });
+      }
     }
   }
 

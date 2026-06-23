@@ -6,6 +6,7 @@ import { runArchitectAgent } from "../agents/architectAgent.js";
 import { runPmAgent } from "../agents/pmAgent.js";
 import { runQaAgent } from "../agents/qaAgent.js";
 import { runReporterAgent } from "../agents/reporterAgent.js";
+import { analyzeRepository, analysisToMarkdown } from "../repoAnalyzer/repoAnalyzer.js";
 import { getAiToolConfig } from "./workflowHelpers.js";
 import type { AiToolConfig } from "./workflowHelpers.js";
 
@@ -77,6 +78,14 @@ export async function runDocsOnlyWorkflow(
   await writeArtifact(paths.inputFile, `# Raw Requirement\n\n${input.requirement}\n`);
   artifacts.push(paths.inputFile);
 
+  const repoAnalysis = input.projectRoot ? await analyzeRepository(input.projectRoot) : undefined;
+
+  if (repoAnalysis) {
+    const analysisContent = analysisToMarkdown(repoAnalysis);
+    await writeArtifact(join(paths.designDir, "repository-analysis.md"), analysisContent);
+    artifacts.push(join(paths.designDir, "repository-analysis.md"));
+  }
+
   const baOutput = await runBaAgent(
     { requirement: input.requirement },
     { templateDir, aiTool: baTool },
@@ -103,13 +112,16 @@ export async function runDocsOnlyWorkflow(
   await writeArtifact(join(paths.requirementDir, "assumptions.md"), baOutput.assumptions);
   artifacts.push(join(paths.requirementDir, "assumptions.md"));
 
-  const architectOutput = await runArchitectAgent(
-    {
-      requirement: input.requirement,
-      clarifiedRequirement: baOutput.clarifiedRequirement,
-    },
-    { templateDir, aiTool: architectTool },
-  );
+  const architectInput: Parameters<typeof runArchitectAgent>[0] = {
+    requirement: input.requirement,
+    clarifiedRequirement: baOutput.clarifiedRequirement,
+    ...(repoAnalysis ? { repositoryAnalysis: repoAnalysis } : {}),
+  };
+
+  const architectOutput = await runArchitectAgent(architectInput, {
+    templateDir,
+    aiTool: architectTool,
+  });
 
   await writeArtifact(
     join(paths.designDir, "technical-design.md"),
