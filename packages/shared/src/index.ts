@@ -36,6 +36,7 @@ export type {
   CoverageStatus,
   TraceabilityItem,
   TraceabilityMatrix,
+  GitHubIntegrationConfig,
 } from "./types/domain.js";
 export { MemoryScope, MemoryFormat, AgentRole } from "./types/memory.js";
 export type {

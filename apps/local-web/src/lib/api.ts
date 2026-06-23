@@ -7,6 +7,10 @@ import type {
   Approval,
   TraceabilityMatrix,
   CodeGenerationResult,
+  GitHubStatus,
+  GitHubPRSummary,
+  GitHubPRInfo,
+  GitHubCIRun,
 } from "./types.js";
 
 const BASE = "/api";
@@ -157,5 +161,40 @@ export const api = {
       body: JSON.stringify({ gate, status, note }),
     });
     return data.approval;
+  },
+
+  async getGitHubStatus(): Promise<GitHubStatus> {
+    const data = await request<{ status: GitHubStatus }>("/integrations/github/status");
+    return data.status;
+  },
+
+  async testGitHubConnection(): Promise<{ success: boolean; message: string }> {
+    return request("/integrations/github/test", { method: "POST" });
+  },
+
+  async getGitHubPRs(): Promise<GitHubPRInfo[]> {
+    const data = await request<{ prs: GitHubPRInfo[] }>("/integrations/github/prs");
+    return data.prs;
+  },
+
+  async getGitHubActions(): Promise<GitHubCIRun[]> {
+    const data = await request<{ runs: GitHubCIRun[] }>("/integrations/github/actions");
+    return data.runs;
+  },
+
+  async createGitHubPR(
+    runId: string,
+    approve?: boolean,
+  ): Promise<{
+    success: boolean;
+    prUrl?: string;
+    summary?: GitHubPRSummary;
+    message?: string;
+    gate?: string;
+  }> {
+    return request("/integrations/github/pr", {
+      method: "POST",
+      body: JSON.stringify({ runId, approve }),
+    });
   },
 };

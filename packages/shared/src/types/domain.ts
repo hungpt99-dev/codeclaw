@@ -173,6 +173,13 @@ export interface TraceabilityMatrix {
   };
 }
 
+export interface GitHubIntegrationConfig {
+  enabled: boolean;
+  mode: "gh-cli";
+  owner?: string;
+  repo?: string;
+}
+
 export interface AiTeamConfig {
   version: string;
   project: {
@@ -217,5 +224,8 @@ export interface AiTeamConfig {
     denyFiles: string[];
     warnFiles: string[];
     denyCommands: string[];
+  };
+  integrations: {
+    github: GitHubIntegrationConfig;
   };
 }

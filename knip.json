@@ -11,5 +11,5 @@
     "packages/memory": {},
     "packages/server": {}
   },
-  "ignoreBinaries": ["dot"]
+  "ignoreBinaries": ["dot", "which", "gh"]
 }

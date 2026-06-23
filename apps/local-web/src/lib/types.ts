@@ -80,3 +80,30 @@ export interface CodeGenerationResult {
     safe: string[];
   };
 }
+
+export interface GitHubStatus {
+  ghCliAvailable: boolean;
+  ghAuthenticated: boolean;
+  ghVersion: string | null;
+  currentRepo: { owner: string; repo: string } | null;
+  configValid: boolean;
+  overall: string;
+}
+
+export interface GitHubPRSummary {
+  title: string;
+  body: string;
+}
+
+export interface GitHubPRInfo {
+  state: string;
+  title: string;
+  url: string;
+  number: number;
+}
+
+export interface GitHubCIRun {
+  workflow: string;
+  status: string;
+  conclusion: string;
+}

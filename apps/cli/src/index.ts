@@ -13,6 +13,12 @@ import { resumeCommand } from "./commands/resume.js";
 import { cancelCommand } from "./commands/cancel.js";
 import { analyzeCommand } from "./commands/analyze.js";
 import { traceCommand } from "./commands/trace.js";
+import {
+  githubStatusCommand,
+  githubTestCommand,
+  githubPRCommand,
+  githubActionsCommand,
+} from "./commands/github.js";
 
 interface InitCliOptions {
   force?: boolean;
@@ -199,6 +205,42 @@ program
   .option("--regenerate", "Regenerate traceability from artifacts")
   .action(async (options: { run: string; format?: string; regenerate?: boolean }) => {
     await traceCommand(options);
+  });
+
+const githubProgram = program.command("github").description("GitHub integration (optional)");
+
+githubProgram
+  .command("status")
+  .description("Check gh CLI availability and auth status")
+  .action(async () => {
+    await githubStatusCommand();
+  });
+
+githubProgram
+  .command("test")
+  .description("Test GitHub connection")
+  .action(async () => {
+    await githubTestCommand();
+  });
+
+githubProgram
+  .command("pr")
+  .description("Manage pull requests")
+  .argument("<action>", "create or view")
+  .option("--run <runId>", "Run ID")
+  .option("--approve", "Skip approval prompt")
+  .action(async (action: string, options: { run?: string; approve?: boolean }) => {
+    const ghOpts: { run?: string; approve?: boolean } = {};
+    if (options.run !== undefined) ghOpts.run = options.run;
+    if (options.approve !== undefined) ghOpts.approve = options.approve;
+    await githubPRCommand(action, ghOpts);
+  });
+
+githubProgram
+  .command("actions")
+  .description("Read CI/CD status")
+  .action(async () => {
+    await githubActionsCommand();
   });
 
 program.parse();

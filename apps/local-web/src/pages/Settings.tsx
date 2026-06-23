@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type ReactElement } from "react";
 import { api } from "../lib/api.js";
+import type { GitHubStatus } from "../lib/types.js";
 
 interface SettingsForm {
   project_name: string;
@@ -81,6 +82,9 @@ export function Settings(): ReactElement {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [gitHubStatus, setGitHubStatus] = useState<GitHubStatus | null>(null);
+  const [ghStatusLoading, setGhStatusLoading] = useState(false);
+  const [ghTestResult, setGhTestResult] = useState<string | null>(null);
 
   const loadSettings = useCallback(async () => {
     setLoading(true);
@@ -231,6 +235,88 @@ export function Settings(): ReactElement {
         >
           {saving ? "Saving..." : "Save Settings"}
         </button>
+      </div>
+
+      <div className="rounded-lg border bg-white p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-gray-900">GitHub Integration</h2>
+        <p className="text-sm text-gray-500">
+          Optional GitHub integration using the gh CLI. No API tokens required.
+        </p>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={(): void => {
+              void (async () => {
+                setGhStatusLoading(true);
+                setGhTestResult(null);
+                try {
+                  const status = await api.getGitHubStatus();
+                  setGitHubStatus(status);
+                } catch {
+                  setGitHubStatus(null);
+                } finally {
+                  setGhStatusLoading(false);
+                }
+              })();
+            }}
+            disabled={ghStatusLoading}
+            className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          >
+            {ghStatusLoading ? "Checking..." : "Check Status"}
+          </button>
+          <button
+            type="button"
+            onClick={(): void => {
+              void (async () => {
+                setGhTestResult(null);
+                try {
+                  const result = await api.testGitHubConnection();
+                  setGhTestResult(
+                    result.success ? `OK: ${result.message}` : `Failed: ${result.message}`,
+                  );
+                } catch (e) {
+                  setGhTestResult(`Error: ${e instanceof Error ? e.message : "Unknown"}`);
+                }
+              })();
+            }}
+            className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            Test Connection
+          </button>
+        </div>
+
+        {gitHubStatus && (
+          <div className="text-sm space-y-1 text-gray-700">
+            <p>
+              <span className="font-medium">gh CLI:</span>{" "}
+              {gitHubStatus.ghCliAvailable ? "Available" : "Not found"}
+            </p>
+            <p>
+              <span className="font-medium">Authenticated:</span>{" "}
+              {gitHubStatus.ghAuthenticated ? "Yes" : "No"}
+            </p>
+            {gitHubStatus.ghVersion && (
+              <p>
+                <span className="font-medium">Version:</span> {gitHubStatus.ghVersion}
+              </p>
+            )}
+            {gitHubStatus.currentRepo && (
+              <p>
+                <span className="font-medium">Repo:</span> {gitHubStatus.currentRepo.owner}/
+                {gitHubStatus.currentRepo.repo}
+              </p>
+            )}
+          </div>
+        )}
+
+        {ghTestResult && (
+          <div
+            className={`text-sm px-3 py-2 rounded-md ${ghTestResult.startsWith("OK") ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
+          >
+            {ghTestResult}
+          </div>
+        )}
       </div>
     </div>
   );

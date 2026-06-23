@@ -10,6 +10,8 @@ import type {
   Approval,
   TraceabilityMatrix,
   CodeGenerationResult,
+  GitHubStatus,
+  GitHubPRSummary,
 } from "../lib/types.js";
 import type { ReactElement } from "react";
 
@@ -64,6 +66,10 @@ export function RunDetail(): ReactElement {
   const [diffContent, setDiffContent] = useState<string | null>(null);
   const [agentLog, setAgentLog] = useState<string | null>(null);
   const [implementationPrompt, setImplementationPrompt] = useState<string | null>(null);
+  const [gitHubStatus, setGitHubStatus] = useState<GitHubStatus | null>(null);
+  const [gitHubPRSummary, setGitHubPRSummary] = useState<GitHubPRSummary | null>(null);
+  const [gitHubPRLoading, setGitHubPRLoading] = useState(false);
+  const [gitHubPRResult, setGitHubPRResult] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -845,6 +851,101 @@ export function RunDetail(): ReactElement {
           </section>
         );
       })}
+
+      <section className="rounded-lg border bg-white p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">GitHub</h2>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={(): void => {
+                void (async () => {
+                  try {
+                    const status = await api.getGitHubStatus();
+                    setGitHubStatus(status);
+                  } catch {
+                    setGitHubStatus(null);
+                  }
+                })();
+              }}
+              className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Check GitHub Status
+            </button>
+            <button
+              type="button"
+              onClick={(): void => {
+                void (async () => {
+                  if (!id) return;
+                  setGitHubPRLoading(true);
+                  setGitHubPRResult(null);
+                  try {
+                    const result = await api.createGitHubPR(id);
+                    if (result.summary) {
+                      setGitHubPRSummary(result.summary);
+                    }
+                    if (result.success) {
+                      setGitHubPRResult(`PR created: ${result.prUrl ?? ""}`);
+                    } else if (result.gate) {
+                      setGitHubPRResult(
+                        "PR creation requires approval. Use --approve or approve via CLI.",
+                      );
+                    } else {
+                      setGitHubPRResult(result.message ?? "Unknown response");
+                    }
+                  } catch (e) {
+                    setGitHubPRResult(`Error: ${e instanceof Error ? e.message : "Unknown"}`);
+                  } finally {
+                    setGitHubPRLoading(false);
+                  }
+                })();
+              }}
+              disabled={gitHubPRLoading}
+              className="px-3 py-1.5 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
+            >
+              {gitHubPRLoading ? "Creating..." : "Create PR"}
+            </button>
+          </div>
+
+          {gitHubStatus && (
+            <div className="text-sm space-y-1 text-gray-700">
+              <p>
+                <span className="font-medium">gh CLI:</span>{" "}
+                {gitHubStatus.ghCliAvailable ? "Available" : "Not found"}
+              </p>
+              <p>
+                <span className="font-medium">Authenticated:</span>{" "}
+                {gitHubStatus.ghAuthenticated ? "Yes" : "No"}
+              </p>
+              {gitHubStatus.currentRepo && (
+                <p>
+                  <span className="font-medium">Repo:</span> {gitHubStatus.currentRepo.owner}/
+                  {gitHubStatus.currentRepo.repo}
+                </p>
+              )}
+            </div>
+          )}
+
+          {gitHubPRSummary && (
+            <div className="rounded-md border border-gray-200 p-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">PR Summary Preview</h3>
+              <p className="text-sm font-semibold text-gray-900 mb-1">{gitHubPRSummary.title}</p>
+              <div className="text-sm text-gray-600 whitespace-pre-wrap max-h-64 overflow-y-auto">
+                {gitHubPRSummary.body.slice(0, 2000)}
+                {gitHubPRSummary.body.length > 2000 && "..."}
+              </div>
+            </div>
+          )}
+
+          {gitHubPRResult && (
+            <div
+              className={`text-sm px-3 py-2 rounded-md ${gitHubPRResult.startsWith("PR created") ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}
+            >
+              {gitHubPRResult}
+            </div>
+          )}
+        </div>
+      </section>
 
       <section className="rounded-lg border bg-white p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Logs</h2>

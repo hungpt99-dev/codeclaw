@@ -5,7 +5,12 @@ import { configSchema } from "@aiteam/shared";
 import { openDatabase } from "@aiteam/storage";
 import { getMemoryStatus } from "@aiteam/memory";
 import { analyzeRepository } from "@aiteam/core";
-import { createClaudeCodeAdapter, createCodexAdapter } from "@aiteam/adapters";
+import {
+  createClaudeCodeAdapter,
+  createCodexAdapter,
+  isGhCliAvailable,
+  isGhAuthenticated,
+} from "@aiteam/adapters";
 
 interface CheckResult {
   name: string;
@@ -185,6 +190,18 @@ export async function doctorCommand(): Promise<void> {
     }
   }
 
+  const ghAvailable = await isGhCliAvailable();
+  const ghAuthenticated = await isGhAuthenticated();
+  results.push({
+    name: "GitHub CLI (gh)",
+    status: ghAvailable ? (ghAuthenticated ? "pass" : "warn") : "warn",
+    message: ghAvailable
+      ? ghAuthenticated
+        ? "Available and authenticated"
+        : "Available but not authenticated. Run: gh auth login"
+      : "Not found in PATH",
+  });
+
   if (configExists) {
     try {
       const raw = await readFile(configPath, "utf-8");
@@ -227,6 +244,21 @@ export async function doctorCommand(): Promise<void> {
           name: "Enabled AI CLI tools",
           status: enabledTools.length > 0 ? "pass" : "warn",
           message: enabledTools.length > 0 ? enabledTools.join(", ") : "None enabled",
+        });
+      }
+
+      const integrations = parsed.integrations as
+        | { github?: { enabled?: boolean; owner?: string; repo?: string } }
+        | undefined;
+      if (integrations?.github?.enabled) {
+        results.push({
+          name: "GitHub integration",
+          status: ghAvailable ? (ghAuthenticated ? "pass" : "warn") : "warn",
+          message: ghAvailable
+            ? ghAuthenticated
+              ? `Enabled (${integrations.github.owner ?? "?"}/${integrations.github.repo ?? "?"})`
+              : "Enabled but not authenticated"
+            : "Enabled but gh CLI not found",
         });
       }
     } catch {

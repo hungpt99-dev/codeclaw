@@ -162,6 +162,9 @@ importers:
 
   packages/server:
     dependencies:
+      '@aiteam/adapters':
+        specifier: workspace:*
+        version: link:../adapters
       '@aiteam/core':
         specifier: workspace:*
         version: link:../core

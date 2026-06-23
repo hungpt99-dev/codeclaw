@@ -54,6 +54,14 @@ export const configSchema = z.object({
     warnFiles: z.array(z.string()),
     denyCommands: z.array(z.string()),
   }),
+  integrations: z.object({
+    github: z.object({
+      enabled: z.boolean().default(false),
+      mode: z.enum(["gh-cli"]).default("gh-cli"),
+      owner: z.string().optional(),
+      repo: z.string().optional(),
+    }),
+  }),
 });
 
 export type Config = z.infer<typeof configSchema>;
@@ -102,5 +110,11 @@ export const defaultConfig: Config = {
     denyFiles: [".env", ".env.*", "*.pem", "*.key", "credentials.json"],
     warnFiles: ["pom.xml", "build.gradle", "package.json", "Dockerfile"],
     denyCommands: ["rm -rf /", "sudo", "chmod 777", "curl | sh", "wget | sh"],
+  },
+  integrations: {
+    github: {
+      enabled: false,
+      mode: "gh-cli",
+    },
   },
 };

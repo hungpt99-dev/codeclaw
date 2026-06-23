@@ -21,3 +21,34 @@ export {
 
 export { generateDiffPatchFiles } from "./diff/diffService.js";
 export type { DiffFile } from "./diff/diffService.js";
+
+export {
+  checkStatus,
+  testConnection,
+  generatePRSummary,
+  createPR,
+  readCIRun,
+  readPRStatus,
+  readPRDetail,
+} from "./integrations/gitHubAdapter.js";
+export type {
+  GitHubConfig,
+  PRSummaryInput,
+  PRSummaryResult,
+  GitHubStatus,
+  CheckStatusResult,
+  TestConnectionResult,
+  CIRunInfo,
+  PRInfo,
+} from "./integrations/gitHubAdapter.js";
+
+export {
+  isGhCliAvailable,
+  isGhAuthenticated,
+  getCurrentRepo,
+  createGhPR,
+  getGhPRStatus,
+  getGhPRView,
+  getCIRuns,
+  getGhCliVersion,
+} from "./integrations/gitHubCliService.js";
