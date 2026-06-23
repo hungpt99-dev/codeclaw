@@ -55,8 +55,6 @@ export const configSchema = z.object({
 
 export type Config = z.infer<typeof configSchema>;
 
-const defaultCliToolConfig = { enabled: false, command: "", timeoutSeconds: 300 };
-
 export const defaultConfig: Config = {
   version: "0.1.0",
   project: {
@@ -74,10 +72,10 @@ export const defaultConfig: Config = {
     defaultReporter: "claude",
   },
   cli: {
-    claude: { ...defaultCliToolConfig, command: "claude" },
-    codex: { ...defaultCliToolConfig, command: "codex" },
-    gemini: { ...defaultCliToolConfig, command: "gemini" },
-    aider: { ...defaultCliToolConfig, command: "aider" },
+    claude: { enabled: true, command: "claude", timeoutSeconds: 900 },
+    codex: { enabled: true, command: "codex", timeoutSeconds: 900 },
+    gemini: { enabled: true, command: "gemini", timeoutSeconds: 900 },
+    aider: { enabled: false, command: "aider", timeoutSeconds: 900 },
   },
   workflow: {
     defaultMode: "docs-only",

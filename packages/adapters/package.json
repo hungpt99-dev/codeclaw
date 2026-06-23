@@ -18,6 +18,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@aiteam/shared": "workspace:*",
     "execa": "^9.5.2"
   }
 }

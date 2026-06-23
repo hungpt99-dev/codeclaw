@@ -76,6 +76,31 @@ export interface Artifact {
 
 export type AiCliTool = "claude" | "codex" | "gemini" | "aider";
 
+export type AiAdapterName = AiCliTool;
+
+export interface AiAdapterConfig {
+  enabled: boolean;
+  command: string;
+  timeoutSeconds: number;
+}
+
+export interface AiTaskInput {
+  role: AgentRole;
+  prompt: string;
+  workingDir: string;
+  contextFiles?: string[];
+  outputLogPath: string;
+  timeoutSeconds: number;
+}
+
+export interface AiTaskResult {
+  success: boolean;
+  exitCode: number | null;
+  outputLogPath: string;
+  changedFiles: string[];
+  error?: string;
+}
+
 export type AgentRole =
   | "BA"
   | "PRODUCT_OWNER"

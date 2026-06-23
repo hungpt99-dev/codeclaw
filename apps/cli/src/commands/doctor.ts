@@ -5,6 +5,7 @@ import { configSchema } from "@aiteam/shared";
 import { openDatabase } from "@aiteam/storage";
 import { getMemoryStatus } from "@aiteam/memory";
 import { analyzeRepository } from "@aiteam/core";
+import { createClaudeCodeAdapter, createCodexAdapter } from "@aiteam/adapters";
 
 interface CheckResult {
   name: string;
@@ -150,7 +151,23 @@ export async function doctorCommand(): Promise<void> {
     });
   }
 
-  const aiTools = ["claude", "codex", "gemini", "aider"];
+  const claudeAdapter = createClaudeCodeAdapter();
+  const claudeAvailable = await claudeAdapter.isAvailable();
+  results.push({
+    name: "Claude Code CLI",
+    status: claudeAvailable ? "pass" : "warn",
+    message: claudeAvailable ? "Available" : "Not found in PATH",
+  });
+
+  const codexAdapter = createCodexAdapter();
+  const codexAvailable = await codexAdapter.isAvailable();
+  results.push({
+    name: "Codex CLI",
+    status: codexAvailable ? "pass" : "warn",
+    message: codexAvailable ? "Available" : "Not found in PATH",
+  });
+
+  const aiTools = ["gemini", "aider"];
   for (const tool of aiTools) {
     try {
       execSync(`which ${tool}`, { stdio: "pipe" });

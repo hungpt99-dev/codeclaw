@@ -18,6 +18,7 @@
     "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
+    "@aiteam/adapters": "workspace:*",
     "@aiteam/core": "workspace:*",
     "@aiteam/server": "workspace:*",
     "@aiteam/memory": "workspace:*",

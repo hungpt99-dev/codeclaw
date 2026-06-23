@@ -11,6 +11,10 @@ export type {
   ApprovalGate,
   ApprovalStatus,
   Approval,
+  AiAdapterName,
+  AiAdapterConfig,
+  AiTaskInput,
+  AiTaskResult,
 } from "./types/domain.js";
 export {
   RunMode as RunModeValues,
