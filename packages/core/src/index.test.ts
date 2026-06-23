@@ -103,10 +103,16 @@ describe("docsOnlyWorkflow", () => {
     await cleanupTestDirs();
   });
 
+  const defaultInput = {
+    requirement: "Build a login page",
+    projectRoot: undefined as string | undefined,
+    memoryContext: undefined as
+      | { projectMemoryCount: number; decisionMemoryCount: number; agentMemoryCount: number }
+      | undefined,
+  };
+
   it("returns output with runId, status, artifacts, and timestamps", async () => {
-    const result = await runDocsOnlyWorkflow({
-      requirement: "Build a login page",
-    });
+    const result = await runDocsOnlyWorkflow(defaultInput);
 
     expect(result.runId).toMatch(/^run_\d{8}_\d{6}_build_a_login_page$/);
     expect(result.status).toBe("REPORT_GENERATED");
@@ -116,17 +122,13 @@ describe("docsOnlyWorkflow", () => {
   });
 
   it("creates exactly 14 artifact files", async () => {
-    const result = await runDocsOnlyWorkflow({
-      requirement: "Build a login page",
-    });
+    const result = await runDocsOnlyWorkflow(defaultInput);
 
     expect(result.artifacts).toHaveLength(14);
   });
 
   it("creates all expected artifact paths", async () => {
-    const result = await runDocsOnlyWorkflow({
-      requirement: "Build a login page",
-    });
+    const result = await runDocsOnlyWorkflow(defaultInput);
 
     const expectedPaths = [
       join(".ai-team", "runs", result.runId, "input.md"),
@@ -151,9 +153,7 @@ describe("docsOnlyWorkflow", () => {
   });
 
   it("writes non-empty content to all artifact files", async () => {
-    const result = await runDocsOnlyWorkflow({
-      requirement: "Build a login page",
-    });
+    const result = await runDocsOnlyWorkflow(defaultInput);
 
     for (const artifactPath of result.artifacts) {
       const content = await readFile(artifactPath, "utf-8");
@@ -162,9 +162,7 @@ describe("docsOnlyWorkflow", () => {
   });
 
   it("includes requirement text in input.md", async () => {
-    const result = await runDocsOnlyWorkflow({
-      requirement: "Build a login page",
-    });
+    const result = await runDocsOnlyWorkflow(defaultInput);
 
     const inputContent = await readFile(
       join(".ai-team", "runs", result.runId, "input.md"),
@@ -174,9 +172,7 @@ describe("docsOnlyWorkflow", () => {
   });
 
   it("generates valid JSON for task-breakdown.json", async () => {
-    const result = await runDocsOnlyWorkflow({
-      requirement: "Build a login page",
-    });
+    const result = await runDocsOnlyWorkflow(defaultInput);
 
     const jsonContent = await readFile(
       join(".ai-team", "runs", result.runId, "tasks", "task-breakdown.json"),
@@ -190,9 +186,7 @@ describe("docsOnlyWorkflow", () => {
   });
 
   it("generates valid JSON for test-matrix.json", async () => {
-    const result = await runDocsOnlyWorkflow({
-      requirement: "Build a login page",
-    });
+    const result = await runDocsOnlyWorkflow(defaultInput);
 
     const jsonContent = await readFile(
       join(".ai-team", "runs", result.runId, "tests", "test-matrix.json"),
@@ -206,10 +200,9 @@ describe("docsOnlyWorkflow", () => {
   });
 
   it("generates different runIds for different requirements", async () => {
-    const result1 = await runDocsOnlyWorkflow({
-      requirement: "Build a login page",
-    });
+    const result1 = await runDocsOnlyWorkflow(defaultInput);
     const result2 = await runDocsOnlyWorkflow({
+      ...defaultInput,
       requirement: "Build a dashboard",
     });
 

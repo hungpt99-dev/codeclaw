@@ -6,6 +6,7 @@ import { runCommand } from "./commands/run.js";
 import { listCommand } from "./commands/list.js";
 import { showCommand } from "./commands/show.js";
 import { uiCommand } from "./commands/ui.js";
+import { memoryStatusCommand, memoryIndexCommand } from "./commands/memory.js";
 
 interface InitCliOptions {
   force?: boolean;
@@ -71,6 +72,22 @@ program
   .description("Start or show info about the web UI")
   .action(() => {
     uiCommand();
+  });
+
+const memoryProgram = program.command("memory").description("Manage runtime memory");
+
+memoryProgram
+  .command("status")
+  .description("Show runtime memory status")
+  .action(async () => {
+    await memoryStatusCommand();
+  });
+
+memoryProgram
+  .command("index")
+  .description("Re-index runtime memory files into SQLite")
+  .action(async () => {
+    await memoryIndexCommand();
   });
 
 program.parse();

@@ -10,6 +10,7 @@ import {
   createArtifactRepository,
 } from "@aiteam/storage";
 import type { ArtifactType } from "@aiteam/shared";
+import { getMemoryStatus, addRunMemory } from "@aiteam/memory";
 
 interface RunOptions {
   title?: string;
@@ -76,7 +77,23 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
     mode: config.workflow.defaultMode as RunMode,
   });
 
-  const result = await runDocsOnlyWorkflow({ requirement });
+  const memoryStatus = await getMemoryStatus(process.cwd());
+
+  const result = await runDocsOnlyWorkflow({
+    requirement,
+    projectRoot: process.cwd(),
+    memoryContext: memoryStatus.exists
+      ? {
+          projectMemoryCount: memoryStatus.projectMemoryCount,
+          decisionMemoryCount: memoryStatus.decisionMemoryCount,
+          agentMemoryCount: memoryStatus.agentMemoryCount,
+        }
+      : undefined,
+  });
+
+  if (memoryStatus.exists) {
+    await addRunMemory(process.cwd(), runId, title, requirement);
+  }
 
   const artifactRecords = result.artifacts.map((artifactPath, index) => {
     const type = inferArtifactType(artifactPath);

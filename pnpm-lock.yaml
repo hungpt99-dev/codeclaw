@@ -59,6 +59,9 @@ importers:
       '@aiteam/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@aiteam/memory':
+        specifier: workspace:*
+        version: link:../../packages/memory
       '@aiteam/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -122,6 +125,15 @@ importers:
       '@aiteam/shared':
         specifier: workspace:*
         version: link:../shared
+
+  packages/memory:
+    dependencies:
+      '@aiteam/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@aiteam/storage':
+        specifier: workspace:*
+        version: link:../storage
 
   packages/shared:
     dependencies:

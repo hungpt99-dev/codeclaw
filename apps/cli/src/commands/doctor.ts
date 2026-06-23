@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { execSync } from "node:child_process";
 import { configSchema } from "@aiteam/shared";
 import { openDatabase } from "@aiteam/storage";
+import { getMemoryStatus } from "@aiteam/memory";
 
 interface CheckResult {
   name: string;
@@ -145,6 +146,41 @@ export async function doctorCommand(): Promise<void> {
       name: "Git",
       status: "fail",
       message: "Not available",
+    });
+  }
+
+  const memoryStatus = await getMemoryStatus(process.cwd());
+  if (memoryStatus.exists) {
+    results.push({
+      name: "Runtime memory directory",
+      status: "pass",
+      message: "Exists",
+    });
+    results.push({
+      name: "Project memory files",
+      status: memoryStatus.projectMemoryCount > 0 ? "pass" : "warn",
+      message: `${String(memoryStatus.projectMemoryCount)} files`,
+    });
+    results.push({
+      name: "Decision memory files",
+      status: memoryStatus.decisionMemoryCount > 0 ? "pass" : "warn",
+      message: `${String(memoryStatus.decisionMemoryCount)} files`,
+    });
+    results.push({
+      name: "Agent memory files",
+      status: memoryStatus.agentMemoryCount > 0 ? "pass" : "warn",
+      message: `${String(memoryStatus.agentMemoryCount)} files`,
+    });
+    results.push({
+      name: "Indexed memory items",
+      status: memoryStatus.indexedItemCount > 0 ? "pass" : "warn",
+      message: `${String(memoryStatus.indexedItemCount)} items`,
+    });
+  } else {
+    results.push({
+      name: "Runtime memory",
+      status: "warn",
+      message: "Not found. Run 'aiteam init' to create.",
     });
   }
 

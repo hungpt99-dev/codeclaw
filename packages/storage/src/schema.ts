@@ -25,4 +25,26 @@ CREATE TABLE IF NOT EXISTS settings (
   value TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS memory_items (
+  id TEXT PRIMARY KEY,
+  scope TEXT NOT NULL,
+  title TEXT NOT NULL,
+  path TEXT NOT NULL,
+  format TEXT NOT NULL,
+  tags TEXT NOT NULL,
+  summary TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS memory_relations (
+  id TEXT PRIMARY KEY,
+  source_memory_id TEXT NOT NULL,
+  target_memory_id TEXT NOT NULL,
+  relation_type TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (source_memory_id) REFERENCES memory_items(id),
+  FOREIGN KEY (target_memory_id) REFERENCES memory_items(id)
+);
 `;

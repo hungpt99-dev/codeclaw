@@ -53,7 +53,11 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
 
     runRepo.updateStatus(runId, "SPEC_GENERATED");
 
-    const workflowResult = await runDocsOnlyWorkflow({ requirement });
+    const workflowResult = await runDocsOnlyWorkflow({
+      requirement,
+      projectRoot: undefined,
+      memoryContext: undefined,
+    });
 
     const artifactRepo = createArtifactRepository(db);
     const artifactDefs: ArtifactDef[] = [

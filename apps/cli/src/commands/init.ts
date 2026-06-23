@@ -3,6 +3,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defaultConfig } from "@aiteam/shared";
 import { openDatabase, initializeSchema } from "@aiteam/storage";
+import { initializeRuntimeMemory } from "@aiteam/memory";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -79,6 +80,14 @@ export async function initCommand(options: InitOptions): Promise<void> {
 
   await mkdir(join(aiTeamDir, "runs"), { recursive: true });
   console.log("✅ Created .ai-team/runs/");
+
+  const memoryResult = await initializeRuntimeMemory({
+    projectRoot: process.cwd(),
+    force: options.force,
+  });
+  console.log(
+    `✅ Created .ai-team/memory/ (${String(memoryResult.filesCreated.length)} files created, ${String(memoryResult.filesSkipped.length)} skipped)`,
+  );
 
   console.log("\n🎉 aiteam initialized successfully!");
 }

@@ -9,6 +9,14 @@ import { runReporterAgent } from "../agents/reporterAgent.js";
 
 export interface DocsOnlyWorkflowInput {
   requirement: string;
+  projectRoot: string | undefined;
+  memoryContext:
+    | {
+        projectMemoryCount: number;
+        decisionMemoryCount: number;
+        agentMemoryCount: number;
+      }
+    | undefined;
 }
 
 export interface DocsOnlyWorkflowOutput {
@@ -17,6 +25,13 @@ export interface DocsOnlyWorkflowOutput {
   artifacts: string[];
   createdAt: string;
   completedAt: string;
+  memoryUsed:
+    | {
+        projectMemoryFiles: number;
+        decisionMemoryFiles: number;
+        agentMemoryFiles: number;
+      }
+    | undefined;
 }
 
 export async function runDocsOnlyWorkflow(
@@ -108,11 +123,20 @@ export async function runDocsOnlyWorkflow(
   await writeArtifact(join(paths.reportDir, "final-report.md"), reporterOutput.finalReport);
   artifacts.push(join(paths.reportDir, "final-report.md"));
 
+  const memoryUsed = input.memoryContext
+    ? {
+        projectMemoryFiles: input.memoryContext.projectMemoryCount,
+        decisionMemoryFiles: input.memoryContext.decisionMemoryCount,
+        agentMemoryFiles: input.memoryContext.agentMemoryCount,
+      }
+    : undefined;
+
   return {
     runId,
     status: "REPORT_GENERATED",
     artifacts,
     createdAt,
     completedAt: nowIso(),
+    memoryUsed,
   };
 }
