@@ -69,6 +69,9 @@ module.exports = {
     doNotFollow: {
       path: "node_modules",
     },
+    exclude: {
+      path: "dist",
+    },
     tsPreCompilationDeps: true,
     tsConfig: {
       fileName: "tsconfig.base.json",

@@ -8,7 +8,7 @@ import { registerRunsRoutes } from "./routes/runs.routes.js";
 import { registerArtifactRoutes } from "./routes/artifacts.routes.js";
 import { registerPromptRoutes } from "./routes/prompts.routes.js";
 
-export interface AppOptions {
+interface AppOptions {
   dbPath: string;
   promptsDir: string;
 }
