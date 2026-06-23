@@ -26,6 +26,8 @@ const mockPaths = {
   traceabilityMd: "/test/.ai-team/runs/run_123/report/traceability.md",
   traceabilityJson: "/test/.ai-team/runs/run_123/report/traceability.json",
   snapshotDir: "/test/.ai-team/runs/run_123/snapshots",
+  testResultPath: "/test/.ai-team/runs/run_123/tests/test-result.md",
+  failedTestsPath: "/test/.ai-team/runs/run_123/tests/failed-tests.json",
 };
 
 const mockRun = {

@@ -7,6 +7,7 @@ import type {
   Approval,
   TraceabilityMatrix,
   CodeGenerationResult,
+  TestRunResult,
   GitHubStatus,
   GitHubPRSummary,
   GitHubPRInfo,
@@ -246,6 +247,22 @@ export const api = {
       method: "POST",
       body: JSON.stringify(options),
     });
+  },
+
+  async triggerTests(runId: string, commands?: string[]): Promise<TestRunResult> {
+    const data = await request<{ testRun: TestRunResult }>(`/runs/${runId}/test`, {
+      method: "POST",
+      body: JSON.stringify({ commands }),
+    });
+    return data.testRun;
+  },
+
+  async getTestResult(runId: string): Promise<{ testResult: string }> {
+    return request(`/runs/${runId}/test-result`);
+  },
+
+  async getFailedTests(runId: string): Promise<{ failedTests: string }> {
+    return request(`/runs/${runId}/failed-tests`);
   },
 
   async createGitHubPR(

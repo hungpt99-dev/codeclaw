@@ -69,6 +69,21 @@ export interface TraceabilityMatrix {
   };
 }
 
+export interface TestCommandResult {
+  name: string;
+  command: string;
+  exitCode: number | null;
+  status: string;
+  durationMs: number;
+  stdoutPath: string;
+  stderrPath: string;
+}
+
+export interface TestRunResult {
+  overallStatus: string;
+  results: TestCommandResult[];
+}
+
 export interface CodeGenerationResult {
   success: boolean;
   changedFiles: string[];

@@ -89,6 +89,18 @@ export { notifySlack } from "./integrations/slackNotifier.js";
 
 export { exportRunArtifacts } from "./export/exportService.js";
 export type { ExportFormat, ExportOptions, ExportResult } from "./export/exportService.js";
+export { runTests } from "./test/testRunner.js";
+export type { TestCommand, TestResult, TestRunResult } from "./test/testRunner.js";
+export {
+  parseMavenOutput,
+  parseNpmOutput,
+  parseGradleOutput,
+  parseGenericOutput,
+} from "./test/testOutputParser.js";
+export type { ParsedTestFailure } from "./test/testOutputParser.js";
+export { writeTestResultArtifacts } from "./test/testResultWriter.js";
+export type { WriteResult as TestResultWriteResult } from "./test/testResultWriter.js";
+
 export { convertMdToHtml } from "./export/mdToHtml.js";
 export type { HtmlDocumentOptions } from "./export/mdToHtml.js";
 export { convertHtmlToDocx } from "./export/htmlToDocx.js";

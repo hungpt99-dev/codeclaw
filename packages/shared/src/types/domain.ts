@@ -17,6 +17,10 @@ export const RunStatus = {
   CODING: "CODING",
   CODE_GENERATED: "CODE_GENERATED",
   CODE_FAILED: "CODE_FAILED",
+  TESTING: "TESTING",
+  TEST_PASSED: "TEST_PASSED",
+  TEST_FAILED: "TEST_FAILED",
+  TEST_SKIPPED: "TEST_SKIPPED",
   REPORT_GENERATED: "REPORT_GENERATED",
   FAILED: "FAILED",
   CANCELLED: "CANCELLED",
@@ -60,6 +64,8 @@ export const ArtifactType = {
   AGENT_LOG: "AGENT_LOG",
   DIFF_PATCH: "DIFF_PATCH",
   CHANGED_FILES: "CHANGED_FILES",
+  TEST_RESULT: "TEST_RESULT",
+  FAILED_TESTS: "FAILED_TESTS",
   FINAL_REPORT: "FINAL_REPORT",
 } as const;
 
@@ -83,6 +89,18 @@ export interface Artifact {
 }
 
 export type AiCliTool = "claude" | "codex" | "gemini" | "aider";
+
+export type TestStatus = "PASSED" | "FAILED" | "TIMEOUT" | "SKIPPED" | "NOT_RUN";
+
+export interface TestCommandResult {
+  name: string;
+  command: string;
+  exitCode: number | null;
+  status: TestStatus;
+  durationMs: number;
+  stdoutPath: string;
+  stderrPath: string;
+}
 
 export type AiAdapterName = AiCliTool;
 

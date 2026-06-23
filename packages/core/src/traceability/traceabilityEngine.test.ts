@@ -26,6 +26,8 @@ const mockPaths = {
   traceabilityMd: "/fake/runs/run-1/report/traceability.md",
   traceabilityJson: "/fake/runs/run-1/report/traceability.json",
   snapshotDir: "/fake/runs/run-1/snapshots",
+  testResultPath: "/fake/runs/run-1/tests/test-result.md",
+  failedTestsPath: "/fake/runs/run-1/tests/failed-tests.json",
 };
 
 describe("traceabilityEngine", () => {

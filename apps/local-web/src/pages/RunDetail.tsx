@@ -10,6 +10,7 @@ import type {
   Approval,
   TraceabilityMatrix,
   CodeGenerationResult,
+  TestRunResult,
   GitHubStatus,
   GitHubPRSummary,
   JiraStatus,
@@ -70,6 +71,11 @@ export function RunDetail(): ReactElement {
   const [diffContent, setDiffContent] = useState<string | null>(null);
   const [agentLog, setAgentLog] = useState<string | null>(null);
   const [implementationPrompt, setImplementationPrompt] = useState<string | null>(null);
+  const [testRunResult, setTestRunResult] = useState<TestRunResult | null>(null);
+  const [testLoading, setTestLoading] = useState(false);
+  const [testError, setTestError] = useState<string | null>(null);
+  const [testResultContent, setTestResultContent] = useState<string | null>(null);
+
   const [gitHubStatus, setGitHubStatus] = useState<GitHubStatus | null>(null);
   const [gitHubPRSummary, setGitHubPRSummary] = useState<GitHubPRSummary | null>(null);
   const [gitHubPRLoading, setGitHubPRLoading] = useState(false);
@@ -208,6 +214,32 @@ export function RunDetail(): ReactElement {
       setCodeError(e instanceof Error ? e.message : "Code generation failed");
     } finally {
       setCodeLoading(false);
+    }
+  }, [id]);
+
+  const handleRunTests = useCallback(async () => {
+    if (!id) return;
+    setTestLoading(true);
+    setTestError(null);
+    try {
+      const result = await api.triggerTests(id);
+      setTestRunResult(result);
+      const content = await api.getTestResult(id);
+      setTestResultContent(content.testResult);
+    } catch (e) {
+      setTestError(e instanceof Error ? e.message : "Test execution failed");
+    } finally {
+      setTestLoading(false);
+    }
+  }, [id]);
+
+  const handleLoadTestResult = useCallback(async () => {
+    if (!id) return;
+    try {
+      const content = await api.getTestResult(id);
+      setTestResultContent(content.testResult);
+    } catch {
+      setTestResultContent(null);
     }
   }, [id]);
 
@@ -949,6 +981,101 @@ export function RunDetail(): ReactElement {
             </div>
           )}
         </div>
+      </section>
+
+      <section className="rounded-lg border bg-white p-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-gray-900">Test Execution</h2>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                void handleLoadTestResult();
+              }}
+              className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Load Results
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                void handleRunTests();
+              }}
+              disabled={testLoading}
+              className="px-3 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {testLoading ? "Running..." : "Run Tests"}
+            </button>
+          </div>
+        </div>
+
+        {testError && (
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 mb-3">
+            <p className="text-sm text-red-700">{testError}</p>
+          </div>
+        )}
+
+        {testRunResult && (
+          <div className="space-y-3 mb-3">
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-block w-2 h-2 rounded-full ${
+                  testRunResult.overallStatus === "PASSED" ? "bg-green-500" : "bg-red-500"
+                }`}
+              />
+              <span className="text-sm font-medium">Status: {testRunResult.overallStatus}</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-gray-500">
+                    <th className="pb-2 pr-4 font-medium">Command</th>
+                    <th className="pb-2 pr-4 font-medium">Exit Code</th>
+                    <th className="pb-2 pr-4 font-medium">Duration</th>
+                    <th className="pb-2 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {testRunResult.results.map((r) => (
+                    <tr key={r.name} className="border-b hover:bg-gray-50">
+                      <td className="py-2 pr-4 text-sm">{r.name}</td>
+                      <td className="py-2 pr-4 text-sm font-mono">
+                        {String(r.exitCode ?? "null")}
+                      </td>
+                      <td className="py-2 pr-4 text-sm">{(r.durationMs / 1000).toFixed(1)}s</td>
+                      <td className="py-2">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                            r.status === "PASSED"
+                              ? "bg-green-100 text-green-700"
+                              : r.status === "TIMEOUT"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {r.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {testResultContent && (
+          <div className="rounded-md bg-gray-50 p-4 max-h-64 overflow-y-auto">
+            <pre className="text-xs text-gray-700 whitespace-pre-wrap">{testResultContent}</pre>
+          </div>
+        )}
+
+        {!testRunResult && !testResultContent && !testLoading && !testError && (
+          <p className="text-sm text-gray-400 italic">
+            Click "Run Tests" to execute configured test commands or "Load Results" to view existing
+            results.
+          </p>
+        )}
       </section>
 
       {GROUPS.map((group) => {

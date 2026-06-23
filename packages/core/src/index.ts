@@ -1,3 +1,5 @@
+export { runTestsForRun } from "./workflows/testWorkflow.js";
+export type { TestWorkflowInput, TestWorkflowOutput } from "./workflows/testWorkflow.js";
 export { renderPrompt } from "./prompts/promptRenderer.js";
 export { getArtifactPaths, createArtifactDirs, writeArtifact } from "./artifacts/artifactWriter.js";
 export type { ArtifactPaths } from "./artifacts/artifactWriter.js";

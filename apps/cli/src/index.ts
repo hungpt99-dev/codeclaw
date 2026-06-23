@@ -14,6 +14,7 @@ import { cancelCommand } from "./commands/cancel.js";
 import { analyzeCommand } from "./commands/analyze.js";
 import { traceCommand } from "./commands/trace.js";
 import { exportCommand } from "./commands/export.js";
+import { testCommand } from "./commands/test.js";
 import {
   githubStatusCommand,
   githubTestCommand,
@@ -57,6 +58,16 @@ interface RejectCliOptions {
 
 interface CancelCliOptions {
   reason?: string;
+}
+
+interface TestCliOptions {
+  run: string;
+  build?: boolean;
+  unit?: boolean;
+  integration?: boolean;
+  lint?: boolean;
+  all?: boolean;
+  command?: string;
 }
 
 const program = new Command();
@@ -214,6 +225,20 @@ program
   .option("--regenerate", "Regenerate traceability from artifacts")
   .action(async (options: { run: string; format?: string; regenerate?: boolean }) => {
     await traceCommand(options);
+  });
+
+program
+  .command("test")
+  .description("Run configured test/build commands")
+  .requiredOption("--run <runId>", "Target run ID")
+  .option("--build", "Run build command only")
+  .option("--unit", "Run unit test command only")
+  .option("--integration", "Run integration test command only")
+  .option("--lint", "Run lint command only")
+  .option("--all", "Run all configured commands")
+  .option("--command <cmd>", "Run custom command")
+  .action(async (options: TestCliOptions) => {
+    await testCommand(options);
   });
 
 const githubProgram = program.command("github").description("GitHub integration (optional)");

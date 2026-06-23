@@ -39,6 +39,8 @@ export type {
   GitHubIntegrationConfig,
   JiraIntegrationConfig,
   SlackIntegrationConfig,
+  TestStatus,
+  TestCommandResult,
 } from "./types/domain.js";
 export { MemoryScope, MemoryFormat, AgentRole } from "./types/memory.js";
 export type {

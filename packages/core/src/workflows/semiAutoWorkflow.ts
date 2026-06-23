@@ -1,6 +1,11 @@
 import { join } from "node:path";
 import { createRunId, nowIso } from "@aiteam/shared";
-import type { ApprovalGate, AiAdapterName, SlackIntegrationConfig } from "@aiteam/shared";
+import type {
+  ApprovalGate,
+  AiAdapterName,
+  SlackIntegrationConfig,
+  TestCommandResult,
+} from "@aiteam/shared";
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
 import { runBaAgent } from "../agents/baAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
@@ -40,6 +45,13 @@ export interface SemiAutoWorkflowInput {
   safetyPolicy?: SafetyPolicy;
   commandTimeoutSeconds?: number;
   slackConfig?: SlackIntegrationConfig;
+  testCommands?: {
+    build: string;
+    unitTest: string;
+    integrationTest: string;
+    lint: string;
+  };
+  skipTests?: boolean;
 }
 
 export interface SemiAutoWorkflowOutput {
@@ -68,6 +80,12 @@ export interface SemiAutoWorkflowOutput {
         projectMemoryFiles: number;
         decisionMemoryFiles: number;
         agentMemoryFiles: number;
+      }
+    | undefined;
+  testRunResult:
+    | {
+        overallStatus: string;
+        results: TestCommandResult[];
       }
     | undefined;
 }
@@ -349,6 +367,7 @@ export async function runSemiAutoWorkflow(
             agentMemoryFiles: input.memoryContext.agentMemoryCount,
           }
         : undefined,
+      testRunResult: undefined,
     };
   }
 
@@ -366,6 +385,58 @@ export async function runSemiAutoWorkflow(
   artifacts.push(paths.agentLogPath);
   artifacts.push(paths.diffPatchPath);
   artifacts.push(paths.changedFilesPath);
+
+  let testRunResult: SemiAutoWorkflowOutput["testRunResult"];
+  let finalStatus = codeResult.success ? "CODE_GENERATED" : "CODE_FAILED";
+
+  if (codeResult.success && !input.skipTests && input.testCommands) {
+    const cmds: { name: string; command: string }[] = [];
+    if (input.testCommands.build) cmds.push({ name: "build", command: input.testCommands.build });
+    if (input.testCommands.unitTest)
+      cmds.push({ name: "unitTest", command: input.testCommands.unitTest });
+    if (input.testCommands.integrationTest)
+      cmds.push({ name: "integrationTest", command: input.testCommands.integrationTest });
+    if (input.testCommands.lint) cmds.push({ name: "lint", command: input.testCommands.lint });
+
+    if (cmds.length > 0) {
+      const { runTests, writeTestResultArtifacts } = await import("@aiteam/adapters");
+      const timeout = input.commandTimeoutSeconds ?? 300;
+      const logDir = join(paths.runDir, "tests");
+
+      const testRun = await runTests(
+        cmds.map((c) => ({
+          name: c.name,
+          command: c.command,
+          cwd: input.projectRoot ?? process.cwd(),
+          timeoutSeconds: timeout,
+        })),
+        logDir,
+      );
+
+      const { testResultPath, failedTestsPath } = await writeTestResultArtifacts(
+        testRun,
+        join(paths.runDir, "tests"),
+      );
+
+      artifacts.push(testResultPath);
+      artifacts.push(failedTestsPath);
+
+      testRunResult = {
+        overallStatus: testRun.overallStatus,
+        results: testRun.results.map((r) => ({
+          name: r.commandName,
+          command: r.command,
+          exitCode: r.exitCode,
+          status: r.timedOut ? "TIMEOUT" : r.passed ? "PASSED" : "FAILED",
+          durationMs: r.durationMs,
+          stdoutPath: r.stdoutPath,
+          stderrPath: r.stderrPath,
+        })),
+      };
+
+      finalStatus = testRun.overallStatus === "PASSED" ? "TEST_PASSED" : "TEST_FAILED";
+    }
+  }
 
   const traceability = await generateTraceability(runId, paths);
   await writeArtifact(paths.traceabilityMd, traceabilityToMarkdown(traceability));
@@ -403,13 +474,15 @@ export async function runSemiAutoWorkflow(
       }
     : undefined;
 
-  const completedStatus = codeResult.success ? "REPORT_GENERATED" : "CODE_FAILED";
+  if (finalStatus === "CODE_GENERATED" && !testRunResult) {
+    finalStatus = "REPORT_GENERATED";
+  }
 
   if (input.slackConfig?.enabled && input.slackConfig.notifyOn.includes("report_ready")) {
     const slackInput: SlackMessageInput = {
       runTitle: input.requirement,
       runId,
-      status: completedStatus,
+      status: finalStatus,
     };
     const slackText = buildReportReadyMessage(slackInput);
     try {
@@ -422,12 +495,13 @@ export async function runSemiAutoWorkflow(
 
   return {
     runId,
-    status: completedStatus,
+    status: finalStatus,
     artifacts,
     createdAt,
     completedAt: nowIso(),
     codeGenerationResult: codeResult,
     memoryUsed,
+    testRunResult,
   };
 }
 
@@ -472,5 +546,6 @@ export async function continueSemiAutoWorkflow(
     completedAt: nowIso(),
     codeGenerationResult: codeResult,
     memoryUsed,
+    testRunResult: undefined,
   };
 }

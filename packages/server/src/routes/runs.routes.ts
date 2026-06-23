@@ -25,6 +25,7 @@ import {
   analyzeRepository,
   generateTraceability,
   getArtifactPaths,
+  runTestsForRun,
 } from "@aiteam/core";
 
 interface ArtifactDef {
@@ -453,6 +454,70 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
         summary,
       },
     };
+  });
+
+  app.post("/api/runs/:id/test", async (_request, reply) => {
+    const params = _request.params as { id: string };
+
+    const runRepo = createRunRepository(db);
+    const run = runRepo.findById(params.id);
+    if (!run) {
+      return reply.status(404).send({ error: "Run not found" });
+    }
+
+    let config: {
+      commands?: { build?: string; unitTest?: string; integrationTest?: string; lint?: string };
+    };
+    try {
+      const { readFile: rf } = await import("node:fs/promises");
+      const raw = await rf(join(".ai-team", "config.json"), "utf-8");
+      config = JSON.parse(raw) as typeof config;
+    } catch {
+      return reply.status(500).send({ error: "Failed to load config" });
+    }
+
+    const commands = config.commands ?? { build: "", unitTest: "", integrationTest: "", lint: "" };
+
+    const result = await runTestsForRun({
+      runId: params.id,
+      commands: {
+        build: commands.build ?? "",
+        unitTest: commands.unitTest ?? "",
+        integrationTest: commands.integrationTest ?? "",
+        lint: commands.lint ?? "",
+      },
+      cwd: process.cwd(),
+      timeoutSeconds: 300,
+    });
+
+    runRepo.updateStatus(
+      params.id,
+      result.overallStatus === "PASSED" ? "TEST_PASSED" : "TEST_FAILED",
+    );
+
+    return { testRun: { overallStatus: result.overallStatus, results: result.results } };
+  });
+
+  app.get("/api/runs/:id/test-result", async (request, reply) => {
+    const params = request.params as { id: string };
+    const paths = getArtifactPaths(params.id);
+    try {
+      const content = await readFile(paths.testResultPath, "utf-8");
+      return { testResult: content };
+    } catch {
+      return reply.status(404).send({ error: "Test result not found" });
+    }
+  });
+
+  app.get("/api/runs/:id/failed-tests", async (request, reply) => {
+    const params = request.params as { id: string };
+    const paths = getArtifactPaths(params.id);
+    try {
+      const content = await readFile(paths.failedTestsPath, "utf-8");
+      return { failedTests: content };
+    } catch {
+      return reply.status(404).send({ error: "Failed tests not found" });
+    }
   });
 
   app.post("/api/runs/:id/export", async (request, reply) => {

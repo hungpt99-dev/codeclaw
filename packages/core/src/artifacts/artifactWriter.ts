@@ -18,6 +18,8 @@ export interface ArtifactPaths {
   traceabilityMd: string;
   traceabilityJson: string;
   snapshotDir: string;
+  testResultPath: string;
+  failedTestsPath: string;
 }
 
 export function getArtifactPaths(runId: string): ArtifactPaths {
@@ -39,6 +41,8 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
     traceabilityMd: join(runDir, "report", "traceability.md"),
     traceabilityJson: join(runDir, "report", "traceability.json"),
     snapshotDir: join(runDir, "snapshots"),
+    testResultPath: join(runDir, "tests", "test-result.md"),
+    failedTestsPath: join(runDir, "tests", "failed-tests.json"),
   };
 }
 
