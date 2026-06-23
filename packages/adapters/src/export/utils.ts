@@ -1,5 +1,4 @@
-import { readFile, readdir } from "node:fs/promises";
-import { join, relative } from "node:path";
+import { readFile } from "node:fs/promises";
 
 export interface ArtifactRecord {
   id: string;
@@ -36,29 +35,6 @@ export async function collectArtifactContents(
     }),
   );
 }
-
-export async function collectFilesFromRun(
-  runDir: string,
-): Promise<{ name: string; path: string }[]> {
-  const files: { name: string; path: string }[] = [];
-
-  async function walk(dir: string) {
-    const entries = await readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        await walk(fullPath);
-      } else {
-        const rel = relative(runDir, fullPath);
-        files.push({ name: rel, path: fullPath });
-      }
-    }
-  }
-
-  await walk(runDir);
-  return files;
-}
-
 export function buildCombinedMarkdown(artifacts: ArtifactRecord[], title: string): string {
   const lines: string[] = [];
 
