@@ -4,10 +4,17 @@ import {
   createRunRepository,
   createArtifactRepository,
   createApprovalRepository,
+  createTraceabilityRepository,
 } from "@aiteam/storage";
 import type { ArtifactType, RunMode, ApprovalGate, ApprovalStatus } from "@aiteam/shared";
 import { createRunId, ArtifactTypeValues } from "@aiteam/shared";
-import { runDocsOnlyWorkflow, runAssistedWorkflow, analyzeRepository } from "@aiteam/core";
+import {
+  runDocsOnlyWorkflow,
+  runAssistedWorkflow,
+  analyzeRepository,
+  generateTraceability,
+  getArtifactPaths,
+} from "@aiteam/core";
 
 interface ArtifactDef {
   type: ArtifactType;
@@ -242,5 +249,79 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
     }
 
     return { approval };
+  });
+
+  app.get("/api/runs/:id/traceability", async (request, reply) => {
+    const params = request.params as { id: string };
+    const runRepo = createRunRepository(db);
+    const run = runRepo.findById(params.id);
+    if (!run) {
+      return reply.status(404).send({ error: "Run not found" });
+    }
+
+    const traceRepo = createTraceabilityRepository(db);
+    const records = traceRepo.findByRunId(params.id);
+
+    if (records.length === 0) {
+      return reply.status(404).send({ error: "No traceability data found for this run" });
+    }
+
+    const summary = traceRepo.getSummary(params.id);
+    const traceabilityMatrix = {
+      runId: params.id,
+      items: records.map((r) => ({
+        requirementId: r.requirementId,
+        requirementText: r.requirementText,
+        acceptanceCriteriaIds: r.acceptanceCriteriaIds,
+        taskIds: r.taskIds,
+        codeFiles: r.codeFiles,
+        testCases: r.testCases,
+        testResults: r.testResults,
+        status: r.status,
+      })),
+      generatedAt: new Date().toISOString(),
+      summary,
+    };
+
+    return { traceability: traceabilityMatrix };
+  });
+
+  app.post("/api/runs/:id/traceability", async (request, reply) => {
+    const params = request.params as { id: string };
+    const runRepo = createRunRepository(db);
+    const run = runRepo.findById(params.id);
+    if (!run) {
+      return reply.status(404).send({ error: "Run not found" });
+    }
+
+    const paths = getArtifactPaths(params.id);
+    const matrix = await generateTraceability(params.id, paths);
+
+    const traceRepo = createTraceabilityRepository(db);
+    traceRepo.deleteByRunId(params.id);
+
+    for (const item of matrix.items) {
+      traceRepo.create({
+        id: `${params.id}_trace_${item.requirementId}`,
+        runId: params.id,
+        requirementId: item.requirementId,
+        requirementText: item.requirementText,
+        acceptanceCriteriaIds: item.acceptanceCriteriaIds,
+        taskIds: item.taskIds,
+        codeFiles: item.codeFiles,
+        testCases: item.testCases,
+        testResults: item.testResults,
+        status: item.status,
+      });
+    }
+
+    const summary = traceRepo.getSummary(params.id);
+
+    return {
+      traceability: {
+        ...matrix,
+        summary,
+      },
+    };
   });
 }

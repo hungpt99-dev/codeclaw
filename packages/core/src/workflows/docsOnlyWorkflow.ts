@@ -9,6 +9,10 @@ import { runReporterAgent } from "../agents/reporterAgent.js";
 import { analyzeRepository, analysisToMarkdown } from "../repoAnalyzer/repoAnalyzer.js";
 import { getAiToolConfig } from "./workflowHelpers.js";
 import type { AiToolConfig } from "./workflowHelpers.js";
+import {
+  generateTraceability,
+  traceabilityToMarkdown,
+} from "../traceability/traceabilityEngine.js";
 
 export interface DocsOnlyWorkflowInput {
   requirement: string;
@@ -164,6 +168,15 @@ export async function runDocsOnlyWorkflow(
   await writeArtifact(join(paths.testsDir, "test-matrix.json"), qaOutput.testMatrixJson);
   artifacts.push(join(paths.testsDir, "test-matrix.json"));
 
+  const traceability = await generateTraceability(runId, paths);
+  await writeArtifact(paths.traceabilityMd, traceabilityToMarkdown(traceability));
+  artifacts.push(paths.traceabilityMd);
+
+  await writeArtifact(paths.traceabilityJson, JSON.stringify(traceability, null, 2));
+  artifacts.push(paths.traceabilityJson);
+
+  const traceabilitySection = traceabilityToMarkdown(traceability);
+
   const reporterOutput = await runReporterAgent(
     {
       requirement: input.requirement,
@@ -175,6 +188,7 @@ export async function runDocsOnlyWorkflow(
       dbDesign: architectOutput.dbDesign,
       taskBreakdownMd: pmOutput.taskBreakdownMd,
       testMatrixMd: qaOutput.testMatrixMd,
+      traceabilitySection,
     },
     { templateDir, aiTool: reporterTool },
   );

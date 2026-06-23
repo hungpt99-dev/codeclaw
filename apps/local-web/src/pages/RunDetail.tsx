@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { StatusBadge } from "../components/StatusBadge.js";
 import { MarkdownViewer } from "../components/MarkdownViewer.js";
 import { api } from "../lib/api.js";
-import type { Run, Artifact, Approval } from "../lib/types.js";
+import type { Run, Artifact, Approval, TraceabilityMatrix } from "../lib/types.js";
 import type { ReactElement } from "react";
 
 const AGENT_FORMATS = [
@@ -48,6 +48,9 @@ export function RunDetail(): ReactElement {
   const [approvalNote, setApprovalNote] = useState("");
   const [approvalAction, setApprovalAction] = useState<string | null>(null);
   const [repoAnalysis, setRepoAnalysis] = useState<RepoAnalysisData | null>(null);
+  const [traceability, setTraceability] = useState<TraceabilityMatrix | null>(null);
+  const [traceabilityLoading, setTraceabilityLoading] = useState(false);
+  const [traceabilityError, setTraceabilityError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -117,6 +120,36 @@ export function RunDetail(): ReactElement {
   const handleRefresh = (): void => {
     void load();
   };
+
+  const loadTraceability = useCallback(async () => {
+    if (!id) return;
+    setTraceabilityLoading(true);
+    setTraceabilityError(null);
+    try {
+      const data = await api.getTraceability(id);
+      setTraceability(data);
+    } catch {
+      setTraceabilityError("No traceability data available. Generate it first.");
+      setTraceability(null);
+    } finally {
+      setTraceabilityLoading(false);
+    }
+  }, [id]);
+
+  const handleGenerateTraceability = useCallback(async () => {
+    if (!id) return;
+    setTraceabilityLoading(true);
+    setTraceabilityError(null);
+    try {
+      const data = await api.generateTraceability(id);
+      setTraceability(data);
+    } catch {
+      setTraceabilityError("Failed to generate traceability.");
+      setTraceability(null);
+    } finally {
+      setTraceabilityLoading(false);
+    }
+  }, [id]);
 
   const handleCopy = (content: string, artifactId: string): void => {
     void navigator.clipboard.writeText(content).then((): void => {
@@ -333,6 +366,175 @@ export function RunDetail(): ReactElement {
       <section className="rounded-lg border bg-white p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Input</h2>
         <p className="text-sm text-gray-700 whitespace-pre-wrap">{run.rawRequirement}</p>
+      </section>
+
+      <section className="rounded-lg border bg-white p-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-gray-900">Traceability</h2>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                void loadTraceability();
+              }}
+              disabled={traceabilityLoading}
+              className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            >
+              {traceabilityLoading ? "Loading..." : "Load"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                void handleGenerateTraceability();
+              }}
+              disabled={traceabilityLoading}
+              className="px-3 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {traceabilityLoading ? "Generating..." : "Generate"}
+            </button>
+          </div>
+        </div>
+
+        {traceabilityError && !traceability && (
+          <p className="text-sm text-gray-400 italic">{traceabilityError}</p>
+        )}
+
+        {traceabilityLoading && !traceability && (
+          <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
+            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+            Loading traceability...
+          </div>
+        )}
+
+        {traceability && (
+          <>
+            <div className="grid grid-cols-4 gap-3 mb-4">
+              <div className="rounded-md bg-gray-50 p-3 text-center">
+                <div className="text-2xl font-bold text-gray-900">{traceability.summary.total}</div>
+                <div className="text-xs text-gray-500">Total Items</div>
+              </div>
+              <div className="rounded-md bg-green-50 p-3 text-center">
+                <div className="text-2xl font-bold text-green-700">
+                  {traceability.summary.covered}
+                </div>
+                <div className="text-xs text-green-600">Covered</div>
+              </div>
+              <div className="rounded-md bg-yellow-50 p-3 text-center">
+                <div className="text-2xl font-bold text-yellow-700">
+                  {traceability.summary.partial}
+                </div>
+                <div className="text-xs text-yellow-600">Partial</div>
+              </div>
+              <div className="rounded-md bg-red-50 p-3 text-center">
+                <div className="text-2xl font-bold text-red-700">
+                  {traceability.summary.notCovered}
+                </div>
+                <div className="text-xs text-red-600">Not Covered</div>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-gray-500">
+                    <th className="pb-2 pr-4 font-medium">Requirement</th>
+                    <th className="pb-2 pr-4 font-medium">Text</th>
+                    <th className="pb-2 pr-4 font-medium">AC</th>
+                    <th className="pb-2 pr-4 font-medium">Tasks</th>
+                    <th className="pb-2 pr-4 font-medium">Code Files</th>
+                    <th className="pb-2 pr-4 font-medium">Tests</th>
+                    <th className="pb-2 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {traceability.items.map((item) => {
+                    let statusClass = "bg-gray-100 text-gray-700";
+                    let statusLabel: string = item.status;
+                    if (item.status === "COVERED") {
+                      statusClass = "bg-green-100 text-green-700";
+                      statusLabel = "Covered";
+                    } else if (item.status === "PARTIAL") {
+                      statusClass = "bg-yellow-100 text-yellow-700";
+                      statusLabel = "Partial";
+                    } else if (item.status === "NOT_COVERED") {
+                      statusClass = "bg-red-100 text-red-700";
+                      statusLabel = "Not Covered";
+                    }
+                    return (
+                      <tr key={item.requirementId} className="border-b hover:bg-gray-50">
+                        <td className="py-2 pr-4 font-mono text-xs">{item.requirementId}</td>
+                        <td className="py-2 pr-4 text-xs max-w-xs truncate">
+                          {item.requirementText}
+                        </td>
+                        <td className="py-2 pr-4 text-xs">
+                          {item.acceptanceCriteriaIds.join(", ")}
+                        </td>
+                        <td className="py-2 pr-4 text-xs">{item.taskIds.join(", ")}</td>
+                        <td className="py-2 pr-4 text-xs">{item.codeFiles.join(", ") || "—"}</td>
+                        <td className="py-2 pr-4 text-xs">{item.testCases.join(", ") || "—"}</td>
+                        <td className="py-2">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${statusClass}`}
+                          >
+                            {statusLabel}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {traceability.items.length > 0 && (
+              <div className="flex items-center gap-2 mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const total = String(traceability.summary.total);
+                    const covered = String(traceability.summary.covered);
+                    const partial = String(traceability.summary.partial);
+                    const notCovered = String(traceability.summary.notCovered);
+                    const mdContent = `# Traceability Matrix\n\n## Summary\n\n| Metric | Value |\n|---|---|\n| Total | ${total} |\n| Covered | ${covered} |\n| Partial | ${partial} |\n| Not Covered | ${notCovered} |\n`;
+                    void navigator.clipboard.writeText(mdContent);
+                  }}
+                  className="text-xs px-2 py-1 rounded border bg-white text-gray-500 hover:bg-gray-50 transition-colors"
+                >
+                  Copy Markdown Summary
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(JSON.stringify(traceability, null, 2));
+                  }}
+                  className="text-xs px-2 py-1 rounded border bg-white text-gray-500 hover:bg-gray-50 transition-colors"
+                >
+                  Copy JSON
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {!traceability && !traceabilityLoading && !traceabilityError && (
+          <p className="text-sm text-gray-400 italic">
+            Click "Load" to view traceability or "Generate" to create it.
+          </p>
+        )}
       </section>
 
       {GROUPS.map((group) => {

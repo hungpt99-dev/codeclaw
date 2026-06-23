@@ -34,3 +34,5 @@ export type {
   WorkflowGate,
   WorkflowPhase,
 } from "./workflows/workflowRunner.js";
+export { generateTraceability, traceabilityToMarkdown } from "./traceability/traceabilityEngine.js";
+export type { TraceabilityMatrix, TraceabilityItem, CoverageStatus } from "@aiteam/shared";

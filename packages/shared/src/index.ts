@@ -26,7 +26,13 @@ export type { RunSchema } from "./schemas/run.schema.js";
 
 export { createRunId, slugify } from "./utils/ids.js";
 export { nowIso } from "./utils/date.js";
-export type { ProjectType, RepositoryAnalysis } from "./types/domain.js";
+export type {
+  ProjectType,
+  RepositoryAnalysis,
+  CoverageStatus,
+  TraceabilityItem,
+  TraceabilityMatrix,
+} from "./types/domain.js";
 export { MemoryScope, MemoryFormat, AgentRole } from "./types/memory.js";
 export type {
   MemoryScope as MemoryScopeType,

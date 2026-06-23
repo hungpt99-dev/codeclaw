@@ -15,3 +15,8 @@ export type {
 } from "./repositories/memoryRepository.js";
 export { createApprovalRepository } from "./repositories/approvalRepository.js";
 export type { ApprovalRecord, CreateApprovalInput } from "./repositories/approvalRepository.js";
+export { createTraceabilityRepository } from "./repositories/traceabilityRepository.js";
+export type {
+  TraceabilityRecord,
+  CreateTraceabilityItemInput,
+} from "./repositories/traceabilityRepository.js";

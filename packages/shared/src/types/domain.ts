@@ -116,6 +116,31 @@ export interface RepositoryAnalysis {
   javaVersion: string | null;
 }
 
+export type CoverageStatus = "COVERED" | "PARTIAL" | "NOT_COVERED" | "UNKNOWN";
+
+export interface TraceabilityItem {
+  requirementId: string;
+  requirementText: string;
+  acceptanceCriteriaIds: string[];
+  taskIds: string[];
+  codeFiles: string[];
+  testCases: string[];
+  testResults: string[];
+  status: CoverageStatus;
+}
+
+export interface TraceabilityMatrix {
+  runId: string;
+  items: TraceabilityItem[];
+  generatedAt: string;
+  summary: {
+    total: number;
+    covered: number;
+    partial: number;
+    notCovered: number;
+  };
+}
+
 export interface AiTeamConfig {
   version: string;
   project: {

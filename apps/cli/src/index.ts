@@ -12,6 +12,7 @@ import { rejectCommand } from "./commands/reject.js";
 import { resumeCommand } from "./commands/resume.js";
 import { cancelCommand } from "./commands/cancel.js";
 import { analyzeCommand } from "./commands/analyze.js";
+import { traceCommand } from "./commands/trace.js";
 
 interface InitCliOptions {
   force?: boolean;
@@ -184,6 +185,16 @@ program
   .option("--exclude <glob>", "Exclude file pattern")
   .action(async (options: { run?: string; json?: boolean; include?: string; exclude?: string }) => {
     await analyzeCommand(options);
+  });
+
+program
+  .command("trace")
+  .description("Generate or show traceability matrix for a run")
+  .requiredOption("--run <runId>", "Run ID")
+  .option("--format <format>", "Output format: markdown, json, all", "all")
+  .option("--regenerate", "Regenerate traceability from artifacts")
+  .action(async (options: { run: string; format?: string; regenerate?: boolean }) => {
+    await traceCommand(options);
   });
 
 program.parse();

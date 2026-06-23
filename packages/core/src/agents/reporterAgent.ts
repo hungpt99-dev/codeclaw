@@ -14,6 +14,7 @@ export interface ReporterAgentInput {
   dbDesign: string;
   taskBreakdownMd: string;
   testMatrixMd: string;
+  traceabilitySection?: string;
 }
 
 export interface ReporterAgentOutput {
@@ -100,16 +101,11 @@ No AI calls were made during this workflow.
 
 ---
 
-## Appendix
+## Traceability
 
-### Traceability Matrix
+{{traceabilitySection}}
 
-| Requirement | Business Rule | Acceptance Criteria | Task | Test Case |
-|-------------|---------------|---------------------|------|-----------|
-| Core functionality | BR-001 | AC-001 | T-004 | UT-001, IT-001 |
-| Input validation | BR-002 | AC-002, AC-003 | T-003 | UT-002, UT-003, UT-004 |
-| Error handling | BR-003 | AC-002 | T-005 | IT-002 |
-| Data consistency | BR-004 | AC-005 | T-008 | IT-004 |
+---
 
 ### Glossary
 
@@ -151,6 +147,7 @@ export async function runReporterAgent(
         technicalDesign: input.technicalDesign,
         taskBreakdown: input.taskBreakdownMd,
         testMatrix: input.testMatrixMd,
+        traceabilitySection: input.traceabilitySection ?? "",
       },
       aiToolConfig: options.aiTool,
     });
@@ -163,6 +160,7 @@ export async function runReporterAgent(
   const context = {
     requirement: input.requirement,
     generatedAt: new Date().toISOString(),
+    traceabilitySection: input.traceabilitySection ?? "No traceability data available.",
   };
 
   return {

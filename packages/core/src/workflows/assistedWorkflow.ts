@@ -10,6 +10,10 @@ import { runReporterAgent } from "../agents/reporterAgent.js";
 import { analyzeRepository, analysisToMarkdown } from "../repoAnalyzer/repoAnalyzer.js";
 import { getAiToolConfig } from "./workflowHelpers.js";
 import type { AiToolConfig } from "./workflowHelpers.js";
+import {
+  generateTraceability,
+  traceabilityToMarkdown,
+} from "../traceability/traceabilityEngine.js";
 
 export interface AssistedWorkflowInput {
   requirement: string;
@@ -193,6 +197,15 @@ export async function runAssistedWorkflow(
   );
   artifacts.push(join(paths.implementationDir, "implementation-prompt.md"));
 
+  const traceability = await generateTraceability(runId, paths);
+  await writeArtifact(paths.traceabilityMd, traceabilityToMarkdown(traceability));
+  artifacts.push(paths.traceabilityMd);
+
+  await writeArtifact(paths.traceabilityJson, JSON.stringify(traceability, null, 2));
+  artifacts.push(paths.traceabilityJson);
+
+  const traceabilitySection = traceabilityToMarkdown(traceability);
+
   const reporterOutput = await runReporterAgent(
     {
       requirement: input.requirement,
@@ -204,6 +217,7 @@ export async function runAssistedWorkflow(
       dbDesign: architectOutput.dbDesign,
       taskBreakdownMd: pmOutput.taskBreakdownMd,
       testMatrixMd: qaOutput.testMatrixMd,
+      traceabilitySection,
     },
     { templateDir, aiTool: reporterTool },
   );

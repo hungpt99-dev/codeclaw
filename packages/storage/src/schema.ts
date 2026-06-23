@@ -59,4 +59,19 @@ CREATE TABLE IF NOT EXISTS approvals (
   updated_at TEXT NOT NULL,
   FOREIGN KEY (run_id) REFERENCES runs(id)
 );
+
+CREATE TABLE IF NOT EXISTS traceability_items (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  requirement_id TEXT NOT NULL,
+  requirement_text TEXT NOT NULL,
+  acceptance_criteria_ids TEXT NOT NULL,
+  task_ids TEXT NOT NULL,
+  code_files TEXT NOT NULL,
+  test_cases TEXT NOT NULL,
+  test_results TEXT NOT NULL,
+  status TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (run_id) REFERENCES runs(id)
+);
 `;

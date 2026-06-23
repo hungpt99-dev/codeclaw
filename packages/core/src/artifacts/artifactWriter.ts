@@ -11,6 +11,8 @@ export interface ArtifactPaths {
   implementationDir: string;
   reportDir: string;
   logsDir: string;
+  traceabilityMd: string;
+  traceabilityJson: string;
 }
 
 export function getArtifactPaths(runId: string): ArtifactPaths {
@@ -25,6 +27,8 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
     implementationDir: join(runDir, "implementation"),
     reportDir: join(runDir, "report"),
     logsDir: join(runDir, "logs"),
+    traceabilityMd: join(runDir, "report", "traceability.md"),
+    traceabilityJson: join(runDir, "report", "traceability.json"),
   };
 }
 

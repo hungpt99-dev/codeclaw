@@ -1,4 +1,12 @@
-import type { Run, Artifact, Setting, PromptFile, PromptDetail, Approval } from "./types.js";
+import type {
+  Run,
+  Artifact,
+  Setting,
+  PromptFile,
+  PromptDetail,
+  Approval,
+  TraceabilityMatrix,
+} from "./types.js";
 
 const BASE = "/api";
 
@@ -93,6 +101,19 @@ export const api = {
 
   async analyzeRun(runId: string): Promise<{ analysis: unknown }> {
     return request(`/runs/${runId}/analyze`, { method: "POST" });
+  },
+
+  async getTraceability(runId: string): Promise<TraceabilityMatrix> {
+    const data = await request<{ traceability: TraceabilityMatrix }>(`/runs/${runId}/traceability`);
+    return data.traceability;
+  },
+
+  async generateTraceability(runId: string): Promise<TraceabilityMatrix> {
+    const data = await request<{ traceability: TraceabilityMatrix }>(
+      `/runs/${runId}/traceability`,
+      { method: "POST" },
+    );
+    return data.traceability;
   },
 
   async updateApproval(
