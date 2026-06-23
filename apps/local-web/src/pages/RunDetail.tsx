@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { StatusBadge } from "../components/StatusBadge.js";
 import { MarkdownViewer } from "../components/MarkdownViewer.js";
 import { api } from "../lib/api.js";
-import type { Run, Artifact } from "../lib/types.js";
+import type { Run, Artifact, Approval } from "../lib/types.js";
 import type { ReactElement } from "react";
 
 const AGENT_FORMATS = [
@@ -31,18 +31,26 @@ export function RunDetail(): ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [agentFormat, setAgentFormat] = useState("generic");
+  const [approvals, setApprovals] = useState<Approval[]>([]);
+  const [approvalNote, setApprovalNote] = useState("");
+  const [approvalAction, setApprovalAction] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     setError(null);
     try {
-      const [runData, artifactsData] = await Promise.all([api.getRun(id), api.listArtifacts(id)]);
+      const [runData, artifactsData, approvalsData] = await Promise.all([
+        api.getRun(id),
+        api.listArtifacts(id),
+        api.listApprovals(id).catch(() => [] as Approval[]),
+      ]);
       setRun(runData);
       const withContent = await Promise.all(
         artifactsData.map((a) => api.getArtifact(id, a.id).catch(() => a)),
       );
       setArtifacts(withContent);
+      setApprovals(approvalsData);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load run details");
     } finally {
@@ -53,6 +61,34 @@ export function RunDetail(): ReactElement {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const handleApprove = async (gate: string): Promise<void> => {
+    if (!id) return;
+    setApprovalAction(gate);
+    try {
+      await api.updateApproval(id, gate, "APPROVED", approvalNote || undefined);
+      setApprovalNote("");
+      await load();
+    } catch {
+      // ignore
+    } finally {
+      setApprovalAction(null);
+    }
+  };
+
+  const handleReject = async (gate: string): Promise<void> => {
+    if (!id) return;
+    setApprovalAction(gate);
+    try {
+      await api.updateApproval(id, gate, "REJECTED", approvalNote || undefined);
+      setApprovalNote("");
+      await load();
+    } catch {
+      // ignore
+    } finally {
+      setApprovalAction(null);
+    }
+  };
 
   const handleRefresh = (): void => {
     void load();
@@ -150,6 +186,62 @@ export function RunDetail(): ReactElement {
           Created: {new Date(run.createdAt).toLocaleString()}
         </span>
       </div>
+
+      {approvals.filter((a) => a.status === "PENDING").length > 0 && (
+        <section className="rounded-lg border border-amber-200 bg-amber-50 p-6">
+          <h2 className="text-lg font-semibold text-amber-900 mb-3">Approval Required</h2>
+          <div className="space-y-4">
+            {approvals
+              .filter((a) => a.status === "PENDING")
+              .map((a) => (
+                <div key={a.id} className="rounded-md border border-amber-200 bg-white p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-amber-800">Gate: {a.gate}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                      PENDING
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    This workflow stage is waiting for your approval.
+                  </p>
+                  <div className="flex items-center gap-2 mb-3">
+                    <input
+                      type="text"
+                      placeholder="Note (optional)"
+                      value={approvalNote}
+                      onChange={(e) => {
+                        setApprovalNote(e.target.value);
+                      }}
+                      className="flex-1 text-sm rounded border border-gray-300 px-3 py-1.5 bg-white text-gray-700"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void handleApprove(a.gate);
+                      }}
+                      disabled={approvalAction === a.gate}
+                      className="px-4 py-1.5 text-sm rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
+                    >
+                      {approvalAction === a.gate ? "Processing..." : "Approve"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void handleReject(a.gate);
+                      }}
+                      disabled={approvalAction === a.gate}
+                      className="px-4 py-1.5 text-sm rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+                    >
+                      {approvalAction === a.gate ? "Processing..." : "Reject"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </section>
+      )}
 
       <section className="rounded-lg border bg-white p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Input</h2>

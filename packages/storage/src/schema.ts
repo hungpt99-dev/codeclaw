@@ -48,4 +48,15 @@ CREATE TABLE IF NOT EXISTS memory_relations (
   FOREIGN KEY (source_memory_id) REFERENCES memory_items(id),
   FOREIGN KEY (target_memory_id) REFERENCES memory_items(id)
 );
+
+CREATE TABLE IF NOT EXISTS approvals (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  gate TEXT NOT NULL,
+  status TEXT NOT NULL,
+  note TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (run_id) REFERENCES runs(id)
+);
 `;

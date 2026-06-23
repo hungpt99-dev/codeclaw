@@ -10,13 +10,34 @@ export type RunMode = (typeof RunMode)[keyof typeof RunMode];
 export const RunStatus = {
   CREATED: "CREATED",
   SPEC_GENERATED: "SPEC_GENERATED",
+  WAITING_FOR_REQUIREMENT_APPROVAL: "WAITING_FOR_REQUIREMENT_APPROVAL",
   PLAN_GENERATED: "PLAN_GENERATED",
+  WAITING_FOR_PLAN_APPROVAL: "WAITING_FOR_PLAN_APPROVAL",
   REPORT_GENERATED: "REPORT_GENERATED",
   FAILED: "FAILED",
   CANCELLED: "CANCELLED",
 } as const;
 
 export type RunStatus = (typeof RunStatus)[keyof typeof RunStatus];
+
+export type ApprovalGate =
+  | "REQUIREMENT"
+  | "PLAN"
+  | "CODE_GENERATION"
+  | "RISKY_FILE"
+  | "EXTERNAL_UPDATE"
+  | "ROLLBACK";
+
+export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface Approval {
+  gate: ApprovalGate;
+  runId: string;
+  status: ApprovalStatus;
+  approvedAt?: string;
+  approvedBy?: string;
+  note?: string;
+}
 
 export const ArtifactType = {
   RAW_REQUIREMENT: "RAW_REQUIREMENT",
@@ -98,6 +119,8 @@ export interface AiTeamConfig {
     defaultMode: RunMode;
     defaultOutputLanguage: string;
     generateTraceability: boolean;
+    requireRequirementApproval: boolean;
+    requirePlanApproval: boolean;
   };
   commands: {
     build: string;

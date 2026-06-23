@@ -35,6 +35,8 @@ export const configSchema = z.object({
     defaultMode: z.enum(Object.values(RunMode) as [string, ...string[]]),
     defaultOutputLanguage: z.string(),
     generateTraceability: z.boolean(),
+    requireRequirementApproval: z.boolean(),
+    requirePlanApproval: z.boolean(),
   }),
   commands: z.object({
     build: z.string(),
@@ -81,6 +83,8 @@ export const defaultConfig: Config = {
     defaultMode: "docs-only",
     defaultOutputLanguage: "bilingual",
     generateTraceability: false,
+    requireRequirementApproval: true,
+    requirePlanApproval: true,
   },
   commands: {
     build: "",

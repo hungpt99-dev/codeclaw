@@ -1,7 +1,11 @@
 import type { FastifyInstance } from "fastify";
 import type { DbConnection } from "@aiteam/storage";
-import { createRunRepository, createArtifactRepository } from "@aiteam/storage";
-import type { ArtifactType, RunMode } from "@aiteam/shared";
+import {
+  createRunRepository,
+  createArtifactRepository,
+  createApprovalRepository,
+} from "@aiteam/storage";
+import type { ArtifactType, RunMode, ApprovalGate, ApprovalStatus } from "@aiteam/shared";
 import { createRunId, ArtifactTypeValues } from "@aiteam/shared";
 import { runDocsOnlyWorkflow, runAssistedWorkflow } from "@aiteam/core";
 
@@ -138,5 +142,93 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
 
     const run = runRepo.findById(runId);
     return { run };
+  });
+
+  app.get("/api/runs/:id/approvals", async (request, _reply) => {
+    const params = request.params as { id: string };
+    const approvalRepo = createApprovalRepository(db);
+    const approvals = approvalRepo.findByRunId(params.id);
+    return { approvals };
+  });
+
+  app.post("/api/runs/:id/approvals", async (request, reply) => {
+    const params = request.params as { id: string };
+    const body = request.body as
+      | {
+          gate?: string;
+          status?: string;
+          note?: string;
+        }
+      | undefined;
+
+    const validGates: ApprovalGate[] = [
+      "REQUIREMENT",
+      "PLAN",
+      "CODE_GENERATION",
+      "RISKY_FILE",
+      "EXTERNAL_UPDATE",
+      "ROLLBACK",
+    ];
+
+    if (!body) {
+      return reply.status(400).send({ error: "gate and status are required" });
+    }
+
+    if (!body.gate || !body.status) {
+      return reply.status(400).send({ error: "gate and status are required" });
+    }
+
+    const gate = body.gate.toUpperCase() as ApprovalGate;
+    const status = body.status.toUpperCase() as ApprovalStatus;
+
+    if (!validGates.includes(gate)) {
+      return reply.status(400).send({ error: `Invalid gate: ${gate}` });
+    }
+
+    if (!["APPROVED", "REJECTED"].includes(status)) {
+      return reply.status(400).send({ error: "status must be APPROVED or REJECTED" });
+    }
+
+    const approvalRepo = createApprovalRepository(db);
+    const runRepo = createRunRepository(db);
+    const run = runRepo.findById(params.id);
+    if (!run) {
+      return reply.status(404).send({ error: "Run not found" });
+    }
+
+    const existing = approvalRepo.findByRunIdAndGate(params.id, gate);
+    if (existing) {
+      const updated = body.note
+        ? approvalRepo.updateStatus(existing.id, status, body.note)
+        : approvalRepo.updateStatus(existing.id, status);
+      if (status === "REJECTED") {
+        runRepo.updateStatus(params.id, "CANCELLED");
+      }
+      return { approval: updated };
+    }
+
+    const approvalId = `${params.id}_approval_${gate.toLowerCase()}`;
+    const approvalInput: {
+      id: string;
+      runId: string;
+      gate: ApprovalGate;
+      status: ApprovalStatus;
+      note?: string;
+    } = {
+      id: approvalId,
+      runId: params.id,
+      gate,
+      status,
+    };
+    if (body.note) {
+      approvalInput.note = body.note;
+    }
+    const approval = approvalRepo.create(approvalInput);
+
+    if (status === "REJECTED") {
+      runRepo.updateStatus(params.id, "CANCELLED");
+    }
+
+    return { approval };
   });
 }

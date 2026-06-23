@@ -1,13 +1,14 @@
 import { access, readFile } from "node:fs/promises";
 import { join, basename, extname } from "node:path";
 import { createRunId, nowIso, configSchema } from "@aiteam/shared";
-import type { Config, RunMode } from "@aiteam/shared";
-import { runDocsOnlyWorkflow, runAssistedWorkflow } from "@aiteam/core";
+import type { Config, RunMode, RunStatus } from "@aiteam/shared";
+import { runDocsOnlyWorkflow, runAssistedWorkflow, runWorkflowWithGates } from "@aiteam/core";
 import {
   openDatabase,
   initializeSchema,
   createRunRepository,
   createArtifactRepository,
+  createApprovalRepository,
 } from "@aiteam/storage";
 import type { ArtifactType } from "@aiteam/shared";
 import { getMemoryStatus, addRunMemory } from "@aiteam/memory";
@@ -17,6 +18,7 @@ interface RunOptions {
   mode?: string;
   outputLanguage?: string;
   json?: boolean;
+  approve?: boolean;
 }
 
 function inferArtifactType(filePath: string): ArtifactType {
@@ -71,6 +73,7 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
 
   const runRepo = createRunRepository(db);
   const artifactRepo = createArtifactRepository(db);
+  const approvalRepo = createApprovalRepository(db);
 
   const mode = (options.mode ?? config.workflow.defaultMode) as RunMode;
 
@@ -85,6 +88,77 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
   const memoryStatus = await getMemoryStatus(process.cwd());
 
   const templateDir = join(aiTeamDir, "prompts");
+
+  const gatesEnabled =
+    config.workflow.requireRequirementApproval || config.workflow.requirePlanApproval;
+
+  if (gatesEnabled && !options.approve) {
+    const workflowInput = {
+      requirement,
+      projectRoot: process.cwd(),
+      memoryContext: memoryStatus.exists
+        ? {
+            projectMemoryCount: memoryStatus.projectMemoryCount,
+            decisionMemoryCount: memoryStatus.decisionMemoryCount,
+            agentMemoryCount: memoryStatus.agentMemoryCount,
+          }
+        : undefined,
+      templateDir,
+      agentMapping: config.agents,
+      cliConfigs: config.cli,
+    };
+
+    const result = await runWorkflowWithGates(workflowInput);
+
+    for (let i = 0; i < result.artifacts.length; i++) {
+      const artifactPath = result.artifacts[i];
+      if (!artifactPath) continue;
+      const type = inferArtifactType(artifactPath);
+      const format = inferFormat(artifactPath);
+      const name = basename(artifactPath);
+      artifactRepo.create({
+        id: `${runId}_artifact_${String(i)}`,
+        runId,
+        type,
+        name,
+        path: artifactPath,
+        format,
+      });
+    }
+
+    runRepo.updateStatus(runId, result.status as RunStatus);
+
+    if (result.pendingGate) {
+      const gate = result.pendingGate.gate;
+      const approvalId = `${runId}_approval_${gate.toLowerCase()}`;
+      approvalRepo.create({
+        id: approvalId,
+        runId,
+        gate,
+        status: "PENDING",
+      });
+
+      console.log(`\n⏸️ ${result.pendingGate.summary}`);
+      console.log(`   Gate: ${gate}`);
+      console.log(`   Artifacts created: ${String(result.artifacts.length)}`);
+      console.log(`\n   To approve:  aiteam approve ${runId} --gate ${gate}`);
+      console.log(`   To reject:   aiteam reject ${runId} --gate ${gate}`);
+      console.log(`   To resume:   aiteam resume ${runId}`);
+      console.log(`   Or open UI:  aiteam ui`);
+      console.log("");
+    } else {
+      console.log(`\n🚀 Run completed: ${runId}`);
+      console.log(`   Status: ${result.status}`);
+      console.log(`\n📄 Artifacts:`);
+      for (const artifactPath of result.artifacts) {
+        console.log(`   - ${artifactPath}`);
+      }
+      console.log("");
+    }
+
+    db.close();
+    return;
+  }
 
   const workflowInput = {
     requirement,

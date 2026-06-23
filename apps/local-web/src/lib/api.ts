@@ -1,4 +1,4 @@
-import type { Run, Artifact, Setting, PromptFile, PromptDetail } from "./types.js";
+import type { Run, Artifact, Setting, PromptFile, PromptDetail, Approval } from "./types.js";
 
 const BASE = "/api";
 
@@ -84,5 +84,23 @@ export const api = {
       method: "PUT",
       body: JSON.stringify({ content }),
     });
+  },
+
+  async listApprovals(runId: string): Promise<Approval[]> {
+    const data = await request<{ approvals: Approval[] }>(`/runs/${runId}/approvals`);
+    return data.approvals;
+  },
+
+  async updateApproval(
+    runId: string,
+    gate: string,
+    status: string,
+    note?: string,
+  ): Promise<Approval> {
+    const data = await request<{ approval: Approval }>(`/runs/${runId}/approvals`, {
+      method: "POST",
+      body: JSON.stringify({ gate, status, note }),
+    });
+    return data.approval;
   },
 };

@@ -13,3 +13,5 @@ export type {
   CreateMemoryItemInput,
   CreateMemoryRelationInput,
 } from "./repositories/memoryRepository.js";
+export { createApprovalRepository } from "./repositories/approvalRepository.js";
+export type { ApprovalRecord, CreateApprovalInput } from "./repositories/approvalRepository.js";

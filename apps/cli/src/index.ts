@@ -7,6 +7,10 @@ import { listCommand } from "./commands/list.js";
 import { showCommand } from "./commands/show.js";
 import { uiCommand } from "./commands/ui.js";
 import { memoryStatusCommand, memoryIndexCommand } from "./commands/memory.js";
+import { approveCommand } from "./commands/approve.js";
+import { rejectCommand } from "./commands/reject.js";
+import { resumeCommand } from "./commands/resume.js";
+import { cancelCommand } from "./commands/cancel.js";
 
 interface InitCliOptions {
   force?: boolean;
@@ -19,6 +23,21 @@ interface RunCliOptions {
   mode?: string;
   outputLanguage?: string;
   json?: boolean;
+  approve?: boolean;
+}
+
+interface ApproveCliOptions {
+  gate?: string;
+  note?: string;
+}
+
+interface RejectCliOptions {
+  gate?: string;
+  reason?: string;
+}
+
+interface CancelCliOptions {
+  reason?: string;
 }
 
 const program = new Command();
@@ -39,6 +58,10 @@ Examples:
   aiteam list                          Show recent runs
   aiteam show run_20260623_120000      Show run details
   aiteam ui --open                     Start the local web UI
+  aiteam approve <runId> --gate PLAN   Approve a pending gate
+  aiteam reject <runId> --gate PLAN    Reject a pending gate
+  aiteam resume <runId>                Resume a paused workflow
+  aiteam cancel <runId>                Cancel a workflow run
   aiteam memory status                 Show runtime memory status
 `,
   );
@@ -68,6 +91,7 @@ program
   .option("--title <title>", "Run title")
   .option("--output-language <language>", "Output language")
   .option("--json", "Output as JSON")
+  .option("--approve", "Auto-approve non-risky gates")
   .action(async (requirement: string, options: RunCliOptions) => {
     await runCommand(requirement, options);
   });
@@ -111,6 +135,43 @@ memoryProgram
   .description("Re-index runtime memory files into SQLite")
   .action(async () => {
     await memoryIndexCommand();
+  });
+
+program
+  .command("approve")
+  .description("Approve a pending workflow gate")
+  .argument("<runId>", "Run ID")
+  .option("--gate <gate>", "Gate to approve (REQUIREMENT, PLAN, ...)")
+  .option("--note <note>", "Approval note")
+  .action(async (runId: string, options: ApproveCliOptions) => {
+    await approveCommand(runId, options);
+  });
+
+program
+  .command("reject")
+  .description("Reject a pending workflow gate")
+  .argument("<runId>", "Run ID")
+  .option("--gate <gate>", "Gate to reject (REQUIREMENT, PLAN, ...)")
+  .option("--reason <reason>", "Rejection reason")
+  .action(async (runId: string, options: RejectCliOptions) => {
+    await rejectCommand(runId, options);
+  });
+
+program
+  .command("resume")
+  .description("Resume a paused workflow run")
+  .argument("<runId>", "Run ID")
+  .action(async (runId: string) => {
+    await resumeCommand(runId);
+  });
+
+program
+  .command("cancel")
+  .description("Cancel a running or paused workflow run")
+  .argument("<runId>", "Run ID")
+  .option("--reason <reason>", "Cancellation reason")
+  .action(async (runId: string, options: CancelCliOptions) => {
+    await cancelCommand(runId, options);
   });
 
 program.parse();

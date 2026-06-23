@@ -35,3 +35,13 @@ export interface PromptDetail {
   name: string;
   content: string;
 }
+
+export interface Approval {
+  id: string;
+  runId: string;
+  gate: string;
+  status: string;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

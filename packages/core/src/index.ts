@@ -25,3 +25,10 @@ export type {
 } from "./workflows/assistedWorkflow.js";
 export { getAiToolConfig } from "./workflows/workflowHelpers.js";
 export type { AiToolConfig } from "./workflows/workflowHelpers.js";
+export { runWorkflowWithGates } from "./workflows/workflowRunner.js";
+export type {
+  WorkflowInput,
+  WorkflowResult,
+  WorkflowGate,
+  WorkflowPhase,
+} from "./workflows/workflowRunner.js";

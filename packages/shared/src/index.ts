@@ -8,6 +8,9 @@ export type {
   AiCliTool,
   AgentRole as AgentRoleName,
   AiCliToolConfig,
+  ApprovalGate,
+  ApprovalStatus,
+  Approval,
 } from "./types/domain.js";
 export {
   RunMode as RunModeValues,
