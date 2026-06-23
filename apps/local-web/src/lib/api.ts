@@ -16,6 +16,8 @@ import type {
   SlackStatus,
   SlackTestResult,
   SlackPostResult,
+  ExportOptions,
+  ExportResult,
 } from "./types.js";
 
 const BASE = "/api";
@@ -233,6 +235,16 @@ export const api = {
     return request("/integrations/slack/post", {
       method: "POST",
       body: JSON.stringify({ runId, event, approve }),
+    });
+  },
+
+  async exportRun(
+    runId: string,
+    options: ExportOptions,
+  ): Promise<{ success: boolean; downloadUrl?: string; result?: ExportResult }> {
+    return request(`/runs/${runId}/export`, {
+      method: "POST",
+      body: JSON.stringify(options),
     });
   },
 

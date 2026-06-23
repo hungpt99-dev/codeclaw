@@ -86,3 +86,14 @@ export type {
 export { slackRequest, SlackApiError } from "./integrations/slackApiService.js";
 
 export { notifySlack } from "./integrations/slackNotifier.js";
+
+export { exportRunArtifacts } from "./export/exportService.js";
+export type { ExportFormat, ExportOptions, ExportResult } from "./export/exportService.js";
+export { convertMdToHtml } from "./export/mdToHtml.js";
+export type { HtmlDocumentOptions } from "./export/mdToHtml.js";
+export { convertHtmlToDocx } from "./export/htmlToDocx.js";
+export type { DocxOptions } from "./export/htmlToDocx.js";
+export { convertHtmlToPdf } from "./export/htmlToPdf.js";
+export type { PdfOptions } from "./export/htmlToPdf.js";
+export { buildCombinedMarkdown, tocFromMarkdown } from "./export/utils.js";
+export type { ArtifactRecord, RunInfo } from "./export/utils.js";

@@ -19,6 +19,11 @@
   },
   "dependencies": {
     "@aiteam/shared": "workspace:*",
-    "execa": "^9.5.2"
+    "execa": "^9.5.2",
+    "html-to-docx": "^1.8.0",
+    "marked": "^15.0.0"
+  },
+  "optionalDependencies": {
+    "playwright": "^1.52.0"
   }
 }

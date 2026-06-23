@@ -13,6 +13,7 @@ import { resumeCommand } from "./commands/resume.js";
 import { cancelCommand } from "./commands/cancel.js";
 import { analyzeCommand } from "./commands/analyze.js";
 import { traceCommand } from "./commands/trace.js";
+import { exportCommand } from "./commands/export.js";
 import {
   githubStatusCommand,
   githubTestCommand,
@@ -319,5 +320,31 @@ slackProgram
   .action(async (options: { run?: string; event?: string; approve?: boolean }) => {
     await slackPostCommand(options);
   });
+
+program
+  .command("export")
+  .description("Export run artifacts to various formats")
+  .argument("<runId>", "Run ID")
+  .option("--format <format>", "Output format (markdown, html, docx, pdf, zip)", "markdown")
+  .option("--output <path>", "Output path")
+  .option("--include-logs", "Include log files")
+  .option("--include-diff", "Include diff patch")
+  .option("--title <title>", "Document title")
+  .option("--author <author>", "Document author")
+  .action(
+    async (
+      runId: string,
+      options: {
+        format?: string;
+        output?: string;
+        includeLogs?: boolean;
+        includeDiff?: boolean;
+        title?: string;
+        author?: string;
+      },
+    ) => {
+      await exportCommand(runId, options);
+    },
+  );
 
 program.parse();

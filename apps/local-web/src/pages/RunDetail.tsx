@@ -15,6 +15,7 @@ import type {
   JiraStatus,
   SlackStatus,
   SlackPostResult,
+  ExportOptions,
 } from "../lib/types.js";
 import type { ReactElement } from "react";
 
@@ -80,6 +81,15 @@ export function RunDetail(): ReactElement {
   const [slackStatus, setSlackStatus] = useState<SlackStatus | null>(null);
   const [slackPostResult, setSlackPostResult] = useState<SlackPostResult | null>(null);
   const [slackLoading, setSlackLoading] = useState(false);
+
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportFormat, setExportFormat] = useState<string>("html");
+  const [exportIncludeLogs, setExportIncludeLogs] = useState(false);
+  const [exportIncludeDiff, setExportIncludeDiff] = useState(false);
+  const [exportDocTitle, setExportDocTitle] = useState("");
+  const [exportDocAuthor, setExportDocAuthor] = useState("");
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportResult, setExportResult] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -231,6 +241,31 @@ export function RunDetail(): ReactElement {
     }
   }, [id]);
 
+  const handleExport = useCallback(async (): Promise<void> => {
+    if (!id) return;
+    setExportLoading(true);
+    setExportResult(null);
+    try {
+      const options: ExportOptions = {
+        format: exportFormat as ExportOptions["format"],
+        includeLogs: exportIncludeLogs,
+        includeDiff: exportIncludeDiff,
+      };
+      if (exportDocTitle) options.title = exportDocTitle;
+      if (exportDocAuthor) options.author = exportDocAuthor;
+      const result = await api.exportRun(id, options);
+      if (result.success) {
+        setExportResult("Export completed successfully! Check the file in the exported directory.");
+      } else {
+        setExportResult(`Export failed: ${result.result?.error ?? "Unknown error"}`);
+      }
+    } catch (e) {
+      setExportResult(`Export failed: ${e instanceof Error ? e.message : "Unknown error"}`);
+    } finally {
+      setExportLoading(false);
+    }
+  }, [id, exportFormat, exportIncludeLogs, exportIncludeDiff, exportDocTitle, exportDocAuthor]);
+
   const handleCopy = (content: string, artifactId: string): void => {
     void navigator.clipboard.writeText(content).then((): void => {
       setCopiedId(artifactId);
@@ -307,13 +342,25 @@ export function RunDetail(): ReactElement {
           <h1 className="text-2xl font-bold text-gray-900">{run.title}</h1>
           <p className="text-gray-500 mt-1">ID: {run.id}</p>
         </div>
-        <button
-          type="button"
-          onClick={handleRefresh}
-          className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 transition-colors"
-        >
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setShowExportModal(true);
+              setExportDocTitle(run.title);
+            }}
+            className="px-3 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+          >
+            Export
+          </button>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
@@ -323,6 +370,117 @@ export function RunDetail(): ReactElement {
           Created: {new Date(run.createdAt).toLocaleString()}
         </span>
       </div>
+
+      {showExportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Export Artifacts</h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Format</label>
+                <select
+                  value={exportFormat}
+                  onChange={(e) => {
+                    setExportFormat(e.target.value);
+                  }}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white text-gray-700"
+                >
+                  <option value="html">HTML</option>
+                  <option value="docx">DOCX (Word)</option>
+                  <option value="pdf">PDF</option>
+                  <option value="zip">ZIP Archive</option>
+                  <option value="markdown">Markdown</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Document Title
+                </label>
+                <input
+                  type="text"
+                  value={exportDocTitle}
+                  onChange={(e) => {
+                    setExportDocTitle(e.target.value);
+                  }}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white text-gray-700"
+                  placeholder={run.title}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Author</label>
+                <input
+                  type="text"
+                  value={exportDocAuthor}
+                  onChange={(e) => {
+                    setExportDocAuthor(e.target.value);
+                  }}
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white text-gray-700"
+                  placeholder="AITeam"
+                />
+              </div>
+
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={exportIncludeLogs}
+                    onChange={(e) => {
+                      setExportIncludeLogs(e.target.checked);
+                    }}
+                    className="rounded border-gray-300"
+                  />
+                  Include Logs
+                </label>
+                <label className="flex items-center gap-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={exportIncludeDiff}
+                    onChange={(e) => {
+                      setExportIncludeDiff(e.target.checked);
+                    }}
+                    className="rounded border-gray-300"
+                  />
+                  Include Diff
+                </label>
+              </div>
+
+              {exportResult && (
+                <div
+                  className={`text-sm px-3 py-2 rounded-md ${exportResult.startsWith("Export completed") ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
+                >
+                  {exportResult}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 mt-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExportModal(false);
+                  setExportResult(null);
+                }}
+                className="px-4 py-2 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  void handleExport();
+                }}
+                disabled={exportLoading}
+                className="px-4 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              >
+                {exportLoading ? "Exporting..." : "Export"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {approvals.filter((a) => a.status === "PENDING").length > 0 && (
         <section className="rounded-lg border border-amber-200 bg-amber-50 p-6">

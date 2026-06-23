@@ -1,0 +1,106 @@
+import { join } from "node:path";
+import { access } from "node:fs/promises";
+import {
+  openDatabase,
+  initializeSchema,
+  createArtifactRepository,
+  createRunRepository,
+} from "@aiteam/storage";
+import { exportRunArtifacts } from "@aiteam/adapters";
+import type { ArtifactRecord, ExportFormat } from "@aiteam/adapters";
+
+interface ExportCliOptions {
+  format?: string;
+  output?: string;
+  includeLogs?: boolean;
+  includeDiff?: boolean;
+  title?: string;
+  author?: string;
+}
+
+function bytesToSize(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const size = (bytes / Math.pow(1024, i)).toFixed(1);
+  return `${size} ${units[i] ?? "B"}`;
+}
+
+export async function exportCommand(runId: string, options: ExportCliOptions): Promise<void> {
+  const aiTeamDir = join(process.cwd(), ".ai-team");
+  try {
+    await access(aiTeamDir);
+  } catch {
+    console.log("Error: .ai-team not found. Run 'aiteam init' first.");
+    process.exit(1);
+  }
+
+  const format = (options.format ?? "markdown") as ExportFormat;
+  const validFormats = ["markdown", "html", "docx", "pdf", "zip"];
+  if (!validFormats.includes(format)) {
+    console.log(`Error: Unsupported format '${format}'. Supported: ${validFormats.join(", ")}`);
+    process.exit(1);
+  }
+
+  const db = openDatabase(join(aiTeamDir, "database.sqlite"));
+  initializeSchema(db);
+
+  const runRepo = createRunRepository(db);
+  const run = runRepo.findById(runId);
+  if (!run) {
+    console.log(`Error: Run '${runId}' not found.`);
+    db.close();
+    process.exit(1);
+  }
+
+  const artifactRepo = createArtifactRepository(db);
+  const dbArtifacts = artifactRepo.findByRunId(runId);
+
+  const artifacts: ArtifactRecord[] = dbArtifacts.map((a) => ({
+    id: a.id,
+    runId: a.runId,
+    type: a.type,
+    name: a.name,
+    path: a.path,
+    format: a.format,
+  }));
+
+  if (artifacts.length === 0) {
+    console.log(`Error: No artifacts found for run '${runId}'.`);
+    db.close();
+    process.exit(1);
+  }
+
+  db.close();
+
+  let outputPath = options.output;
+  if (!outputPath) {
+    const defaultDir = join(process.cwd(), ".ai-team", "runs", runId, "export");
+    if (format === "markdown") {
+      outputPath = join(defaultDir, "markdown");
+    } else {
+      outputPath = join(defaultDir, `report.${format}`);
+    }
+  }
+
+  const exportOpts: Parameters<typeof exportRunArtifacts>[2] = {
+    format,
+    outputPath,
+    docTitle: options.title ?? run.title,
+  };
+  if (options.includeLogs) exportOpts.includeLogs = options.includeLogs;
+  if (options.includeDiff) exportOpts.includeDiff = options.includeDiff;
+  if (options.author) exportOpts.docAuthor = options.author;
+
+  const result = await exportRunArtifacts(runId, artifacts, exportOpts);
+
+  if (result.success) {
+    const sizeStr = bytesToSize(result.fileSize);
+    console.log(`Exported run '${runId}' as ${format.toUpperCase()}`);
+    console.log(`Output: ${result.outputPath}`);
+    console.log(`Size: ${sizeStr}`);
+  } else {
+    console.log(`Export failed: ${result.error ?? "Unknown error"}`);
+    process.exit(1);
+  }
+}

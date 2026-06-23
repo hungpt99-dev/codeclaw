@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import type { FastifyInstance } from "fastify";
 import type { DbConnection } from "@aiteam/storage";
 import {
@@ -7,6 +8,7 @@ import {
   createApprovalRepository,
   createTraceabilityRepository,
 } from "@aiteam/storage";
+import { exportRunArtifacts } from "@aiteam/adapters";
 import type {
   ArtifactType,
   RunMode,
@@ -451,5 +453,80 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
         summary,
       },
     };
+  });
+
+  app.post("/api/runs/:id/export", async (request, reply) => {
+    const params = request.params as { id: string };
+    const body = request.body as
+      | {
+          format?: string;
+          includeLogs?: boolean;
+          includeDiff?: boolean;
+          title?: string;
+          author?: string;
+        }
+      | undefined;
+
+    const runRepo = createRunRepository(db);
+    const run = runRepo.findById(params.id);
+    if (!run) {
+      return reply.status(404).send({ error: "Run not found" });
+    }
+
+    const artifactRepo = createArtifactRepository(db);
+    const dbArtifacts = artifactRepo.findByRunId(params.id);
+
+    const artifacts = dbArtifacts.map((a) => ({
+      id: a.id,
+      runId: a.runId,
+      type: a.type,
+      name: a.name,
+      path: a.path,
+      format: a.format,
+    }));
+
+    const format = (body?.format ?? "html") as "markdown" | "html" | "docx" | "pdf" | "zip";
+    const outputPath = join(
+      process.cwd(),
+      ".ai-team",
+      "runs",
+      params.id,
+      "export",
+      `report.${format === "markdown" ? "md" : format}`,
+    );
+
+    const exportOpts: Parameters<typeof exportRunArtifacts>[2] = {
+      format,
+      outputPath,
+    };
+    if (body?.includeLogs) exportOpts.includeLogs = body.includeLogs;
+    if (body?.includeDiff) exportOpts.includeDiff = body.includeDiff;
+    if (body?.title) exportOpts.docTitle = body.title;
+    if (body?.author) exportOpts.docAuthor = body.author;
+    if (!body?.title) exportOpts.docTitle = run.title;
+
+    const result = await exportRunArtifacts(params.id, artifacts, exportOpts);
+
+    if (!result.success) {
+      return reply.status(500).send({ error: result.error ?? "Export failed" });
+    }
+
+    try {
+      const fileContent = await readFile(result.outputPath);
+      const mimeTypes: Record<string, string> = {
+        html: "text/html",
+        docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        pdf: "application/pdf",
+        zip: "application/zip",
+        markdown: "text/markdown",
+      };
+
+      const ext = format === "markdown" ? "md" : format;
+      reply.header("Content-Type", mimeTypes[format] ?? "application/octet-stream");
+      reply.header("Content-Disposition", `attachment; filename="report.${ext}"`);
+      return await reply.send(fileContent);
+    } catch {
+      return { result };
+    }
   });
 }

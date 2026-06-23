@@ -144,3 +144,19 @@ export interface SlackPostResult {
   ts?: string | undefined;
   error?: string | undefined;
 }
+
+export interface ExportOptions {
+  format: "markdown" | "html" | "docx" | "pdf" | "zip";
+  includeLogs?: boolean;
+  includeDiff?: boolean;
+  title?: string;
+  author?: string;
+}
+
+export interface ExportResult {
+  success: boolean;
+  outputPath: string;
+  format: string;
+  fileSize: number;
+  error?: string;
+}
