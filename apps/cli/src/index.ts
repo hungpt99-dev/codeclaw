@@ -325,6 +325,7 @@ program
   .command("review")
   .description("Run code review on implementation artifacts")
   .requiredOption("--run <runId>", "Target run ID")
+  .option("--code", "Run code review only")
   .option("--security", "Run security review only")
   .option("--coverage", "Run requirement coverage review only")
   .option("--all", "Run all review types (default)")
@@ -332,6 +333,7 @@ program
   .action(
     async (options: {
       run: string;
+      code?: boolean;
       security?: boolean;
       coverage?: boolean;
       all?: boolean;

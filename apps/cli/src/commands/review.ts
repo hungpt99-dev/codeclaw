@@ -4,6 +4,7 @@ import { loadAndReview, persistReview, getArtifactPaths } from "@aiteam/core";
 
 interface ReviewCliOptions {
   run: string;
+  code?: boolean;
   security?: boolean;
   coverage?: boolean;
   all?: boolean;
@@ -25,9 +26,10 @@ export async function reviewCommand(options: ReviewCliOptions): Promise<void> {
   }
 
   const runId = ensureRunId(options);
+  const runCode = options.code ?? false;
   const runSecurity = options.security ?? false;
   const runCoverage = options.coverage ?? false;
-  const runAll = options.all ?? (!runSecurity && !runCoverage);
+  const runAll = options.all ?? (!runCode && !runSecurity && !runCoverage);
   const regenerate = options.regenerate ?? false;
 
   const paths = getArtifactPaths(runId);
@@ -58,10 +60,10 @@ export async function reviewCommand(options: ReviewCliOptions): Promise<void> {
       }
     }
 
-    if (runAll) {
+    if (runAll || runCode) {
       try {
         const content = await readFile(paths.reviewReportPath, "utf-8");
-        console.log("\n=== Review Report ===\n");
+        console.log("\n=== Code Review Report ===\n");
         console.log(content);
         hasExisting = true;
       } catch {
@@ -75,9 +77,13 @@ export async function reviewCommand(options: ReviewCliOptions): Promise<void> {
     }
   }
 
-  console.log(`Running review for run: ${runId}...`);
+  const reviewType = runAll ? "all" : runSecurity ? "security" : "code";
 
-  const result = await loadAndReview(runId);
+  console.log(`Running ${reviewType} review for run: ${runId}...`);
+
+  const result = await loadAndReview(runId, {
+    reviewType,
+  });
 
   const persisted = await persistReview(runId, result);
 
@@ -91,8 +97,8 @@ export async function reviewCommand(options: ReviewCliOptions): Promise<void> {
     console.log(`\n=== Security Review ===\n${result.securityReview}`);
   }
 
-  if (runAll) {
-    console.log(`\n=== Review Report ===\n${result.reviewReport}`);
+  if (runAll || runCode) {
+    console.log(`\n=== Code Review Report ===\n${result.reviewReport}`);
   }
 
   console.log("\nArtifacts written:");

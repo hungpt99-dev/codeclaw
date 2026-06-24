@@ -51,6 +51,46 @@ describe("runReview", () => {
       result.overallStatus,
     );
   });
+
+  it("runs code-only review when reviewType is code", async () => {
+    const result = await runReview(
+      {
+        runId: "test-run",
+        clarifiedRequirement: "Req",
+        acceptanceCriteria: "- AC1",
+        technicalDesign: "Design",
+        changedFiles: "[]",
+        diff: "",
+        testResults: "No tests",
+      },
+      { reviewType: "code" },
+    );
+
+    expect(result).toHaveProperty("reviewReport");
+    expect(result).toHaveProperty("securityReview");
+    expect(result).toHaveProperty("requirementCoverage");
+    expect(result).toHaveProperty("overallStatus");
+  });
+
+  it("runs security-only review when reviewType is security", async () => {
+    const result = await runReview(
+      {
+        runId: "test-run",
+        clarifiedRequirement: "Req",
+        acceptanceCriteria: "- AC1",
+        technicalDesign: "Design",
+        changedFiles: "[]",
+        diff: "",
+        testResults: "No tests",
+      },
+      { reviewType: "security" },
+    );
+
+    expect(result).toHaveProperty("reviewReport");
+    expect(result).toHaveProperty("securityReview");
+    expect(result).toHaveProperty("requirementCoverage");
+    expect(result).toHaveProperty("overallStatus");
+  });
 });
 
 describe("loadAndReview", () => {

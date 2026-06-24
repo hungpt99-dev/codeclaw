@@ -101,12 +101,28 @@ export {
 } from "./policies/safetyPolicy.js";
 export type { SafetyPolicy, FileSafetyResult, FileRiskResult } from "./policies/safetyPolicy.js";
 export { checkFileRisk } from "./policies/safetyPolicy.js";
+export { runCodeReviewerAgent } from "./agents/codeReviewerAgent.js";
+export type {
+  CodeReviewerAgentInput,
+  CodeReviewerAgentOutput,
+} from "./agents/codeReviewerAgent.js";
+export { runSecurityReviewerAgent } from "./agents/securityReviewerAgent.js";
+export type {
+  SecurityReviewerAgentInput,
+  SecurityReviewerAgentOutput,
+} from "./agents/securityReviewerAgent.js";
+export { parseCodeReviewerOutput } from "./agents/parsers/codeReviewerOutputParser.js";
+export { parseSecurityReviewerOutput } from "./agents/parsers/securityReviewerOutputParser.js";
 export { runReview, loadAndReview, persistReview } from "./review/reviewService.js";
 export type { ReviewInput, ReviewOutput, ReviewOptions } from "./review/reviewService.js";
-export { generateDeterministicReview } from "./review/deterministicReview.js";
+export {
+  generateDeterministicCodeReview,
+  generateDeterministicSecurityReview,
+} from "./review/deterministicReview.js";
 export type {
   DeterministicReviewInput,
-  DeterministicReviewOutput,
+  DeterministicCodeReviewOutput,
+  DeterministicSecurityReviewOutput,
 } from "./review/deterministicReview.js";
 export { runFixLoop } from "./workflows/fixLoop.js";
 export type { FixLoopConfig, FixLoopIteration, FixLoopResult } from "./workflows/fixLoop.js";

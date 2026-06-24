@@ -6,11 +6,15 @@ export interface DeterministicReviewInput {
   clarifiedRequirement: string;
 }
 
-export interface DeterministicReviewOutput {
+export interface DeterministicCodeReviewOutput {
   reviewReport: string;
-  securityReview: string;
   requirementCoverage: string;
   overallStatus: "APPROVED" | "APPROVED_WITH_WARNINGS" | "CHANGES_REQUIRED";
+}
+
+export interface DeterministicSecurityReviewOutput {
+  securityReview: string;
+  securityStatus: "SECURE" | "MINOR_ISSUES" | "CRITICAL_ISSUES";
 }
 
 function parseAcceptanceCriteria(acText: string): string[] {
@@ -70,6 +74,36 @@ function checkSensitiveFiles(files: string[]): string[] {
   return files.filter((f) => SENSITIVE_PATTERNS.some((p) => p.test(f)));
 }
 
+const DANGEROUS_FUNCTION_PATTERNS = [
+  /eval\s*\(/,
+  /exec\s*\(/,
+  /spawn\s*\(/,
+  /unescape\(/,
+  /innerHTML\s*=/,
+  /dangerouslySetInnerHTML/,
+  /new Function\(/,
+  /child_process/,
+  /process\.env/,
+];
+
+const UNPROTECTED_ENDPOINT_PATTERNS = [
+  /app\.(get|post|put|delete|patch)\s*\(\s*["'`]\/api\/(?!auth)/i,
+  /router\.(get|post|put|delete|patch)\s*\(\s*["'`]\/api\/(?!auth)/i,
+  /@(Get|Post|Put|Delete|Patch)\(/,
+];
+
+function checkDangerousFunctions(diff: string): string[] {
+  return DANGEROUS_FUNCTION_PATTERNS.filter((p) => p.test(diff)).map(
+    (p) => `Potential dangerous pattern: ${p.source}`,
+  );
+}
+
+function checkUnprotectedEndpoints(diff: string): string[] {
+  return UNPROTECTED_ENDPOINT_PATTERNS.filter((p) => p.test(diff)).map(
+    (p) => `Potential unprotected endpoint pattern: ${p.source}`,
+  );
+}
+
 function countLines(diff: string): number {
   return diff.split("\n").filter((l) => l.startsWith("+") && !l.startsWith("+++")).length;
 }
@@ -79,13 +113,12 @@ function countFiles(diff: string): number {
   return files ? files.length : 0;
 }
 
-export function generateDeterministicReview(
+export function generateDeterministicCodeReview(
   input: DeterministicReviewInput,
-): DeterministicReviewOutput {
+): DeterministicCodeReviewOutput {
   const criteria = parseAcceptanceCriteria(input.acceptanceCriteria);
   const testStats = parseTestResults(input.testResults);
   const files = parseChangedFiles(input.changedFiles);
-  const sensitiveFiles = checkSensitiveFiles(files);
   const locChanged = countLines(input.diff);
   const fileCount = countFiles(input.diff);
 
@@ -137,6 +170,7 @@ export function generateDeterministicReview(
   }
 
   const securityIssues: string[] = [];
+  const sensitiveFiles = checkSensitiveFiles(files);
   if (sensitiveFiles.length > 0) {
     securityIssues.push(
       `Sensitive file patterns detected: ${sensitiveFiles.join(", ")} — review for secrets exposure`,
@@ -149,11 +183,10 @@ export function generateDeterministicReview(
   }
 
   const hasFailingTests = testStats.failed > 0;
-  const hasSensitiveChanges = sensitiveFiles.length > 0;
   const noTests = testStats.total === 0;
 
-  let overallStatus: DeterministicReviewOutput["overallStatus"];
-  if (hasFailingTests || hasSensitiveChanges) {
+  let overallStatus: DeterministicCodeReviewOutput["overallStatus"];
+  if (hasFailingTests || sensitiveFiles.length > 0) {
     overallStatus = "CHANGES_REQUIRED";
   } else if (noTests || locChanged > 500) {
     overallStatus = "APPROVED_WITH_WARNINGS";
@@ -188,25 +221,6 @@ ${securityIssues.map((i) => `- ${i}`).join("\n")}
 - Tests: ${String(testStats.total)} (${String(testStats.passed)} passed, ${String(testStats.failed)} failed)
 `;
 
-  const securityReview = `# Security Review Report
-
-## Security Review Summary
-${sensitiveFiles.length > 0 ? "MINOR_ISSUES" : "SECURE"}
-
-## Vulnerabilities Found
-| Severity | Issue | File | Recommendation |
-|----------|-------|------|----------------|
-${sensitiveFiles.length > 0 ? sensitiveFiles.map((f) => `| MEDIUM | Sensitive file pattern | ${f} | Verify no secrets or credentials are exposed |`).join("\n") : "| INFO | No vulnerabilities detected | — | — |"}
-
-## Critical Issues
-${sensitiveFiles.length > 0 ? "1. Review sensitive file patterns for credential exposure" : "None"}
-
-## Recommendations
-1. Ensure all secrets are stored in environment variables
-2. Verify .gitignore includes common secret file patterns
-3. Run a dependency vulnerability scanner before deployment
-`;
-
   const requirementCoverage = `# Requirement Coverage Report
 
 ## Coverage Summary
@@ -222,8 +236,113 @@ ${coverageRows}
 
   return {
     reviewReport,
-    securityReview,
     requirementCoverage,
     overallStatus,
+  };
+}
+
+export function generateDeterministicSecurityReview(
+  input: DeterministicReviewInput,
+): DeterministicSecurityReviewOutput {
+  const files = parseChangedFiles(input.changedFiles);
+  const sensitiveFiles = checkSensitiveFiles(files);
+  const dangerousFunctions = checkDangerousFunctions(input.diff);
+  const unprotectedEndpoints = checkUnprotectedEndpoints(input.diff);
+
+  const allIssues: { severity: string; issue: string; file: string; recommendation: string }[] = [];
+
+  for (const f of sensitiveFiles) {
+    allIssues.push({
+      severity: "MEDIUM",
+      issue: "Sensitive file pattern detected",
+      file: f,
+      recommendation: "Verify no secrets or credentials are exposed",
+    });
+  }
+
+  for (const func of dangerousFunctions) {
+    allIssues.push({
+      severity: "HIGH",
+      issue: func,
+      file: "diff",
+      recommendation: "Review usage of dangerous functions; consider safer alternatives",
+    });
+  }
+
+  for (const endpoint of unprotectedEndpoints) {
+    allIssues.push({
+      severity: "MEDIUM",
+      issue: endpoint,
+      file: "diff",
+      recommendation: "Ensure authentication/authorization is applied to this endpoint",
+    });
+  }
+
+  if (input.diff.includes("hardcoded") || /\bsecret\b\s*[:=]\s*["']/.test(input.diff)) {
+    allIssues.push({
+      severity: "HIGH",
+      issue: "Potential hardcoded secret in code",
+      file: "diff",
+      recommendation: "Move secrets to environment variables",
+    });
+  }
+
+  let securityStatus: DeterministicSecurityReviewOutput["securityStatus"];
+  const hasCritical = allIssues.some((i) => i.severity === "HIGH");
+  const hasMedium = allIssues.some((i) => i.severity === "MEDIUM");
+  if (hasCritical) {
+    securityStatus = "CRITICAL_ISSUES";
+  } else if (hasMedium) {
+    securityStatus = "MINOR_ISSUES";
+  } else {
+    securityStatus = "SECURE";
+  }
+
+  const vulnerabilityRows =
+    allIssues.length > 0
+      ? allIssues
+          .map((i) => `| ${i.severity} | ${i.issue} | ${i.file} | ${i.recommendation} |`)
+          .join("\n")
+      : "| INFO | No vulnerabilities detected | — | — |";
+
+  const criticalIssues = allIssues
+    .filter((i) => i.severity === "HIGH")
+    .map((i, idx) => `${String(idx + 1)}. ${i.issue} in ${i.file}: ${i.recommendation}`);
+  const criticalSection = criticalIssues.length > 0 ? criticalIssues.join("\n") : "None";
+
+  const recommendations: string[] = [];
+  if (sensitiveFiles.length > 0) {
+    recommendations.push("Review sensitive file patterns for credential exposure");
+  }
+  if (dangerousFunctions.length > 0) {
+    recommendations.push("Replace dangerous function calls with safer alternatives");
+  }
+  if (unprotectedEndpoints.length > 0) {
+    recommendations.push("Add authentication/authorization middleware to unprotected endpoints");
+  }
+  recommendations.push("Ensure all secrets are stored in environment variables");
+  recommendations.push("Verify .gitignore includes common secret file patterns");
+  recommendations.push("Run a dependency vulnerability scanner before deployment");
+
+  const securityReview = `# Security Review Report
+
+## Security Review Summary
+${securityStatus}
+
+## Vulnerabilities Found
+| Severity | Issue | File | Recommendation |
+|----------|-------|------|----------------|
+${vulnerabilityRows}
+
+## Critical Issues
+${criticalSection}
+
+## Recommendations
+${recommendations.map((r, idx) => `${String(idx + 1)}. ${r}`).join("\n")}
+`;
+
+  return {
+    securityReview,
+    securityStatus,
   };
 }

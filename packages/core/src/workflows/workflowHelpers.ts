@@ -29,6 +29,8 @@ const AGENT_TO_CONFIG_KEY: Record<string, string> = {
   PROJECT_MANAGER: "defaultPm",
   QA: "defaultQa",
   DEVELOPER: "defaultDeveloper",
+  CODE_REVIEWER: "defaultCodeReviewer",
+  SECURITY_REVIEWER: "defaultSecurityReviewer",
   REPORTER: "defaultReporter",
   UX_RESEARCHER: "defaultUxResearcher",
   UI_DESIGNER: "defaultUiDesigner",

@@ -1,8 +1,15 @@
 import { readFile, access } from "node:fs/promises";
 import { join } from "node:path";
 import { getArtifactPaths, writeArtifact } from "../artifacts/artifactWriter.js";
-import { generateDeterministicReview } from "./deterministicReview.js";
+import {
+  generateDeterministicCodeReview,
+  generateDeterministicSecurityReview,
+} from "./deterministicReview.js";
 import type { DeterministicReviewInput } from "./deterministicReview.js";
+import { runCodeReviewerAgent } from "../agents/codeReviewerAgent.js";
+import type { CodeReviewerAgentInput } from "../agents/codeReviewerAgent.js";
+import { runSecurityReviewerAgent } from "../agents/securityReviewerAgent.js";
+import type { SecurityReviewerAgentInput } from "../agents/securityReviewerAgent.js";
 
 export interface ReviewInput {
   runId: string;
@@ -28,6 +35,7 @@ export interface ReviewOptions {
     command: string;
     timeoutSeconds: number;
   };
+  reviewType?: "code" | "security" | "all";
 }
 
 async function loadArtifact(path: string): Promise<string> {
@@ -75,107 +83,14 @@ async function loadReviewContext(runId: string): Promise<{
   };
 }
 
-async function runAiReview(
-  templatePath: string,
-  context: Record<string, string>,
-  aiTool: NonNullable<ReviewOptions["aiTool"]>,
-): Promise<string> {
-  const templateContent = await readFile(templatePath, "utf-8");
-  const rendered = templateContent.replace(
-    /\{\{(\w+)\}\}/g,
-    (_match: string, key: string) => context[key] ?? `{{${key}}}`,
-  );
-
-  const { runAgentPrompt } = await import("@aiteam/adapters");
-  const result = await runAgentPrompt(rendered, {
-    command: aiTool.command,
-    timeoutSeconds: aiTool.timeoutSeconds,
-  });
-
-  return result.output;
-}
-
 export async function runReview(
   input: ReviewInput,
   options?: ReviewOptions,
 ): Promise<ReviewOutput> {
   const aiTool = options?.aiTool;
   const templateDir = options?.templateDir;
+  const reviewType = options?.reviewType ?? "all";
 
-  if (aiTool?.command != null && templateDir) {
-    const reviewerTemplate = join(templateDir, "reviewer-agent.md");
-    const securityTemplate = join(templateDir, "security-reviewer-agent.md");
-
-    const context: Record<string, string> = {
-      clarifiedRequirement: input.clarifiedRequirement,
-      acceptanceCriteria: input.acceptanceCriteria,
-      technicalDesign: input.technicalDesign,
-      changedFiles: input.changedFiles,
-      diff: input.diff,
-      testResults: input.testResults,
-    };
-
-    try {
-      const [reviewOutput, securityOutput] = await Promise.all([
-        runAiReview(reviewerTemplate, context, aiTool),
-        runAiReview(securityTemplate, context, aiTool),
-      ]);
-
-      const overallStatus = parseOverallStatus(reviewOutput);
-
-      const requirementCoverage = extractSection(reviewOutput, "Requirement Coverage");
-
-      return {
-        reviewReport: reviewOutput,
-        securityReview: securityOutput,
-        requirementCoverage,
-        overallStatus,
-      };
-    } catch {
-      return runDeterministicReview(input);
-    }
-  }
-
-  return runDeterministicReview(input);
-}
-
-function parseOverallStatus(output: string): ReviewOutput["overallStatus"] {
-  const pattern = /## Review Summary\s*\n\s*\[?(APPROVED(?:_WITH_WARNINGS)?|CHANGES_REQUIRED)\]?/i;
-  const match = pattern.exec(output);
-  if (match) {
-    const val = match[1]?.toUpperCase() as ReviewOutput["overallStatus"];
-    if (val === "APPROVED" || val === "APPROVED_WITH_WARNINGS") {
-      return val;
-    }
-    return "CHANGES_REQUIRED";
-  }
-  return "CHANGES_REQUIRED";
-}
-
-function extractSection(output: string, sectionName: string): string {
-  const lines = output.split("\n");
-  let inSection = false;
-  const sectionLines: string[] = [];
-  const headerPattern = new RegExp(
-    `^##\\s+${sectionName.replace(/[-[\]{}()*+?.\\^$|#\s]/g, "\\$&")}`,
-  );
-
-  for (const line of lines) {
-    if (headerPattern.test(line)) {
-      inSection = true;
-      continue;
-    }
-    if (inSection) {
-      if (/^##\s/.test(line) && !headerPattern.test(line)) {
-        break;
-      }
-      sectionLines.push(line);
-    }
-  }
-  return sectionLines.join("\n").trim() || `${sectionName} section not available`;
-}
-
-function runDeterministicReview(input: ReviewInput): ReviewOutput {
   const detInput: DeterministicReviewInput = {
     acceptanceCriteria: input.acceptanceCriteria,
     changedFiles: input.changedFiles,
@@ -184,7 +99,108 @@ function runDeterministicReview(input: ReviewInput): ReviewOutput {
     clarifiedRequirement: input.clarifiedRequirement,
   };
 
-  return generateDeterministicReview(detInput);
+  const codeReviewerInput: CodeReviewerAgentInput = {
+    clarifiedRequirement: input.clarifiedRequirement,
+    acceptanceCriteria: input.acceptanceCriteria,
+    technicalDesign: input.technicalDesign,
+    changedFiles: input.changedFiles,
+    diff: input.diff,
+    testResults: input.testResults,
+  };
+
+  const securityReviewerInput: SecurityReviewerAgentInput = {
+    clarifiedRequirement: input.clarifiedRequirement,
+    technicalDesign: input.technicalDesign,
+    changedFiles: input.changedFiles,
+    diff: input.diff,
+  };
+
+  const aiToolConfig =
+    aiTool?.command != null
+      ? {
+          tool: aiTool.tool as "claude" | "codex" | "gemini" | "aider",
+          command: aiTool.command,
+          timeoutSeconds: aiTool.timeoutSeconds,
+        }
+      : undefined;
+
+  let codeReviewOutput: Awaited<ReturnType<typeof generateDeterministicCodeReview>> | null = null;
+  let securityReviewOutput: Awaited<ReturnType<typeof generateDeterministicSecurityReview>> | null =
+    null;
+
+  if (reviewType === "code" || reviewType === "all") {
+    if (aiToolConfig && templateDir) {
+      try {
+        const result = await runCodeReviewerAgent(codeReviewerInput, {
+          templateDir,
+          aiTool: aiToolConfig,
+        });
+        codeReviewOutput = {
+          reviewReport: result.reviewReport,
+          requirementCoverage: result.requirementCoverage,
+          overallStatus: result.overallStatus,
+        };
+      } catch {
+        codeReviewOutput = generateDeterministicCodeReview(detInput);
+      }
+    } else {
+      codeReviewOutput = generateDeterministicCodeReview(detInput);
+    }
+  }
+
+  if (reviewType === "security" || reviewType === "all") {
+    if (aiToolConfig && templateDir) {
+      try {
+        const result = await runSecurityReviewerAgent(securityReviewerInput, {
+          templateDir,
+          aiTool: aiToolConfig,
+        });
+        securityReviewOutput = {
+          securityReview: result.securityReview,
+          securityStatus: result.securityStatus,
+        };
+      } catch {
+        securityReviewOutput = generateDeterministicSecurityReview(detInput);
+      }
+    } else {
+      securityReviewOutput = generateDeterministicSecurityReview(detInput);
+    }
+  }
+
+  if (reviewType === "code") {
+    codeReviewOutput ??= generateDeterministicCodeReview(detInput);
+    const fallbackSecurity = generateDeterministicSecurityReview(detInput);
+    return {
+      reviewReport: codeReviewOutput.reviewReport,
+      securityReview: fallbackSecurity.securityReview,
+      requirementCoverage: codeReviewOutput.requirementCoverage,
+      overallStatus: codeReviewOutput.overallStatus,
+    };
+  }
+
+  if (reviewType === "security") {
+    securityReviewOutput ??= generateDeterministicSecurityReview(detInput);
+    const fallbackCode = generateDeterministicCodeReview(detInput);
+    return {
+      reviewReport: fallbackCode.reviewReport,
+      securityReview: securityReviewOutput.securityReview,
+      requirementCoverage: fallbackCode.requirementCoverage,
+      overallStatus:
+        securityReviewOutput.securityStatus === "CRITICAL_ISSUES"
+          ? "CHANGES_REQUIRED"
+          : fallbackCode.overallStatus,
+    };
+  }
+
+  const code = codeReviewOutput ?? generateDeterministicCodeReview(detInput);
+  const security = securityReviewOutput ?? generateDeterministicSecurityReview(detInput);
+
+  return {
+    reviewReport: code.reviewReport,
+    securityReview: security.securityReview,
+    requirementCoverage: code.requirementCoverage,
+    overallStatus: code.overallStatus,
+  };
 }
 
 export async function loadAndReview(runId: string, options?: ReviewOptions): Promise<ReviewOutput> {
