@@ -1,67 +1,84 @@
-# CodeClaw Roadmap Audit Summary
+# CodeClaw Feature Completeness Audit
 
 **Date:** 2026-06-24
 
-## Current Limitations Status
+## Summary
 
-| Limitation | Actual Status | Notes |
+CodeClaw is further along than the README suggests. The core architecture is solid and many features are genuinely implemented. However, there are critical gaps: secret redaction is not enabled in production execution paths (P1 security issue), and the README understates what exists (P0 docs issue). Two major missing features (all agents using AgentBackend, Ollama/local LLM) are the biggest product gaps.
+
+**Production Readiness Verdict: Not Ready**
+
+## Audit Matrix
+
+| Area | Feature | Claimed Status | Actual Status | Evidence | Step File | Priority |
+|---|---|---|---|---|---|---|
+| Workflow | Docs-only workflow | Done | Done | Fully implemented, 952 lines | — | P0 |
+| Workflow | Assisted workflow | Done | Done | Fully implemented, 965 lines | — | P1 |
+| Workflow | Semi-auto workflow | Done | Done | Uses NativeRunnerClient (not spawn) | — | P1 |
+| Agent | AgentBackend abstraction | Done | Done | OpenAI-compatible + Mock providers | — | P1 |
+| Agent | OpenCode adapter | Done | Done | Real adapter with isAvailable + runTask | — | P1 |
+| Agent | Claude/Codex/Gemini/Aider | Done | Done | All 4 adapters exist with tests | — | P2 |
+| Agent | **All agents use AgentBackend** | **Partial** | **Partial (2/19)** | Only BA and Architect | STEP_00 | **P1** |
+| Agent | Ollama/local LLM | Missing | Missing | No code exists | STEP_01 | P2 |
+| Safety | Approval gates | Done | Done | CODE_GENERATION, RISKY_FILE, WAITING_FOR_* | — | P1 |
+| Safety | Secret redaction utility | Done | Partial | Utility exists but **hardcoded `false`** in all production paths | STEP_03 | **P1** |
+| Safety | Rust native runner | Done | Done | Full Rust binary with policy, redaction, git | — | P1 |
+| Safety | No Node child_process fallback | Done | Done | shellRunner, gitService, semiAuto all use NativeRunnerClient | — | P1 |
+| Tracking | Step-level execution tracking | Done | Done | step_executions table, CLI commands, tests | — | P1 |
+| Project | Multi-project support | Missing | Missing | No project registry, no --project flag | STEP_02 | P3 |
+| Web UI | Diff viewer | Planned | **Done** | DiffViewer, DiffFileList, server API all exist | STEP_04 | **P0** |
+| Web UI | Live progress | Planned | Done | SSE endpoint, web UI subscribes | — | P4 |
+| Integrations | Jira | Planned | **Done** | Real API client, server routes, CLI commands | STEP_04 | **P0** |
+| Integrations | Slack | Planned | **Done** | Real API client, server routes, CLI commands | STEP_04 | **P0** |
+| Integrations | GitHub | Planned | **Done** | gh CLI client, PR creation, CI reads | STEP_04 | **P0** |
+| Docs | README accuracy | — | **P0 Issue** | README claims integrations and diff are "planned" when they exist | STEP_04 | **P0** |
+| Rust | Redaction enabled | — | **P1 Issue** | Every call uses `redactSecrets: false` | STEP_03 | **P1** |
+
+## Major Missing Features
+
+| Feature | Status | Priority | Step File |
+|---|---|---|---|
+| All agents use AgentBackend (17/19 missing) | Partial | P1 | STEP_00 |
+| Ollama/local LLM support | Missing | P2 | STEP_01 |
+| Multi-project/workspace support | Missing | P3 | STEP_02 |
+
+## Fake / Stub / Docs-Only Claims Found
+
+| Claim | Location | Reality |
 |---|---|---|
-| Docs-only default mode | Accurate | Assisted and semi-auto exist but require CLI AI tool config |
-| No cloud backend | Accurate | Intentional design decision — local-first product |
-| No authentication | Accurate | Local-only, no login/user management needed |
-| No external integrations | Partial | GitHub, Jira, Slack integrations exist but are optional and undocumented in README |
-| Single project | Accurate | One `.codeclaw` per working directory |
-| No web diff viewer | Partial | `DiffViewer.tsx` and `DiffFileList.tsx` components exist but may not be connected to run detail page |
-| No live workflow progress in web UI | Partial | SSE endpoint exists in server, web UI subscribes via `subscribeToProgress`, but full timeline UI may be incomplete |
+| "No external integrations (planned)" | README.md:231 | Jira, Slack, GitHub integrations all exist (optional, disabled by default) |
+| "No web diff viewer (planned)" | README.md:233 | DiffViewer component, server API, and run detail wiring all exist |
+| "Jira / Slack / GitHub integration" unchecked | README.md:251 | Should be checked — all three exist |
+| "Web diff viewer" unchecked | README.md:252 | Should be checked — basic diff viewer exists |
 
-## Roadmap Highlights Status
+## Existing Steps Updated
 
-| Item | Actual Status | Step File | Priority | Notes |
-|---|---|---|---|---|
-| Docs-only workflow | Done | — | P0 | Fully implemented with deterministic templates |
-| Assisted workflow mode | Done | — | P1 | Generates implementation prompt |
-| Semi-auto workflow mode | Done | — | P1 | Executes code via CLI AI tools |
-| AgentBackend abstraction | Done | — | P1 | OpenAI-compatible + Mock providers |
-| OpenCode CLI adapter | Done | — | P1 | Production adapter exists |
-| Claude Code, Codex, Gemini CLI, Aider adapters | Done | — | P2 | All 4 adapters exist |
-| Approval gates before code execution | Done | — | P1 | SCOPE, PLAN, CODE_GENERATION, RISKY_FILE gates |
-| Secret redaction utility | Done | — | P1 | `redactSecrets` in shared package |
-| Persistent step-level execution tracking | Done | — | P1 | `step_executions` table, CLI commands |
-| **All agents using AgentBackend** | **Partial** | `STEP_00_ALL_AGENTS_USE_AGENT_BACKEND.md` | **P2** | Only BA and Architect — 17 agents missing |
-| **Ollama/local LLM support** | **Missing** | `STEP_01_OLLAMA_LOCAL_LLM_SUPPORT.md` | **P2** | No local LLM provider at all |
-| **Multi-project/workspace support** | **Missing** | `STEP_02_MULTI_PROJECT_WORKSPACE_SUPPORT.md` | **P3** | Single `.codeclaw` per directory |
-| Live workflow progress in web UI | Partial | Covered in original step 46 (if exists) | P4 | SSE endpoint exists, web UI subscribes |
-| Jira / Slack / GitHub integration | Done | Existing adapters | P5 | All three integrations exist, optional |
-| Web diff viewer | Partial | Existing components | P4 | `DiffViewer.tsx` and `DiffFileList.tsx` exist |
+None — all steps were previously created in the last session.
 
-## Step Files Created
+## New Steps Created
 
 | File | Feature | Priority |
 |---|---|---|
-| `steps/STEP_00_ALL_AGENTS_USE_AGENT_BACKEND.md` | All 19 agents use AgentBackend | P2 |
-| `steps/STEP_01_OLLAMA_LOCAL_LLM_SUPPORT.md` | Ollama / local LLM provider | P2 |
-| `steps/STEP_02_MULTI_PROJECT_WORKSPACE_SUPPORT.md` | Multi-project / workspace support | P3 |
+| `STEP_03_EXECUTION_REDACTION_AND_SECURITY.md` | Enable redactSecrets in all production paths | P1 |
+| `STEP_04_README_AND_DOCS_ACCURACY.md` | Fix README claims about integrations and diff viewer | P0 |
 
-## Features Intentionally NOT Turned Into Steps
+## Recommended Implementation Order
 
-| Feature | Reason |
-|---|---|
-| Cloud backend | Intentional design decision — local-first product. Not a limitation, not a future goal. |
-| Authentication / login | Not needed for local-only mode. If remote access is needed, local access token could be added. |
-| Jira / Slack / GitHub integration | Already implemented. Optional, configurable via env vars. No new step needed. |
-| Live workflow progress in web UI | SSE endpoint and web UI subscription exist. May need UI polish but not a new feature step. |
-| Web diff viewer | `DiffViewer.tsx` and `DiffFileList.tsx` components exist. May need integration but not a new feature step. |
+1. **STEP 04 (P0)** — Fix README accuracy (5 minute task, high trust impact)
+2. **STEP 03 (P1)** — Enable redactSecrets in all production paths (10 minute task, security)
+3. **STEP 00 (P1)** — All agents use AgentBackend (4-8 hours, biggest product impact)
+4. **STEP 01 (P2)** — Ollama/local LLM support (2-4 hours)
+5. **STEP 02 (P3)** — Multi-project/workspace support (4-8 hours)
 
-## Remaining Risks
+## Production Readiness Verdict
 
-- README shows integrations as "planned" but they are actually implemented (optional). Update README to reflect this.
-- The `.automation/opencode-roadmap/steps/` directory was previously cleared — existing numbered steps (1-51) no longer exist. These 3 new steps start fresh with a new naming convention.
-- README limitations are accurate and honest — no stale claims.
+**Not Ready**
 
-## Recommended Next Implementation Step
+Reasons:
+1. **P0:** README understates what exists — users are told integrations and web diff viewer are "planned" when they exist
+2. **P1:** `redactSecrets: false` hardcoded in every production execution path — redaction is non-functional for command output
+3. **P1:** 17 of 19 agents don't use the configured LLM provider — the product feels half-AI
+4. **P2:** No local LLM support (Ollama) — users must have API keys and internet for AI features
+5. **P3:** Single-project only — inconvenient for multi-project users
 
-**STEP 00: All Agents Use AgentBackend (P2)**
-
-This is the highest-impact missing feature. 17 out of 19 agents still don't use the LLM provider users configure. Implementing this makes the product feel like a complete AI software team rather than a half-AI, half-deterministic tool.
-
-Start with simple agents (PO, QA, Reporter) and work toward complex ones (Developer, Reviewer).
+The code is functional and well-structured. The production blockers are primarily documentation accuracy, security configuration, and feature completeness — not architecture or reliability.
