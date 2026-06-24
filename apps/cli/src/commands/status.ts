@@ -66,9 +66,9 @@ export async function statusCommand(options: StatusOptions): Promise<void> {
       process.exit(1);
     }
     const artifacts = artifactRepo.findByRunId(options.run);
-    db.close();
 
     if (options.json) {
+      db.close();
       console.log(JSON.stringify({ run, artifacts, config }, null, 2));
       return;
     }
@@ -111,6 +111,7 @@ export async function statusCommand(options: StatusOptions): Promise<void> {
       }
     }
     console.log("");
+    db.close();
     return;
   }
 
