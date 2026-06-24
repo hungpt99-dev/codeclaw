@@ -93,6 +93,15 @@ export type {
   WorkflowPhase,
 } from "./workflows/workflowRunner.js";
 export { generateTraceability, traceabilityToMarkdown } from "./traceability/traceabilityEngine.js";
+export {
+  runTraceabilityAgent,
+  traceabilityToEnhancedMarkdown,
+} from "./agents/traceabilityAgent.js";
+export type {
+  TraceabilityAgentInput,
+  TraceabilityAgentOutput,
+} from "./agents/traceabilityAgent.js";
+export { parseTraceabilityOutput } from "./agents/parsers/traceabilityOutputParser.js";
 export type { TraceabilityMatrix, TraceabilityItem, CoverageStatus } from "@aiteam/shared";
 export {
   checkFileSafety,

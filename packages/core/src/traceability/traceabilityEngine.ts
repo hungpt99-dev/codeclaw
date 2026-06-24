@@ -29,6 +29,7 @@ function determineStatus(item: { taskIds: string[]; testCases: string[] }): Cove
 export async function generateTraceability(
   runId: string,
   artifactPaths: ArtifactPaths,
+  changedFilesPath?: string,
 ): Promise<TraceabilityMatrix> {
   const [clarifiedReqContent, acceptanceCriteriaContent, taskBreakdownContent, testMatrixContent] =
     await Promise.all([
@@ -43,6 +44,22 @@ export async function generateTraceability(
   const tasks = parseTaskBreakdown(taskBreakdownContent);
   const tests = parseTestMatrix(testMatrixContent);
 
+  // After-code traceability: read changed files if path provided
+  let changedFiles: string[] = [];
+  if (changedFilesPath) {
+    try {
+      const content = await readFile(changedFilesPath, "utf-8");
+      const parsed = JSON.parse(content) as unknown;
+      if (Array.isArray(parsed)) {
+        changedFiles = parsed.filter((f): f is string => typeof f === "string");
+      } else if (parsed && typeof parsed === "object" && "files" in parsed) {
+        changedFiles = parsed.files as string[];
+      }
+    } catch {
+      // silently ignore
+    }
+  }
+
   const items: TraceabilityItem[] = [];
 
   if (req) {
@@ -51,7 +68,7 @@ export async function generateTraceability(
       requirementText: req.text,
       acceptanceCriteriaIds: acList.map((a) => a.id),
       taskIds: tasks.map((t) => t.id),
-      codeFiles: [],
+      codeFiles: changedFiles,
       testCases: tests.map((t) => t.id),
       testResults: [],
       status: determineStatus({
@@ -65,7 +82,7 @@ export async function generateTraceability(
       requirementText: "Unnamed requirement",
       acceptanceCriteriaIds: acList.map((a) => a.id),
       taskIds: tasks.map((t) => t.id),
-      codeFiles: [],
+      codeFiles: changedFiles,
       testCases: tests.map((t) => t.id),
       testResults: [],
       status: determineStatus({

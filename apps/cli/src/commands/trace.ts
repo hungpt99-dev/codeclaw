@@ -1,13 +1,20 @@
 import { join } from "node:path";
 import { readFile, access } from "node:fs/promises";
 import { openDatabase, initializeSchema, createTraceabilityRepository } from "@aiteam/storage";
-import { generateTraceability, traceabilityToMarkdown } from "@aiteam/core";
-import { getArtifactPaths } from "@aiteam/core";
+import {
+  generateTraceability,
+  traceabilityToMarkdown,
+  runTraceabilityAgent,
+  traceabilityToEnhancedMarkdown,
+  getArtifactPaths,
+  getAiToolConfig,
+} from "@aiteam/core";
 
 interface TraceOptions {
   run: string;
   format?: string;
   regenerate?: boolean;
+  ai?: boolean;
 }
 
 function loadRunId(options: TraceOptions): string {
@@ -42,33 +49,92 @@ export async function traceCommand(options: TraceOptions): Promise<void> {
   const paths = getArtifactPaths(runId);
 
   if (options.regenerate) {
-    const matrix = await generateTraceability(runId, paths);
+    if (options.ai) {
+      const templateDir = join(aiTeamDir, "templates", "prompts");
+      const configPath = join(aiTeamDir, "config.json");
+      let aiToolConfig: ReturnType<typeof getAiToolConfig> | undefined;
+      try {
+        const configRaw = await readFile(configPath, "utf-8");
+        const config = JSON.parse(configRaw) as Record<string, unknown>;
+        const agentMapping = config.agentMapping as Record<string, string> | undefined;
+        const cliConfigs = config.cliConfigs as
+          | Record<string, { enabled: boolean; command: string; timeoutSeconds: number }>
+          | undefined;
+        aiToolConfig =
+          agentMapping && cliConfigs
+            ? getAiToolConfig("TRACEABILITY", agentMapping, cliConfigs)
+            : undefined;
+      } catch {
+        aiToolConfig = undefined;
+      }
 
-    const { writeFile } = await import("node:fs/promises");
-    await writeFile(paths.traceabilityMd, traceabilityToMarkdown(matrix));
-    await writeFile(paths.traceabilityJson, JSON.stringify(matrix, null, 2));
+      const aiTool = aiToolConfig
+        ? {
+            tool: aiToolConfig.tool,
+            command: aiToolConfig.command,
+            timeoutSeconds: aiToolConfig.timeoutSeconds,
+          }
+        : undefined;
 
-    const existing = traceRepo.findByRunId(runId);
-    if (existing.length > 0) {
-      traceRepo.deleteByRunId(runId);
+      const output = await runTraceabilityAgent(
+        { runId, artifactPaths: paths },
+        { templateDir, aiTool },
+      );
+
+      const { writeFile } = await import("node:fs/promises");
+      await writeFile(paths.traceabilityMd, traceabilityToEnhancedMarkdown(output));
+      await writeFile(paths.traceabilityJson, JSON.stringify(output.matrix, null, 2));
+
+      const existing = traceRepo.findByRunId(runId);
+      if (existing.length > 0) {
+        traceRepo.deleteByRunId(runId);
+      }
+
+      for (const item of output.matrix.items) {
+        traceRepo.create({
+          id: `${runId}_trace_${item.requirementId}`,
+          runId,
+          requirementId: item.requirementId,
+          requirementText: item.requirementText,
+          acceptanceCriteriaIds: item.acceptanceCriteriaIds,
+          taskIds: item.taskIds,
+          codeFiles: item.codeFiles,
+          testCases: item.testCases,
+          testResults: item.testResults,
+          status: item.status,
+        });
+      }
+
+      console.log(`✅ Traceability regenerated (AI-enhanced) for run: ${runId}`);
+    } else {
+      const matrix = await generateTraceability(runId, paths);
+
+      const { writeFile } = await import("node:fs/promises");
+      await writeFile(paths.traceabilityMd, traceabilityToMarkdown(matrix));
+      await writeFile(paths.traceabilityJson, JSON.stringify(matrix, null, 2));
+
+      const existing = traceRepo.findByRunId(runId);
+      if (existing.length > 0) {
+        traceRepo.deleteByRunId(runId);
+      }
+
+      for (const item of matrix.items) {
+        traceRepo.create({
+          id: `${runId}_trace_${item.requirementId}`,
+          runId,
+          requirementId: item.requirementId,
+          requirementText: item.requirementText,
+          acceptanceCriteriaIds: item.acceptanceCriteriaIds,
+          taskIds: item.taskIds,
+          codeFiles: item.codeFiles,
+          testCases: item.testCases,
+          testResults: item.testResults,
+          status: item.status,
+        });
+      }
+
+      console.log(`✅ Traceability regenerated for run: ${runId}`);
     }
-
-    for (const item of matrix.items) {
-      traceRepo.create({
-        id: `${runId}_trace_${item.requirementId}`,
-        runId,
-        requirementId: item.requirementId,
-        requirementText: item.requirementText,
-        acceptanceCriteriaIds: item.acceptanceCriteriaIds,
-        taskIds: item.taskIds,
-        codeFiles: item.codeFiles,
-        testCases: item.testCases,
-        testResults: item.testResults,
-        status: item.status,
-      });
-    }
-
-    console.log(`✅ Traceability regenerated for run: ${runId}`);
   }
 
   const records = traceRepo.findByRunId(runId);

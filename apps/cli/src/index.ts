@@ -303,7 +303,8 @@ program
   .requiredOption("--run <runId>", "Run ID")
   .option("--format <format>", "Output format: markdown, json, all", "all")
   .option("--regenerate", "Regenerate traceability from artifacts")
-  .action(async (options: { run: string; format?: string; regenerate?: boolean }) => {
+  .option("--ai", "Use AI enhancement for coverage analysis and recommendations")
+  .action(async (options: { run: string; format?: string; regenerate?: boolean; ai?: boolean }) => {
     await traceCommand(options);
   });
 

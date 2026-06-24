@@ -16,13 +16,13 @@ import { runUiDesignerAgent } from "../agents/uiDesignerAgent.js";
 import { runUxWriterAgent } from "../agents/uxWriterAgent.js";
 import { runReporterAgent } from "../agents/reporterAgent.js";
 import { runTechnicalDocumentationAgent } from "../agents/technicalDocumentationAgent.js";
+import {
+  runTraceabilityAgent,
+  traceabilityToEnhancedMarkdown,
+} from "../agents/traceabilityAgent.js";
 import { analyzeRepository, analysisToMarkdown } from "../repoAnalyzer/repoAnalyzer.js";
 import { getAiToolConfig, resolvePlannerSelection } from "./workflowHelpers.js";
 import type { AiToolConfig, PlannerSelection } from "./workflowHelpers.js";
-import {
-  generateTraceability,
-  traceabilityToMarkdown,
-} from "../traceability/traceabilityEngine.js";
 import { buildReportReadyMessage } from "../integrations/slackMessageTemplates.js";
 import type { SlackMessageInput } from "../integrations/slackMessageTemplates.js";
 
@@ -124,6 +124,11 @@ export async function runDocsOnlyWorkflow(
   const reporterTool: AiToolConfig | undefined =
     input.agentMapping && input.cliConfigs
       ? getAiToolConfig("REPORTER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const traceabilityTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("TRACEABILITY", input.agentMapping, input.cliConfigs)
       : undefined;
 
   const techDocTool: AiToolConfig | undefined =
@@ -473,14 +478,19 @@ export async function runDocsOnlyWorkflow(
     artifacts.push(paths.changelogPath);
   }
 
-  const traceability = await generateTraceability(runId, paths);
-  await writeArtifact(paths.traceabilityMd, traceabilityToMarkdown(traceability));
+  const traceabilityOutput = await runTraceabilityAgent(
+    { runId, artifactPaths: paths },
+    { templateDir, aiTool: traceabilityTool },
+  );
+
+  const traceabilityMd = traceabilityToEnhancedMarkdown(traceabilityOutput);
+  await writeArtifact(paths.traceabilityMd, traceabilityMd);
   artifacts.push(paths.traceabilityMd);
 
-  await writeArtifact(paths.traceabilityJson, JSON.stringify(traceability, null, 2));
+  await writeArtifact(paths.traceabilityJson, JSON.stringify(traceabilityOutput.matrix, null, 2));
   artifacts.push(paths.traceabilityJson);
 
-  const traceabilitySection = traceabilityToMarkdown(traceability);
+  const traceabilitySection = traceabilityMd;
 
   if (input.generateDocumentation ?? false) {
     const techDocOutput = await runTechnicalDocumentationAgent(

@@ -15,13 +15,13 @@ import { runUiDesignerAgent } from "../agents/uiDesignerAgent.js";
 import { runUxWriterAgent } from "../agents/uxWriterAgent.js";
 import { runDeveloperAgent } from "../agents/developerAgent.js";
 import { runReporterAgent } from "../agents/reporterAgent.js";
+import {
+  runTraceabilityAgent,
+  traceabilityToEnhancedMarkdown,
+} from "../agents/traceabilityAgent.js";
 import { analyzeRepository, analysisToMarkdown } from "../repoAnalyzer/repoAnalyzer.js";
 import { getAiToolConfig, resolvePlannerSelection } from "./workflowHelpers.js";
 import type { AiToolConfig, PlannerSelection } from "./workflowHelpers.js";
-import {
-  generateTraceability,
-  traceabilityToMarkdown,
-} from "../traceability/traceabilityEngine.js";
 import { buildReportReadyMessage } from "../integrations/slackMessageTemplates.js";
 import type { SlackMessageInput } from "../integrations/slackMessageTemplates.js";
 
@@ -123,6 +123,11 @@ export async function runAssistedWorkflow(
   const reporterTool: AiToolConfig | undefined =
     input.agentMapping && input.cliConfigs
       ? getAiToolConfig("REPORTER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const traceabilityTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("TRACEABILITY", input.agentMapping, input.cliConfigs)
       : undefined;
 
   const integrationPlannerTool: AiToolConfig | undefined =
@@ -448,14 +453,19 @@ export async function runAssistedWorkflow(
     artifacts.push(paths.changelogPath);
   }
 
-  const traceability = await generateTraceability(runId, paths);
-  await writeArtifact(paths.traceabilityMd, traceabilityToMarkdown(traceability));
+  const traceabilityOutput = await runTraceabilityAgent(
+    { runId, artifactPaths: paths },
+    { templateDir, aiTool: traceabilityTool },
+  );
+
+  const traceabilityMd = traceabilityToEnhancedMarkdown(traceabilityOutput);
+  await writeArtifact(paths.traceabilityMd, traceabilityMd);
   artifacts.push(paths.traceabilityMd);
 
-  await writeArtifact(paths.traceabilityJson, JSON.stringify(traceability, null, 2));
+  await writeArtifact(paths.traceabilityJson, JSON.stringify(traceabilityOutput.matrix, null, 2));
   artifacts.push(paths.traceabilityJson);
 
-  const traceabilitySection = traceabilityToMarkdown(traceability);
+  const traceabilitySection = traceabilityMd;
 
   const reporterOutput = await runReporterAgent(
     {

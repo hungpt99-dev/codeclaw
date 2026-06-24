@@ -19,13 +19,13 @@ import { runQaAgent } from "../agents/qaAgent.js";
 import { runDeveloperAgent } from "../agents/developerAgent.js";
 import { runReporterAgent } from "../agents/reporterAgent.js";
 import { runTechnicalDocumentationAgent } from "../agents/technicalDocumentationAgent.js";
+import {
+  runTraceabilityAgent,
+  traceabilityToEnhancedMarkdown,
+} from "../agents/traceabilityAgent.js";
 import { analyzeRepository, analysisToMarkdown } from "../repoAnalyzer/repoAnalyzer.js";
 import { getAiToolConfig, resolvePlannerSelection } from "./workflowHelpers.js";
 import type { AiToolConfig, PlannerSelection } from "./workflowHelpers.js";
-import {
-  generateTraceability,
-  traceabilityToMarkdown,
-} from "../traceability/traceabilityEngine.js";
 import { checkFileSafety, checkCommandSafety } from "../policies/safetyPolicy.js";
 import type { SafetyPolicy, FileSafetyResult } from "../policies/safetyPolicy.js";
 import { buildReportReadyMessage } from "../integrations/slackMessageTemplates.js";
@@ -261,6 +261,11 @@ export async function runSemiAutoWorkflow(
   const reporterTool: AiToolConfig | undefined =
     input.agentMapping && input.cliConfigs
       ? getAiToolConfig("REPORTER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const traceabilityTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("TRACEABILITY", input.agentMapping, input.cliConfigs)
       : undefined;
 
   const integrationPlannerTool: AiToolConfig | undefined =
@@ -587,6 +592,7 @@ export async function runSemiAutoWorkflow(
       : undefined,
     reporterTool,
     devopsReleaseTool,
+    traceabilityTool,
     integrationPlanOutput,
     templateDir,
     techDocTool,
@@ -610,6 +616,7 @@ interface PostCodeContext {
   devTool: AiToolConfig | undefined;
   reporterTool: AiToolConfig | undefined;
   devopsReleaseTool: AiToolConfig | undefined;
+  traceabilityTool: AiToolConfig | undefined;
   integrationPlanOutput: Awaited<ReturnType<typeof runIntegrationPlannerAgent>> | undefined;
   templateDir: string | undefined;
   techDocTool: AiToolConfig | undefined;
@@ -632,6 +639,7 @@ async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkfl
     implementationPrompt,
     devTool,
     reporterTool,
+    traceabilityTool,
     templateDir,
     techDocTool,
   } = ctx;
@@ -792,13 +800,18 @@ async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkfl
     artifacts.push(paths.changelogPath);
   }
 
-  const traceability = await generateTraceability(runId, paths);
-  await writeArtifact(paths.traceabilityMd, traceabilityToMarkdown(traceability));
+  const traceabilityOutput = await runTraceabilityAgent(
+    { runId, artifactPaths: paths, changedFilesPath: paths.changedFilesPath },
+    { templateDir, aiTool: traceabilityTool },
+  );
+
+  const traceabilityMd = traceabilityToEnhancedMarkdown(traceabilityOutput);
+  await writeArtifact(paths.traceabilityMd, traceabilityMd);
   artifacts.push(paths.traceabilityMd);
-  await writeArtifact(paths.traceabilityJson, JSON.stringify(traceability, null, 2));
+  await writeArtifact(paths.traceabilityJson, JSON.stringify(traceabilityOutput.matrix, null, 2));
   artifacts.push(paths.traceabilityJson);
 
-  const traceabilitySection = traceabilityToMarkdown(traceability);
+  const traceabilitySection = traceabilityMd;
 
   if (input.generateDocumentation ?? false) {
     const techDocOutput = await runTechnicalDocumentationAgent(
@@ -964,6 +977,10 @@ export async function continueAfterRiskyFileApproval(
     devopsReleaseTool:
       input.agentMapping && input.cliConfigs && (input.generateReleasePlan ?? false)
         ? getAiToolConfig("DEVOPS_RELEASE", input.agentMapping, input.cliConfigs)
+        : undefined,
+    traceabilityTool:
+      input.agentMapping && input.cliConfigs
+        ? getAiToolConfig("TRACEABILITY", input.agentMapping, input.cliConfigs)
         : undefined,
     integrationPlanOutput: undefined,
     templateDir: input.templateDir,

@@ -19,7 +19,8 @@ export type AgentRole =
   | "BACKEND_PLANNER"
   | "INTEGRATION_PLANNER"
   | "DEVOPS_RELEASE"
-  | "TECHNICAL_DOCUMENTATION";
+  | "TECHNICAL_DOCUMENTATION"
+  | "TRACEABILITY";
 
 export interface AgentRunInput {
   role: AgentRole;

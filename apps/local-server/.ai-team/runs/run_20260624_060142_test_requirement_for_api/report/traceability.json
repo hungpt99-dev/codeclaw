@@ -1,0 +1,28 @@
+{
+  "runId": "run_20260624_060142_test_requirement_for_api",
+  "items": [
+    {
+      "requirementId": "REQ-001",
+      "requirementText": "Unnamed requirement",
+      "acceptanceCriteriaIds": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-005"
+      ],
+      "taskIds": [],
+      "codeFiles": [],
+      "testCases": [],
+      "testResults": [],
+      "status": "NOT_COVERED"
+    }
+  ],
+  "generatedAt": "2026-06-24T06:01:42.997Z",
+  "summary": {
+    "total": 1,
+    "covered": 0,
+    "partial": 0,
+    "notCovered": 1
+  }
+}
