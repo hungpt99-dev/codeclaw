@@ -22,6 +22,10 @@ import type {
   ReviewOutput,
   ReviewArtifacts,
   FixLoopResult,
+  AiCliStatusResponse,
+  AiCliTestResult,
+  StorageInfo,
+  StorageCleanResult,
 } from "./types.js";
 
 const BASE = "/api";
@@ -278,6 +282,32 @@ export const api = {
   async getReviewArtifacts(runId: string): Promise<ReviewArtifacts> {
     const data = await request<{ review: ReviewArtifacts }>(`/runs/${runId}/review`);
     return data.review;
+  },
+
+  async getAiCliStatus(): Promise<AiCliStatusResponse> {
+    return request("/settings/ai-cli/status");
+  },
+
+  async testAiCli(tool: string): Promise<AiCliTestResult> {
+    return request("/settings/ai-cli/test", {
+      method: "POST",
+      body: JSON.stringify({ tool }),
+    });
+  },
+
+  async testIntegration(type: string): Promise<AiCliTestResult> {
+    return request(`/settings/integrations/test/${type}`);
+  },
+
+  async getStorageInfo(): Promise<StorageInfo> {
+    return request("/settings/storage");
+  },
+
+  async cleanOldRuns(days?: number): Promise<StorageCleanResult> {
+    return request("/settings/storage/clean", {
+      method: "POST",
+      body: JSON.stringify({ days: days ?? 30 }),
+    });
   },
 
   async createGitHubPR(

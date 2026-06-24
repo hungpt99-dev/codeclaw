@@ -293,4 +293,88 @@ describe("Local Server API", () => {
       expect(res.statusCode).toBe(404);
     });
   });
+
+  describe("GET /api/settings/ai-cli/status", () => {
+    it("returns ai cli tools status list", async () => {
+      const res = await app.inject({ method: "GET", url: "/api/settings/ai-cli/status" });
+      expect(res.statusCode).toBe(200);
+      const body = getJson<{ tools: unknown[] }>(res);
+      expect(body.tools).toBeInstanceOf(Array);
+      expect(body.tools.length).toBeGreaterThan(0);
+      const tool = body.tools[0] as { name: string; key: string; status: string };
+      expect(tool).toHaveProperty("name");
+      expect(tool).toHaveProperty("key");
+      expect(tool).toHaveProperty("status");
+      expect(["available", "missing", "disabled"]).toContain(tool.status);
+    });
+  });
+
+  describe("POST /api/settings/ai-cli/test", () => {
+    it("rejects missing tool parameter", async () => {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/settings/ai-cli/test",
+        payload: {},
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it("rejects unknown tool", async () => {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/settings/ai-cli/test",
+        payload: { tool: "nonexistent-tool" },
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it("tests a known tool", async () => {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/settings/ai-cli/test",
+        payload: { tool: "claude" },
+      });
+      expect(res.statusCode).toBe(200);
+      const body = getJson<{ success: boolean; message: string }>(res);
+      expect(body).toHaveProperty("success");
+      expect(body).toHaveProperty("message");
+    });
+  });
+
+  describe("GET /api/settings/storage", () => {
+    it("returns storage info", async () => {
+      const res = await app.inject({ method: "GET", url: "/api/settings/storage" });
+      expect(res.statusCode).toBe(200);
+      const body = getJson<{
+        aiTeamPath: string;
+        totalRuns: number;
+        totalSizeBytes: number;
+      }>(res);
+      expect(body).toHaveProperty("aiTeamPath");
+      expect(body).toHaveProperty("totalRuns");
+      expect(body).toHaveProperty("totalSizeBytes");
+      expect(typeof body.totalRuns).toBe("number");
+    });
+  });
+
+  describe("GET /api/settings/integrations/test/:type", () => {
+    it("returns error for unknown integration type", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: "/api/settings/integrations/test/unknown",
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it("tests github integration", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: "/api/settings/integrations/test/github",
+      });
+      expect(res.statusCode).toBe(200);
+      const body = getJson<{ success: boolean; message: string }>(res);
+      expect(body).toHaveProperty("success");
+      expect(body).toHaveProperty("message");
+    });
+  });
 });

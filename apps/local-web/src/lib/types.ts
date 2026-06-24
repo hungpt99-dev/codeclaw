@@ -203,3 +203,72 @@ export interface ExportResult {
   fileSize: number;
   error?: string;
 }
+
+export interface AiCliToolInfo {
+  name: string;
+  key: string;
+  command: string;
+  enabled: boolean;
+  available: boolean;
+  status: "available" | "missing" | "disabled";
+}
+
+export interface AiCliStatusResponse {
+  tools: AiCliToolInfo[];
+}
+
+export interface AiCliTestResult {
+  success: boolean;
+  message: string;
+}
+
+export interface StorageInfo {
+  aiTeamPath: string;
+  databasePath: string;
+  runsPath: string;
+  promptsPath: string;
+  logsPath: string;
+  totalRuns: number;
+  totalSizeBytes: number;
+}
+
+export interface StorageCleanResult {
+  success: boolean;
+  message: string;
+  freedBytes: number;
+}
+
+export type DocArtifactType =
+  | "clarified_requirement"
+  | "business_rules"
+  | "acceptance_criteria"
+  | "open_questions"
+  | "scope_definition"
+  | "technical_design"
+  | "api_design"
+  | "database_design"
+  | "task_breakdown"
+  | "test_matrix"
+  | "implementation_prompt"
+  | "review_report"
+  | "security_review"
+  | "traceability_matrix"
+  | "final_report";
+
+export const DOC_ARTIFACT_LABELS: Record<DocArtifactType, string> = {
+  clarified_requirement: "Clarified Requirement",
+  business_rules: "Business Rules",
+  acceptance_criteria: "Acceptance Criteria",
+  open_questions: "Open Questions / Assumptions",
+  scope_definition: "Scope Definition",
+  technical_design: "Technical Design",
+  api_design: "API Design",
+  database_design: "Database Design",
+  task_breakdown: "Task Breakdown",
+  test_matrix: "Test Matrix",
+  implementation_prompt: "Implementation Prompt",
+  review_report: "Review Report",
+  security_review: "Security Review",
+  traceability_matrix: "Traceability Matrix",
+  final_report: "Final Report",
+};
