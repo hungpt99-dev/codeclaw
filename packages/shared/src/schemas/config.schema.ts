@@ -1,12 +1,20 @@
 import { z } from "zod";
 import { RunMode } from "../types/domain.js";
 
-const aiCliToolSchema = z.enum(["claude", "codex", "gemini", "aider"] as const);
+const aiCliToolSchema = z.enum(["claude", "codex", "gemini", "aider", "opencode"] as const);
 
 const aiCliToolConfigSchema = z.object({
   enabled: z.boolean(),
   command: z.string(),
   timeoutSeconds: z.number().int().positive(),
+});
+
+const agentBackendConfigSchema = z.object({
+  provider: z.enum(["openai-compatible", "mock", "none"]).default("none"),
+  model: z.string().default("gpt-4o-mini"),
+  baseUrl: z.string().default("https://api.openai.com/v1"),
+  apiKeyEnv: z.string().default("CODECLAW_OPENAI_API_KEY"),
+  timeoutMs: z.number().int().positive().default(60000),
 });
 
 const slackNotifyEnum = z.enum([
@@ -45,6 +53,7 @@ export const configSchema = z.object({
     codex: aiCliToolConfigSchema,
     gemini: aiCliToolConfigSchema,
     aider: aiCliToolConfigSchema,
+    opencode: aiCliToolConfigSchema,
   }),
   workflow: z.object({
     defaultMode: z.enum(Object.values(RunMode) as [string, ...string[]]),
@@ -55,6 +64,13 @@ export const configSchema = z.object({
     requireScopeApproval: z.boolean(),
     requireRequirementApproval: z.boolean(),
     requirePlanApproval: z.boolean(),
+  }),
+  agentBackend: agentBackendConfigSchema.optional().default({
+    provider: "none",
+    model: "gpt-4o-mini",
+    baseUrl: "https://api.openai.com/v1",
+    apiKeyEnv: "CODECLAW_OPENAI_API_KEY",
+    timeoutMs: 60000,
   }),
   commands: z.object({
     build: z.string(),
@@ -124,6 +140,7 @@ export const defaultConfig: Config = {
     codex: { enabled: false, command: "codex", timeoutSeconds: 900 },
     gemini: { enabled: false, command: "gemini", timeoutSeconds: 900 },
     aider: { enabled: false, command: "aider", timeoutSeconds: 900 },
+    opencode: { enabled: false, command: "opencode", timeoutSeconds: 900 },
   },
   workflow: {
     defaultMode: "docs-only",
@@ -134,6 +151,13 @@ export const defaultConfig: Config = {
     requireScopeApproval: false,
     requireRequirementApproval: false,
     requirePlanApproval: false,
+  },
+  agentBackend: {
+    provider: "none",
+    model: "gpt-4o-mini",
+    baseUrl: "https://api.openai.com/v1",
+    apiKeyEnv: "CODECLAW_OPENAI_API_KEY",
+    timeoutMs: 60000,
   },
   commands: {
     build: "",

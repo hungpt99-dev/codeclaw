@@ -128,6 +128,12 @@ export type {
   SecurityReviewerAgentInput,
   SecurityReviewerAgentOutput,
 } from "./agents/securityReviewerAgent.js";
+export { runCodingAgent } from "./coding/runCodingAgent.js";
+export type { RunCodingAgentInput, RunCodingAgentOutput } from "./coding/runCodingAgent.js";
+export { generateOpenCodeExecutionReport } from "./coding/opencodeExecutionReport.js";
+export type { ExecutionReportInput } from "./coding/opencodeExecutionReport.js";
+export { runWithAgentBackend, clearAgentBackendCache } from "./agents/agentBackendRunner.js";
+export type { AgentBackendRunnerInput } from "./agents/agentBackendRunner.js";
 export { parseCodeReviewerOutput } from "./agents/parsers/codeReviewerOutputParser.js";
 export { parseSecurityReviewerOutput } from "./agents/parsers/securityReviewerOutputParser.js";
 export { runReview, loadAndReview, persistReview } from "./review/reviewService.js";

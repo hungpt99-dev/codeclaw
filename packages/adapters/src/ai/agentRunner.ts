@@ -1,6 +1,6 @@
 import { runAgentPrompt } from "./agentPromptRunner.js";
 
-export type AiCliTool = "claude" | "codex" | "gemini" | "aider";
+export type AiCliTool = "claude" | "codex" | "gemini" | "aider" | "opencode";
 
 export type AgentRole =
   | "BA"

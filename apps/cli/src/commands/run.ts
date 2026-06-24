@@ -116,6 +116,7 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
       templateDir,
       agentMapping: config.agents,
       cliConfigs: config.cli,
+      agentBackendConfig: config.agentBackend,
     };
 
     const result = await runWorkflowWithGates(workflowInput);
@@ -183,6 +184,7 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
     templateDir,
     agentMapping: config.agents,
     cliConfigs: config.cli,
+    agentBackendConfig: config.agentBackend,
   };
 
   let result: {

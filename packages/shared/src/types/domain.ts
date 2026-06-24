@@ -98,7 +98,7 @@ export interface Artifact {
   createdAt: string;
 }
 
-export type AiCliTool = "claude" | "codex" | "gemini" | "aider";
+export type AiCliTool = "claude" | "codex" | "gemini" | "aider" | "opencode";
 
 export type TestStatus = "PASSED" | "FAILED" | "TIMEOUT" | "SKIPPED" | "NOT_RUN";
 
@@ -237,6 +237,14 @@ export interface SlackIntegrationConfig {
   )[];
 }
 
+export interface AgentBackendConfig {
+  provider: "openai-compatible" | "mock" | "none";
+  model: string;
+  baseUrl: string;
+  apiKeyEnv: string;
+  timeoutMs: number;
+}
+
 export interface CodeClawConfig {
   version: string;
   project: {
@@ -263,7 +271,9 @@ export interface CodeClawConfig {
     codex: AiCliToolConfig;
     gemini: AiCliToolConfig;
     aider: AiCliToolConfig;
+    opencode: AiCliToolConfig;
   };
+  agentBackend: AgentBackendConfig;
   workflow: {
     defaultMode: RunMode;
     defaultOutputLanguage: string;

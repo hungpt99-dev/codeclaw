@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { createRunId, nowIso } from "@codeclaw/shared";
-import type { ApprovalGate, ApprovalStatus } from "@codeclaw/shared";
+import type { ApprovalGate, ApprovalStatus, AgentBackendConfig } from "@codeclaw/shared";
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
 import { runBaAgent } from "../agents/baAgent.js";
 import { runPoAgent } from "../agents/poAgent.js";
@@ -37,6 +37,7 @@ export interface WorkflowInput {
   cliConfigs?: Record<string, { enabled: boolean; command: string; timeoutSeconds: number }>;
   approvedGate?: ApprovalGate;
   plannerSelection?: PlannerSelection;
+  agentBackendConfig?: AgentBackendConfig;
 }
 
 export interface WorkflowResult {
@@ -108,7 +109,7 @@ export async function runWorkflowWithGates(input: WorkflowInput): Promise<Workfl
 
   const baOutput = await runBaAgent(
     { requirement: input.requirement },
-    { templateDir, aiTool: baTool },
+    { templateDir, aiTool: baTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   await writeArtifact(
@@ -190,7 +191,7 @@ export async function runWorkflowWithGates(input: WorkflowInput): Promise<Workfl
       requirement: input.requirement,
       clarifiedRequirement: baOutput.clarifiedRequirement,
     },
-    { templateDir, aiTool: architectTool },
+    { templateDir, aiTool: architectTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   await writeArtifact(

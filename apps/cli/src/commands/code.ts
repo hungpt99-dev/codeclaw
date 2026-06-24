@@ -2,7 +2,7 @@ import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { configSchema } from "@codeclaw/shared";
 import type { AiCliTool } from "@codeclaw/shared";
-import { getArtifactPaths, writeArtifact, runDeveloperAgent } from "@codeclaw/core";
+import { getArtifactPaths, writeArtifact, runDeveloperAgent, runCodingAgent } from "@codeclaw/core";
 import {
   openDatabase,
   initializeSchema,
@@ -130,18 +130,57 @@ export async function codeCommand(options: CodeOptions): Promise<void> {
   if (options.promptOnly) {
     console.log("\nℹ️  Prompt-only mode: code will not be executed.");
     console.log(`   Use the prompt at: ${paths.implementationPromptPath}`);
+    db.close();
+    return;
   }
 
-  if (options.dryRun) {
+  if (defaultAgent === "opencode" && tool && !options.dryRun) {
+    if (!options.approve) {
+      console.log("\n⏸️  OpenCode execution requires approval.");
+      console.log(`   Review the prompt at: ${paths.implementationPromptPath}`);
+      console.log(`   To approve: codeclaw code --run ${runId} --agent opencode --approve`);
+      console.log(`   To dry-run: codeclaw code --run ${runId} --agent opencode --dry-run`);
+      console.log(`   To skip:    codeclaw code --run ${runId} --agent opencode --prompt-only`);
+      db.close();
+      return;
+    }
+
+    console.log(`\n🚀 Triggering OpenCode CLI for implementation...`);
+
+    const result = await runCodingAgent({
+      runId,
+      projectRoot: process.cwd(),
+      prompt: devOutput.implementationPrompt,
+      adapter: "opencode",
+      dryRun: false,
+      timeoutMs: agentConfig.timeoutSeconds * 1000,
+    });
+
+    runRepo.updateStatus(runId, result.runResult.success ? "CODE_GENERATED" : "CODE_FAILED");
+
+    console.log(`   Execution report: ${result.reportPath}`);
+    if (result.runResult.success) {
+      console.log("✅ OpenCode execution completed successfully.");
+    } else {
+      console.log("❌ OpenCode execution failed.");
+      if (result.runResult.stderr) {
+        console.log(`   Error: ${result.runResult.stderr.slice(0, 500)}`);
+      }
+    }
+  } else if (options.dryRun) {
     console.log("\nℹ️  Dry run: no execution commands were issued.");
-  }
-
-  if (tool && !options.promptOnly && !options.dryRun) {
+    if (defaultAgent === "opencode") {
+      console.log("   OpenCode execution would run with the generated prompt.");
+    }
+  } else if (tool) {
     console.log(`\n🚀 Triggering ${defaultAgent} for implementation...`);
     console.log("   (Actual code execution not yet implemented in standalone mode.)");
     console.log(`   Prompt saved to: ${paths.implementationPromptPath}`);
     console.log(
       `   Use: codeclaw run --mode semi-auto --agent ${defaultAgent} "${run.rawRequirement}"`,
+    );
+    console.log(
+      `   Or try: codeclaw code --run ${runId} --agent opencode for OpenCode integration`,
     );
   }
 

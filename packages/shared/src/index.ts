@@ -21,6 +21,7 @@ export {
   RunStatus as RunStatusValues,
   ArtifactType as ArtifactTypeValues,
 } from "./types/domain.js";
+export type { AgentBackendConfig } from "./types/domain.js";
 
 export { configSchema, defaultConfig } from "./schemas/config.schema.js";
 export type { Config, SlackNotifyEvent } from "./schemas/config.schema.js";
@@ -30,6 +31,7 @@ export type { RunSchema } from "./schemas/run.schema.js";
 
 export { createRunId, slugify } from "./utils/ids.js";
 export { nowIso } from "./utils/date.js";
+export { redactSecrets } from "./utils/redact.js";
 export type {
   ProjectType,
   RepositoryAnalysis,

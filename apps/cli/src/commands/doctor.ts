@@ -10,6 +10,7 @@ import {
   createCodexAdapter,
   createGeminiAdapter,
   createAiderAdapter,
+  createOpenCodeAdapter,
   isGhCliAvailable,
   isGhAuthenticated,
   getJiraStatus,
@@ -190,6 +191,16 @@ export async function doctorCommand(): Promise<void> {
     name: "Aider CLI",
     status: aiderAvailable ? "pass" : "warn",
     message: aiderAvailable ? "Available" : "Not found in PATH",
+  });
+
+  const opencodeAdapter = createOpenCodeAdapter();
+  const opencodeAvailable = await opencodeAdapter.isAvailable();
+  results.push({
+    name: "OpenCode CLI",
+    status: opencodeAvailable ? "pass" : "warn",
+    message: opencodeAvailable
+      ? "Available"
+      : "Not found. Install OpenCode or choose another coding adapter.",
   });
 
   const ghAvailable = await isGhCliAvailable();

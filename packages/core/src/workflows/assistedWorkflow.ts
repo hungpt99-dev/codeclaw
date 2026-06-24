@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { createRunId, nowIso } from "@codeclaw/shared";
-import type { SlackIntegrationConfig } from "@codeclaw/shared";
+import type { SlackIntegrationConfig, AgentBackendConfig } from "@codeclaw/shared";
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
 import { runBaAgent } from "../agents/baAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
@@ -40,6 +40,7 @@ export interface AssistedWorkflowInput {
   templateDir?: string;
   agentMapping?: Record<string, string>;
   cliConfigs?: Record<string, { enabled: boolean; command: string; timeoutSeconds: number }>;
+  agentBackendConfig?: AgentBackendConfig;
   targetAgent?: "claude-code" | "codex" | "gemini" | "aider" | "generic";
   slackConfig?: SlackIntegrationConfig;
   plannerSelection?: PlannerSelection;
@@ -189,7 +190,7 @@ export async function runAssistedWorkflow(
 
   const baOutput = await runBaAgent(
     { requirement: input.requirement },
-    { templateDir, aiTool: baTool },
+    { templateDir, aiTool: baTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   emitWorkflowProgress(runId, "AGENT_COMPLETED", {
@@ -261,6 +262,7 @@ export async function runAssistedWorkflow(
   const architectOutput = await runArchitectAgent(architectInput, {
     templateDir,
     aiTool: architectTool,
+    agentBackendConfig: input.agentBackendConfig,
   });
 
   emitWorkflowProgress(runId, "AGENT_COMPLETED", {

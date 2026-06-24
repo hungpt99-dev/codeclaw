@@ -2,7 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
-import type { RepositoryAnalysis } from "@codeclaw/shared";
+import type { RepositoryAnalysis, AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseArchitectOutput } from "./parsers/architectOutputParser.js";
 
 export interface ArchitectAgentInput {
@@ -229,11 +230,40 @@ export async function runArchitectAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<ArchitectAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
 
   const projectContext = buildProjectContext(input);
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a Software Architect. Design the technical architecture for the following requirement.
+
+Requirement: ${input.requirement}
+Clarified Requirement: ${input.clarifiedRequirement}
+${projectContext}
+
+Generate the following sections:
+1. Technical Design - including component breakdown, data flow, design patterns, technology stack
+2. API Design - including endpoints, request/response formats, error codes
+3. Database Design - including tables, columns, indexes, relations`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "ARCHITECT",
+      agentName: "Software Architect",
+      systemPrompt:
+        "You are a senior Software Architect. Generate comprehensive technical design documents from requirements.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement, clarifiedRequirement: input.clarifiedRequirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseArchitectOutput(result.content, input.requirement);
+    }
+  }
 
   if (options?.aiTool) {
     const context = {

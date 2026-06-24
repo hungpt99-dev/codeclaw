@@ -10,8 +10,26 @@ export { createClaudeCodeAdapter } from "./ai/adapters/claudeCodeAdapter.js";
 export { createCodexAdapter } from "./ai/adapters/codexAdapter.js";
 export { createGeminiAdapter } from "./ai/adapters/geminiAdapter.js";
 export { createAiderAdapter } from "./ai/adapters/aiderAdapter.js";
+export { createOpenCodeAdapter } from "./ai/adapters/opencodeAdapter.js";
 export { createAdapter } from "./ai/adapterFactory.js";
 export type { AiCliAdapter } from "./ai/aiCliAdapter.js";
+
+export { createOpenCodeCodingAgent } from "./coding/opencodeCodingAgent.js";
+export type {
+  CodingAgentAdapter,
+  CodingAgentAvailability,
+  CodingAgentRunInput,
+  CodingAgentRunResult,
+} from "./coding/codingAgentAdapter.js";
+
+export { createMockAgentBackend } from "./agentBackend/mockAgentBackend.js";
+export { createOpenAiCompatibleProvider } from "./agentBackend/openaiCompatibleProvider.js";
+export type {
+  AgentBackend,
+  AgentBackendAvailability,
+  AgentGenerateInput,
+  AgentGenerateResult,
+} from "./agentBackend/types.js";
 
 export {
   getGitStatus,

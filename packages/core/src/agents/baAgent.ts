@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseBaOutput } from "./parsers/baOutputParser.js";
 
 export interface BaAgentInput {
@@ -151,9 +153,38 @@ export async function runBaAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<BaAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a Business Analyst. Analyze the following software requirement and produce a structured output.
+
+Requirement: ${input.requirement}
+
+Generate the following sections:
+1. Clarified Requirement
+2. Business Rules
+3. Acceptance Criteria
+4. Open Questions
+5. Assumptions`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "BA",
+      agentName: "Business Analyst",
+      systemPrompt:
+        "You are a senior Business Analyst for a software development team. Generate clear, structured analysis from rough requirements.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseBaOutput(result.content, input.requirement);
+    }
+  }
 
   if (options?.aiTool) {
     const result = await runAgent({

@@ -5,6 +5,7 @@ import type {
   AiAdapterName,
   SlackIntegrationConfig,
   TestCommandResult,
+  AgentBackendConfig,
 } from "@codeclaw/shared";
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
 import type { ArtifactPaths } from "../artifacts/artifactWriter.js";
@@ -68,6 +69,7 @@ export interface SemiAutoWorkflowInput {
   generateIntegrationPlan?: boolean;
   generateReleasePlan?: boolean;
   generateDocumentation?: boolean;
+  agentBackendConfig?: AgentBackendConfig;
 }
 
 export interface SemiAutoWorkflowOutput {
@@ -302,7 +304,7 @@ export async function runSemiAutoWorkflow(
 
   const baOutput = await runBaAgent(
     { requirement: input.requirement },
-    { templateDir, aiTool: baTool },
+    { templateDir, aiTool: baTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   await writeArtifact(
@@ -335,6 +337,7 @@ export async function runSemiAutoWorkflow(
   const architectOutput = await runArchitectAgent(architectInput, {
     templateDir,
     aiTool: architectTool,
+    agentBackendConfig: input.agentBackendConfig,
   });
 
   await writeArtifact(
