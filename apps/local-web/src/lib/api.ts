@@ -65,7 +65,7 @@ export const api = {
   },
 
   async createRun(params: {
-    rawRequirement: string;
+    requirement: string;
     outputLanguage: string;
     mode: string;
   }): Promise<Run> {

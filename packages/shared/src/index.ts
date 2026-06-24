@@ -29,7 +29,7 @@ export { configSchema, defaultConfig } from "./schemas/config.schema.js";
 export type { Config, SlackNotifyEvent } from "./schemas/config.schema.js";
 
 export { runSchema } from "./schemas/run.schema.js";
-export type { RunSchema } from "./schemas/run.schema.js";
+export type { RunSchema, CreateRunRequest } from "./schemas/run.schema.js";
 
 export { createRunId, slugify } from "./utils/ids.js";
 export { nowIso } from "./utils/date.js";

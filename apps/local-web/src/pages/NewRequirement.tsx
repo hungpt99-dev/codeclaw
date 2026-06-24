@@ -22,7 +22,7 @@ export function NewRequirement(): ReactElement {
     setError(null);
     try {
       const run = await api.createRun({
-        rawRequirement: rawRequirement.trim(),
+        requirement: rawRequirement.trim(),
         outputLanguage,
         mode,
       });
