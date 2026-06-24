@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@codeclaw/adapters": "workspace:*",
+    "@codeclaw/native-runner": "workspace:*",
     "@codeclaw/shared": "workspace:*"
   }
 }

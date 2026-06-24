@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@codeclaw/shared": "workspace:*",
+    "@codeclaw/native-runner": "workspace:*",
     "execa": "^9.5.2",
     "html-to-docx": "^1.8.0",
     "marked": "^15.0.0"
