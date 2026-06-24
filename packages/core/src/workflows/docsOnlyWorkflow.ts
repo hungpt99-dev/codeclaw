@@ -7,6 +7,8 @@ import { runPoAgent } from "../agents/poAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
 import { runFrontendPlannerAgent } from "../agents/frontendPlannerAgent.js";
 import { runBackendPlannerAgent } from "../agents/backendPlannerAgent.js";
+import { runIntegrationPlannerAgent } from "../agents/integrationPlannerAgent.js";
+import { runDevopsReleaseAgent } from "../agents/devopsReleaseAgent.js";
 import { runPmAgent } from "../agents/pmAgent.js";
 import { runQaAgent } from "../agents/qaAgent.js";
 import { runUserJourneyAgent } from "../agents/userJourneyAgent.js";
@@ -38,6 +40,8 @@ export interface DocsOnlyWorkflowInput {
   cliConfigs?: Record<string, { enabled: boolean; command: string; timeoutSeconds: number }>;
   slackConfig?: SlackIntegrationConfig;
   plannerSelection?: PlannerSelection;
+  generateIntegrationPlan?: boolean;
+  generateReleasePlan?: boolean;
 }
 
 export interface DocsOnlyWorkflowOutput {
@@ -118,6 +122,16 @@ export async function runDocsOnlyWorkflow(
   const reporterTool: AiToolConfig | undefined =
     input.agentMapping && input.cliConfigs
       ? getAiToolConfig("REPORTER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const integrationPlannerTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs && (input.generateIntegrationPlan ?? false)
+      ? getAiToolConfig("INTEGRATION_PLANNER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const devopsReleaseTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs && (input.generateReleasePlan ?? false)
+      ? getAiToolConfig("DEVOPS_RELEASE", input.agentMapping, input.cliConfigs)
       : undefined;
 
   await writeArtifact(paths.inputFile, `# Raw Requirement\n\n${input.requirement}\n`);
@@ -281,6 +295,23 @@ export async function runDocsOnlyWorkflow(
   await writeArtifact(join(paths.designDir, "db-design.md"), architectOutput.dbDesign);
   artifacts.push(join(paths.designDir, "db-design.md"));
 
+  let integrationPlanOutput: Awaited<ReturnType<typeof runIntegrationPlannerAgent>> | undefined;
+
+  if (input.generateIntegrationPlan ?? false) {
+    integrationPlanOutput = await runIntegrationPlannerAgent(
+      {
+        requirement: input.requirement,
+        clarifiedRequirement: baOutput.clarifiedRequirement,
+        apiDesign: architectOutput.apiDesign,
+        technicalDesign: architectOutput.technicalDesign,
+      },
+      { templateDir, aiTool: integrationPlannerTool },
+    );
+
+    await writeArtifact(paths.integrationPlanPath, integrationPlanOutput.integrationPlan);
+    artifacts.push(paths.integrationPlanPath);
+  }
+
   const plannerSelection = resolvePlannerSelection(
     input.plannerSelection,
     repoAnalysis?.projectType,
@@ -414,6 +445,27 @@ export async function runDocsOnlyWorkflow(
   await writeArtifact(join(paths.testsDir, "test-matrix.json"), qaOutput.testMatrixJson);
   artifacts.push(join(paths.testsDir, "test-matrix.json"));
 
+  let devopsReleaseOutput: Awaited<ReturnType<typeof runDevopsReleaseAgent>> | undefined;
+
+  if (input.generateReleasePlan ?? false) {
+    devopsReleaseOutput = await runDevopsReleaseAgent(
+      {
+        requirement: input.requirement,
+        clarifiedRequirement: baOutput.clarifiedRequirement,
+        technicalDesign: combinedDesign,
+        apiDesign: architectOutput.apiDesign,
+        taskBreakdownMd: pmOutput.taskBreakdownMd,
+      },
+      { templateDir, aiTool: devopsReleaseTool },
+    );
+
+    await writeArtifact(paths.releasePlanPath, devopsReleaseOutput.releasePlan);
+    artifacts.push(paths.releasePlanPath);
+
+    await writeArtifact(paths.changelogPath, devopsReleaseOutput.changelog);
+    artifacts.push(paths.changelogPath);
+  }
+
   const traceability = await generateTraceability(runId, paths);
   await writeArtifact(paths.traceabilityMd, traceabilityToMarkdown(traceability));
   artifacts.push(paths.traceabilityMd);
@@ -435,6 +487,9 @@ export async function runDocsOnlyWorkflow(
       taskBreakdownMd: pmOutput.taskBreakdownMd,
       testMatrixMd: qaOutput.testMatrixMd,
       traceabilitySection,
+      integrationPlanSection: integrationPlanOutput?.integrationPlan,
+      releasePlanSection: devopsReleaseOutput?.releasePlan,
+      changelogSection: devopsReleaseOutput?.changelog,
     },
     { templateDir, aiTool: reporterTool },
   );

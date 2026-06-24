@@ -44,6 +44,9 @@ const mockPaths = {
   componentBreakdownPath: "/fake/runs/run-1/ux/component-breakdown.md",
   frontendDesignPath: "/fake/runs/run-1/design/frontend-design.md",
   backendDesignPath: "/fake/runs/run-1/design/backend-design.md",
+  integrationPlanPath: "/fake/runs/run-1/integration/integration-plan.md",
+  releasePlanPath: "/fake/runs/run-1/release/release-plan.md",
+  changelogPath: "/fake/runs/run-1/release/changelog.md",
 };
 
 describe("traceabilityEngine", () => {

@@ -15,6 +15,9 @@ export interface ReporterAgentInput {
   taskBreakdownMd: string;
   testMatrixMd: string;
   traceabilitySection?: string;
+  integrationPlanSection?: string | undefined;
+  releasePlanSection?: string | undefined;
+  changelogSection?: string | undefined;
 }
 
 export interface ReporterAgentOutput {
@@ -58,9 +61,12 @@ No AI calls were made during this workflow.
 | 11 | Task Breakdown (JSON) | ✓ | tasks/task-breakdown.json |
 | 12 | Test Matrix (MD) | ✓ | tests/test-matrix.md |
 | 13 | Test Matrix (JSON) | ✓ | tests/test-matrix.json |
-| 14 | Final Report | ✓ | report/final-report.md |
+| 14 | Integration Plan | ✓ | integration/integration-plan.md |
+| 15 | Release Plan | ✓ | release/release-plan.md |
+| 16 | Changelog | ✓ | release/changelog.md |
+| 17 | Final Report | ✓ | report/final-report.md |
 
-**Total Artifacts**: 14
+**Total Artifacts**: 17
 
 ---
 
@@ -107,6 +113,22 @@ No AI calls were made during this workflow.
 
 ---
 
+## Integration Plan
+
+{{integrationPlanSection}}
+
+---
+
+## Release Plan & Changelog
+
+{{releasePlanSection}}
+
+---
+
+{{changelogSection}}
+
+---
+
 ### Glossary
 
 | Term | Definition |
@@ -148,6 +170,9 @@ export async function runReporterAgent(
         taskBreakdown: input.taskBreakdownMd,
         testMatrix: input.testMatrixMd,
         traceabilitySection: input.traceabilitySection ?? "",
+        integrationPlanSection: input.integrationPlanSection ?? "",
+        releasePlanSection: input.releasePlanSection ?? "",
+        changelogSection: input.changelogSection ?? "",
       },
       aiToolConfig: options.aiTool,
     });
@@ -161,6 +186,9 @@ export async function runReporterAgent(
     requirement: input.requirement,
     generatedAt: new Date().toISOString(),
     traceabilitySection: input.traceabilitySection ?? "No traceability data available.",
+    integrationPlanSection: input.integrationPlanSection ?? "No integration plan generated.",
+    releasePlanSection: input.releasePlanSection ?? "No release plan generated.",
+    changelogSection: input.changelogSection ?? "No changelog generated.",
   };
 
   return {

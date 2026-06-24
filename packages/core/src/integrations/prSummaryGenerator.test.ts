@@ -44,6 +44,9 @@ const mockPaths = {
   componentBreakdownPath: "/test/.ai-team/runs/run_123/ux/component-breakdown.md",
   frontendDesignPath: "/test/.ai-team/runs/run_123/design/frontend-design.md",
   backendDesignPath: "/test/.ai-team/runs/run_123/design/backend-design.md",
+  integrationPlanPath: "/test/.ai-team/runs/run_123/integration/integration-plan.md",
+  releasePlanPath: "/test/.ai-team/runs/run_123/release/release-plan.md",
+  changelogPath: "/test/.ai-team/runs/run_123/release/changelog.md",
 };
 
 const mockRun = {

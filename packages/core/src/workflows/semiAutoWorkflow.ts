@@ -12,6 +12,8 @@ import { runBaAgent } from "../agents/baAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
 import { runFrontendPlannerAgent } from "../agents/frontendPlannerAgent.js";
 import { runBackendPlannerAgent } from "../agents/backendPlannerAgent.js";
+import { runIntegrationPlannerAgent } from "../agents/integrationPlannerAgent.js";
+import { runDevopsReleaseAgent } from "../agents/devopsReleaseAgent.js";
 import { runPmAgent } from "../agents/pmAgent.js";
 import { runQaAgent } from "../agents/qaAgent.js";
 import { runDeveloperAgent } from "../agents/developerAgent.js";
@@ -61,6 +63,8 @@ export interface SemiAutoWorkflowInput {
   maxIterations?: number;
   noFixLoop?: boolean;
   plannerSelection?: PlannerSelection;
+  generateIntegrationPlan?: boolean;
+  generateReleasePlan?: boolean;
 }
 
 export interface SemiAutoWorkflowOutput {
@@ -257,6 +261,16 @@ export async function runSemiAutoWorkflow(
       ? getAiToolConfig("REPORTER", input.agentMapping, input.cliConfigs)
       : undefined;
 
+  const integrationPlannerTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs && (input.generateIntegrationPlan ?? false)
+      ? getAiToolConfig("INTEGRATION_PLANNER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const devopsReleaseTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs && (input.generateReleasePlan ?? false)
+      ? getAiToolConfig("DEVOPS_RELEASE", input.agentMapping, input.cliConfigs)
+      : undefined;
+
   await writeArtifact(paths.inputFile, `# Raw Requirement\n\n${input.requirement}\n`);
   artifacts.push(paths.inputFile);
 
@@ -316,6 +330,23 @@ export async function runSemiAutoWorkflow(
 
   await writeArtifact(join(paths.designDir, "db-design.md"), architectOutput.dbDesign);
   artifacts.push(join(paths.designDir, "db-design.md"));
+
+  let integrationPlanOutput: Awaited<ReturnType<typeof runIntegrationPlannerAgent>> | undefined;
+
+  if (input.generateIntegrationPlan ?? false) {
+    integrationPlanOutput = await runIntegrationPlannerAgent(
+      {
+        requirement: input.requirement,
+        clarifiedRequirement: baOutput.clarifiedRequirement,
+        apiDesign: architectOutput.apiDesign,
+        technicalDesign: architectOutput.technicalDesign,
+      },
+      { templateDir, aiTool: integrationPlannerTool },
+    );
+
+    await writeArtifact(paths.integrationPlanPath, integrationPlanOutput.integrationPlan);
+    artifacts.push(paths.integrationPlanPath);
+  }
 
   const plannerSelection = resolvePlannerSelection(
     input.plannerSelection,
@@ -548,6 +579,8 @@ export async function runSemiAutoWorkflow(
       ? { tool: devTool.tool, command: devTool.command, timeoutSeconds: devTool.timeoutSeconds }
       : undefined,
     reporterTool,
+    devopsReleaseTool,
+    integrationPlanOutput,
     templateDir,
   });
 }
@@ -568,6 +601,8 @@ interface PostCodeContext {
   implementationPrompt: string;
   devTool: AiToolConfig | undefined;
   reporterTool: AiToolConfig | undefined;
+  devopsReleaseTool: AiToolConfig | undefined;
+  integrationPlanOutput: Awaited<ReturnType<typeof runIntegrationPlannerAgent>> | undefined;
   templateDir: string | undefined;
 }
 
@@ -726,6 +761,27 @@ async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkfl
     }
   }
 
+  let devopsReleaseOutput: Awaited<ReturnType<typeof runDevopsReleaseAgent>> | undefined;
+
+  if (ctx.input.generateReleasePlan ?? false) {
+    devopsReleaseOutput = await runDevopsReleaseAgent(
+      {
+        requirement: ctx.input.requirement,
+        clarifiedRequirement,
+        technicalDesign,
+        apiDesign,
+        taskBreakdownMd,
+      },
+      { templateDir, aiTool: ctx.devopsReleaseTool },
+    );
+
+    await writeArtifact(paths.releasePlanPath, devopsReleaseOutput.releasePlan);
+    artifacts.push(paths.releasePlanPath);
+
+    await writeArtifact(paths.changelogPath, devopsReleaseOutput.changelog);
+    artifacts.push(paths.changelogPath);
+  }
+
   const traceability = await generateTraceability(runId, paths);
   await writeArtifact(paths.traceabilityMd, traceabilityToMarkdown(traceability));
   artifacts.push(paths.traceabilityMd);
@@ -746,6 +802,9 @@ async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkfl
       taskBreakdownMd,
       testMatrixMd,
       traceabilitySection,
+      integrationPlanSection: ctx.integrationPlanOutput?.integrationPlan,
+      releasePlanSection: devopsReleaseOutput?.releasePlan,
+      changelogSection: devopsReleaseOutput?.changelog,
     },
     { templateDir, aiTool: reporterTool },
   );
@@ -861,6 +920,11 @@ export async function continueAfterRiskyFileApproval(
       input.agentMapping && input.cliConfigs
         ? getAiToolConfig("REPORTER", input.agentMapping, input.cliConfigs)
         : undefined,
+    devopsReleaseTool:
+      input.agentMapping && input.cliConfigs && (input.generateReleasePlan ?? false)
+        ? getAiToolConfig("DEVOPS_RELEASE", input.agentMapping, input.cliConfigs)
+        : undefined,
+    integrationPlanOutput: undefined,
     templateDir: input.templateDir,
   });
 }

@@ -17,7 +17,9 @@ type AgentRoleKey =
   | "UI_DESIGNER"
   | "UX_WRITER"
   | "FRONTEND_PLANNER"
-  | "BACKEND_PLANNER";
+  | "BACKEND_PLANNER"
+  | "INTEGRATION_PLANNER"
+  | "DEVOPS_RELEASE";
 
 const AGENT_TO_CONFIG_KEY: Record<string, string> = {
   BA: "defaultBa",
@@ -32,6 +34,8 @@ const AGENT_TO_CONFIG_KEY: Record<string, string> = {
   UX_WRITER: "defaultUxWriter",
   FRONTEND_PLANNER: "defaultFrontendPlanner",
   BACKEND_PLANNER: "defaultBackendPlanner",
+  INTEGRATION_PLANNER: "defaultIntegrationPlanner",
+  DEVOPS_RELEASE: "defaultDevopsRelease",
 };
 
 export interface AiToolConfig {

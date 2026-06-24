@@ -146,7 +146,9 @@ export type AgentRole =
   | "REPORTER"
   | "UX_RESEARCHER"
   | "UI_DESIGNER"
-  | "UX_WRITER";
+  | "UX_WRITER"
+  | "INTEGRATION_PLANNER"
+  | "DEVOPS_RELEASE";
 
 export interface AiCliToolConfig {
   enabled: boolean;
@@ -248,6 +250,8 @@ export interface AiTeamConfig {
     defaultQa: AiCliTool;
     defaultDeveloper: AiCliTool;
     defaultReporter: AiCliTool;
+    defaultIntegrationPlanner: AiCliTool;
+    defaultDevopsRelease: AiCliTool;
   };
   cli: {
     claude: AiCliToolConfig;
@@ -259,6 +263,8 @@ export interface AiTeamConfig {
     defaultMode: RunMode;
     defaultOutputLanguage: string;
     generateTraceability: boolean;
+    generateIntegrationPlan?: boolean;
+    generateReleasePlan?: boolean;
     requireScopeApproval: boolean;
     requireRequirementApproval: boolean;
     requirePlanApproval: boolean;

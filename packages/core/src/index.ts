@@ -33,6 +33,16 @@ export { runReporterAgent } from "./agents/reporterAgent.js";
 export type { ReporterAgentInput, ReporterAgentOutput } from "./agents/reporterAgent.js";
 export { runDeveloperAgent } from "./agents/developerAgent.js";
 export type { DeveloperAgentInput, DeveloperAgentOutput } from "./agents/developerAgent.js";
+export { runIntegrationPlannerAgent } from "./agents/integrationPlannerAgent.js";
+export type {
+  IntegrationPlannerAgentInput,
+  IntegrationPlannerAgentOutput,
+} from "./agents/integrationPlannerAgent.js";
+export { runDevopsReleaseAgent } from "./agents/devopsReleaseAgent.js";
+export type {
+  DevopsReleaseAgentInput,
+  DevopsReleaseAgentOutput,
+} from "./agents/devopsReleaseAgent.js";
 export { runDocsOnlyWorkflow } from "./workflows/docsOnlyWorkflow.js";
 export type {
   DocsOnlyWorkflowInput,

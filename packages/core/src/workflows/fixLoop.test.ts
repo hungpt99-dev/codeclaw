@@ -13,25 +13,30 @@ vi.mock("@aiteam/adapters", () => ({
   runAgentPrompt: vi.fn().mockResolvedValue({ success: true, output: "fixed" }),
   getChangedFiles: vi.fn().mockResolvedValue(["src/fixed.ts"]),
   generateDiff: vi.fn().mockResolvedValue("diff --git a/src/fixed.ts b/src/fixed.ts\n+fixed"),
-  runTests: vi.fn().mockImplementation(() =>
-    Promise.resolve({
-      overallStatus: "PASSED",
-      results: [
-        {
-          commandName: "unitTest",
-          command: "npm test",
-          exitCode: 0,
-          passed: true,
-          durationMs: 100,
-          timedOut: false,
-          stdoutPath: "",
-          stderrPath: "",
-          failureSummary: undefined,
-        },
-      ],
-      startedAt: "",
-      completedAt: "",
-    }),
+  runTests: vi.fn().mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+            overallStatus: "PASSED",
+            results: [
+              {
+                commandName: "unitTest",
+                command: "npm test",
+                exitCode: 0,
+                passed: true,
+                durationMs: 100,
+                timedOut: false,
+                stdoutPath: "",
+                stderrPath: "",
+                failureSummary: undefined,
+              },
+            ],
+            startedAt: "",
+            completedAt: "",
+          });
+        }, 1);
+      }),
   ),
 }));
 

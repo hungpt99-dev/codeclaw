@@ -36,6 +36,9 @@ export interface ArtifactPaths {
   componentBreakdownPath: string;
   frontendDesignPath: string;
   backendDesignPath: string;
+  integrationPlanPath: string;
+  releasePlanPath: string;
+  changelogPath: string;
 }
 
 export function getArtifactPaths(runId: string): ArtifactPaths {
@@ -75,6 +78,9 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
     componentBreakdownPath: join(runDir, "ux", "component-breakdown.md"),
     frontendDesignPath: join(runDir, "design", "frontend-design.md"),
     backendDesignPath: join(runDir, "design", "backend-design.md"),
+    integrationPlanPath: join(runDir, "integration", "integration-plan.md"),
+    releasePlanPath: join(runDir, "release", "release-plan.md"),
+    changelogPath: join(runDir, "release", "changelog.md"),
   };
 }
 
@@ -92,6 +98,8 @@ export async function createArtifactDirs(runId: string): Promise<ArtifactPaths> 
   await mkdir(paths.reviewDir, { recursive: true });
   await mkdir(paths.fixLoopDir, { recursive: true });
   await mkdir(paths.uxDir, { recursive: true });
+  await mkdir(join(paths.runDir, "integration"), { recursive: true });
+  await mkdir(join(paths.runDir, "release"), { recursive: true });
   return paths;
 }
 
