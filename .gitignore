@@ -13,6 +13,8 @@ coverage
 .codeclaw/logs
 .codeclaw/tmp
 apps/local-server/.codeclaw/
+# Rust build artifacts
+crates/*/target/
 # Legacy .ai-team directory (deprecated)
 .ai-team/
 
