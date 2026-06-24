@@ -20,3 +20,5 @@ export type {
   TraceabilityRecord,
   CreateTraceabilityItemInput,
 } from "./repositories/traceabilityRepository.js";
+export { createStepExecutionRepository } from "./repositories/stepExecutionRepository.js";
+export type { CreateStepExecutionInput } from "./repositories/stepExecutionRepository.js";

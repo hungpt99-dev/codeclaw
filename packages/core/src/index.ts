@@ -134,6 +134,8 @@ export { generateOpenCodeExecutionReport } from "./coding/opencodeExecutionRepor
 export type { ExecutionReportInput } from "./coding/opencodeExecutionReport.js";
 export { runWithAgentBackend, clearAgentBackendCache } from "./agents/agentBackendRunner.js";
 export type { AgentBackendRunnerInput } from "./agents/agentBackendRunner.js";
+export { runWithStepTracking, createStepExecutionId } from "./workflows/stepExecutionService.js";
+export type { StepRunnerOptions, StepRunnerResult } from "./workflows/stepExecutionService.js";
 export { parseCodeReviewerOutput } from "./agents/parsers/codeReviewerOutputParser.js";
 export { parseSecurityReviewerOutput } from "./agents/parsers/securityReviewerOutputParser.js";
 export { runReview, loadAndReview, persistReview } from "./review/reviewService.js";

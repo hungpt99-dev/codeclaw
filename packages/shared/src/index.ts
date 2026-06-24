@@ -15,6 +15,8 @@ export type {
   AiAdapterConfig,
   AiTaskInput,
   AiTaskResult,
+  StepStatus,
+  StepExecution,
 } from "./types/domain.js";
 export {
   RunMode as RunModeValues,

@@ -10,6 +10,7 @@ import { memoryStatusCommand, memoryIndexCommand } from "./commands/memory.js";
 import { approveCommand } from "./commands/approve.js";
 import { rejectCommand } from "./commands/reject.js";
 import { resumeCommand } from "./commands/resume.js";
+import { retryCommand } from "./commands/retry.js";
 import { cancelCommand } from "./commands/cancel.js";
 import { scopeCommand } from "./commands/scope.js";
 import { analyzeCommand } from "./commands/analyze.js";
@@ -265,6 +266,15 @@ program
   .argument("<runId>", "Run ID")
   .action(async (runId: string) => {
     await resumeCommand(runId);
+  });
+
+program
+  .command("retry")
+  .description("Retry a failed step in a workflow run")
+  .argument("<runId>", "Run ID")
+  .requiredOption("--step <index>", "Step index to retry (0-based)")
+  .action(async (runId: string, options: { step: string }) => {
+    await retryCommand(runId, options);
   });
 
 program

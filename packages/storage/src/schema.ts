@@ -60,6 +60,23 @@ CREATE TABLE IF NOT EXISTS approvals (
   FOREIGN KEY (run_id) REFERENCES runs(id)
 );
 
+CREATE TABLE IF NOT EXISTS step_executions (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL,
+  step_index INTEGER NOT NULL,
+  step_name TEXT NOT NULL,
+  agent_role TEXT,
+  status TEXT NOT NULL DEFAULT 'PENDING',
+  started_at TEXT,
+  ended_at TEXT,
+  duration_ms INTEGER,
+  error_message TEXT,
+  output_artifact_path TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (run_id) REFERENCES runs(id)
+);
+
 CREATE TABLE IF NOT EXISTS traceability_items (
   id TEXT PRIMARY KEY,
   run_id TEXT NOT NULL,

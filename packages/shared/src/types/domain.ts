@@ -46,6 +46,22 @@ export type ApprovalGate =
 
 export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
 
+export type StepStatus = "PENDING" | "RUNNING" | "COMPLETED" | "FAILED" | "SKIPPED";
+
+export interface StepExecution {
+  id: string;
+  runId: string;
+  stepIndex: number;
+  stepName: string;
+  agentRole: string | null;
+  status: StepStatus;
+  startedAt: string | null;
+  endedAt: string | null;
+  durationMs: number | null;
+  errorMessage: string | null;
+  outputArtifactPath: string | null;
+}
+
 export interface Approval {
   gate: ApprovalGate;
   runId: string;

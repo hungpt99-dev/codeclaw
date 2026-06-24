@@ -4,6 +4,7 @@ import type { SlackIntegrationConfig, AgentBackendConfig } from "@codeclaw/share
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
 import { runBaAgent } from "../agents/baAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
+import type { StepExecutionRepo } from "./stepExecutionService.js";
 import { runFrontendPlannerAgent } from "../agents/frontendPlannerAgent.js";
 import { runBackendPlannerAgent } from "../agents/backendPlannerAgent.js";
 import { runIntegrationPlannerAgent } from "../agents/integrationPlannerAgent.js";
@@ -46,6 +47,7 @@ export interface AssistedWorkflowInput {
   plannerSelection?: PlannerSelection;
   generateIntegrationPlan?: boolean;
   generateReleasePlan?: boolean;
+  stepRepo?: StepExecutionRepo;
 }
 
 export interface AssistedWorkflowOutput {

@@ -5,6 +5,7 @@ import {
   initializeSchema,
   createRunRepository,
   createArtifactRepository,
+  createStepExecutionRepository,
 } from "@codeclaw/storage";
 import { execSync } from "node:child_process";
 
@@ -78,6 +79,31 @@ export async function statusCommand(options: StatusOptions): Promise<void> {
     console.log(`   Mode: ${run.mode}`);
     console.log(`   Created: ${new Date(run.createdAt).toLocaleString()}`);
     console.log(`   Updated: ${new Date(run.updatedAt).toLocaleString()}`);
+
+    const stepRepo = createStepExecutionRepository(db);
+    const steps = stepRepo.findByRunId(options.run);
+    if (steps.length > 0) {
+      console.log(`\n⏱️ Steps (${String(steps.length)}):`);
+      for (const s of steps) {
+        const statusIcon =
+          s.status === "COMPLETED"
+            ? "✅"
+            : s.status === "RUNNING"
+              ? "⏳"
+              : s.status === "FAILED"
+                ? "❌"
+                : s.status === "SKIPPED"
+                  ? "⏭️"
+                  : "⏸️";
+        const duration = s.durationMs !== null ? `(${formatDuration(s.durationMs)})` : "";
+        const errorInfo =
+          s.status === "FAILED" && s.errorMessage ? `: ${s.errorMessage.slice(0, 200)}` : "";
+        console.log(
+          `   ${statusIcon} Step ${String(s.stepIndex + 1)}/${String(steps.length)}: ${s.stepName}  ${duration}${errorInfo}`,
+        );
+      }
+    }
+
     if (artifacts.length > 0) {
       console.log(`\n📄 Artifacts (${String(artifacts.length)}):`);
       for (const a of artifacts) {
@@ -165,4 +191,14 @@ export async function statusCommand(options: StatusOptions): Promise<void> {
   console.log(`    Database: ${dbPath}`);
   console.log(`    Runs: ${join(aiTeamDir, "runs")}`);
   console.log("");
+}
+
+function formatDuration(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (minutes > 0) {
+    return `${String(minutes)}m ${String(remainingSeconds)}s`;
+  }
+  return `${String(remainingSeconds)}s`;
 }
