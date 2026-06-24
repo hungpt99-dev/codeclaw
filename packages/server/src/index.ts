@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { dirname } from "node:path";
 import Fastify from "fastify";
 import type { FastifyInstance } from "fastify";
 import { openDatabase, initializeSchema } from "@codeclaw/storage";
@@ -29,10 +30,11 @@ export function createApp(options: AppOptions): FastifyInstance {
 
   const db = openDatabase(options.dbPath);
   initializeSchema(db);
+  const codeclawDir = dirname(options.dbPath);
 
   registerHealthRoutes(app);
   registerSettingsRoutes(app, db);
-  registerRunsRoutes(app, db);
+  registerRunsRoutes(app, db, codeclawDir);
   registerArtifactRoutes(app, db);
   registerPromptRoutes(app, options.promptsDir);
   registerIntegrationRoutes(app, db);

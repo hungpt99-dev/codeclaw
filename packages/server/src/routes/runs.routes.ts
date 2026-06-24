@@ -38,7 +38,14 @@ interface ArtifactDef {
   format: string;
 }
 
-export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void {
+export function registerRunsRoutes(
+  app: FastifyInstance,
+  db: DbConnection,
+  codeclawDir?: string,
+): void {
+  const configPath = codeclawDir
+    ? join(codeclawDir, "config.json")
+    : join(".codeclaw", "config.json");
   app.get("/api/runs", async (_request, _reply) => {
     const repo = createRunRepository(db);
     const runs = repo.findAll();
@@ -541,7 +548,7 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
     };
     try {
       const { readFile: rf } = await import("node:fs/promises");
-      const raw = await rf(join(".codeclaw", "config.json"), "utf-8");
+      const raw = await rf(configPath, "utf-8");
       config = JSON.parse(raw) as typeof config;
     } catch {
       return reply.status(500).send({ error: "Failed to load config" });
