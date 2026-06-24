@@ -91,6 +91,15 @@ export { notifySlack } from "./integrations/slackNotifier.js";
 
 export { exportRunArtifacts } from "./export/exportService.js";
 export type { ExportFormat, ExportOptions, ExportResult } from "./export/exportService.js";
+export { buildDeliveryPackage } from "./export/deliveryPackage.js";
+export type {
+  DeliveryPackageFormat,
+  DeliveryPackageOptions,
+  DeliveryPackageResult,
+} from "./export/deliveryPackage.js";
+export { ZipBuilder } from "./export/zipBuilder.js";
+export { buildDeliveryPackageMarkdown } from "./export/combinedMdBuilder.js";
+export { exportJson } from "./export/jsonExporter.js";
 export { runTests } from "./test/testRunner.js";
 export type { TestCommand, TestResult, TestRunResult } from "./test/testRunner.js";
 export {

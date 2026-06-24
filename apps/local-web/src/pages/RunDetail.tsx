@@ -19,6 +19,7 @@ import type {
   SlackStatus,
   SlackPostResult,
   ExportOptions,
+  ExportFormat,
   ReviewOutput,
   ReviewArtifacts,
   FixLoopResult,
@@ -373,7 +374,7 @@ export function RunDetail(): ReactElement {
     setExportResult(null);
     try {
       const options: ExportOptions = {
-        format: exportFormat as ExportOptions["format"],
+        format: exportFormat as ExportFormat,
         includeLogs: exportIncludeLogs,
         includeDiff: exportIncludeDiff,
       };
@@ -578,6 +579,9 @@ export function RunDetail(): ReactElement {
                   <option value="pdf">PDF</option>
                   <option value="zip">ZIP Archive</option>
                   <option value="markdown">Markdown</option>
+                  <option value="combined-md">Combined Markdown (with TOC)</option>
+                  <option value="json">JSON Export</option>
+                  <option value="all">All Formats</option>
                 </select>
               </div>
 

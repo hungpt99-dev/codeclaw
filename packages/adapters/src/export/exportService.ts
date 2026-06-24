@@ -3,9 +3,23 @@ import { join, dirname } from "node:path";
 import { convertMdToHtml, type HtmlDocumentOptions } from "./mdToHtml.js";
 import { convertHtmlToDocx, type DocxOptions } from "./htmlToDocx.js";
 import { convertHtmlToPdf, type PdfOptions } from "./htmlToPdf.js";
-import { collectArtifactContents, buildCombinedMarkdown, type ArtifactRecord } from "./utils.js";
+import {
+  collectArtifactContents,
+  buildCombinedMarkdown,
+  type ArtifactRecord,
+  type RunInfo,
+} from "./utils.js";
+import { buildDeliveryPackage } from "./deliveryPackage.js";
 
-export type ExportFormat = "markdown" | "html" | "docx" | "pdf" | "zip";
+export type ExportFormat =
+  | "markdown"
+  | "html"
+  | "docx"
+  | "pdf"
+  | "zip"
+  | "combined-md"
+  | "json"
+  | "all";
 
 export interface ExportOptions {
   format: ExportFormat;
@@ -19,9 +33,9 @@ export interface ExportOptions {
 export interface ExportResult {
   success: boolean;
   outputPath: string;
-  format: ExportFormat;
+  format: string;
   fileSize: number;
-  error?: string;
+  error?: string | undefined;
 }
 
 function getRunDir(runId: string): string {
@@ -47,6 +61,33 @@ export async function exportRunArtifacts(
 
     if (options.format === "zip") {
       return await exportZip(runId, runDir, options);
+    }
+
+    if (options.format === "combined-md" || options.format === "json" || options.format === "all") {
+      const runInfo: RunInfo = {
+        id: runId,
+        title: options.docTitle ?? `Run ${runId}`,
+        rawRequirement: "",
+        mode: "",
+        outputLanguage: "",
+        status: "",
+        createdAt: "",
+      };
+      const result = await buildDeliveryPackage(runId, runInfo, artifacts, {
+        format: options.format,
+        outputPath: outputDir,
+        docTitle: options.docTitle,
+        docAuthor: options.docAuthor,
+      });
+      const totalSize = result.results.reduce((sum, r) => sum + r.fileSize, 0);
+      const outputPaths = result.results.map((r) => r.outputPath).join(", ");
+      return {
+        success: result.success,
+        outputPath: outputPaths,
+        format: options.format,
+        fileSize: totalSize,
+        error: result.error,
+      };
     }
 
     const title = options.docTitle ?? `Run ${runId}`;

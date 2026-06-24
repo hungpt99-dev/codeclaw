@@ -160,8 +160,18 @@ export interface SlackPostResult {
   error?: string | undefined;
 }
 
+export type ExportFormat =
+  | "markdown"
+  | "html"
+  | "docx"
+  | "pdf"
+  | "zip"
+  | "combined-md"
+  | "json"
+  | "all";
+
 export interface ExportOptions {
-  format: "markdown" | "html" | "docx" | "pdf" | "zip";
+  format: ExportFormat;
   includeLogs?: boolean;
   includeDiff?: boolean;
   title?: string;

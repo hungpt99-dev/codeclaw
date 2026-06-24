@@ -36,7 +36,7 @@ export async function exportCommand(runId: string, options: ExportCliOptions): P
   }
 
   const format = (options.format ?? "markdown") as ExportFormat;
-  const validFormats = ["markdown", "html", "docx", "pdf", "zip"];
+  const validFormats = ["markdown", "html", "docx", "pdf", "zip", "combined-md", "json", "all"];
   if (!validFormats.includes(format)) {
     console.log(`Error: Unsupported format '${format}'. Supported: ${validFormats.join(", ")}`);
     process.exit(1);
@@ -78,6 +78,12 @@ export async function exportCommand(runId: string, options: ExportCliOptions): P
     const defaultDir = join(process.cwd(), ".ai-team", "runs", runId, "export");
     if (format === "markdown") {
       outputPath = join(defaultDir, "markdown");
+    } else if (format === "combined-md") {
+      outputPath = join(defaultDir, "combined-report.md");
+    } else if (format === "json") {
+      outputPath = join(defaultDir, "delivery-package.json");
+    } else if (format === "all") {
+      outputPath = join(defaultDir, "delivery-package");
     } else {
       outputPath = join(defaultDir, `report.${format}`);
     }
@@ -97,8 +103,15 @@ export async function exportCommand(runId: string, options: ExportCliOptions): P
   if (result.success) {
     const sizeStr = bytesToSize(result.fileSize);
     console.log(`Exported run '${runId}' as ${format.toUpperCase()}`);
-    console.log(`Output: ${result.outputPath}`);
-    console.log(`Size: ${sizeStr}`);
+    if (format === "all" && result.outputPath.includes(", ")) {
+      const paths = result.outputPath.split(", ");
+      for (const p of paths) {
+        console.log(`  ${p}`);
+      }
+    } else {
+      console.log(`Output: ${result.outputPath}`);
+    }
+    console.log(`Total size: ${sizeStr}`);
   } else {
     console.log(`Export failed: ${result.error ?? "Unknown error"}`);
     process.exit(1);

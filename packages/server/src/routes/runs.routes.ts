@@ -669,15 +669,29 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
       format: a.format,
     }));
 
-    const format = (body?.format ?? "html") as "markdown" | "html" | "docx" | "pdf" | "zip";
-    const outputPath = join(
-      process.cwd(),
-      ".ai-team",
-      "runs",
-      params.id,
-      "export",
-      `report.${format === "markdown" ? "md" : format}`,
-    );
+    const format = (body?.format ?? "html") as
+      | "markdown"
+      | "html"
+      | "docx"
+      | "pdf"
+      | "zip"
+      | "combined-md"
+      | "json"
+      | "all";
+
+    const defaultDir = join(process.cwd(), ".ai-team", "runs", params.id, "export");
+    let outputPath: string;
+    if (format === "combined-md") {
+      outputPath = join(defaultDir, "combined-report.md");
+    } else if (format === "json") {
+      outputPath = join(defaultDir, "delivery-package.json");
+    } else if (format === "all") {
+      outputPath = join(defaultDir, "delivery-package");
+    } else if (format === "markdown") {
+      outputPath = join(defaultDir, "markdown");
+    } else {
+      outputPath = join(defaultDir, `report.${format}`);
+    }
 
     const exportOpts: Parameters<typeof exportRunArtifacts>[2] = {
       format,
@@ -696,6 +710,18 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
     }
 
     try {
+      if (format === "all") {
+        const paths = result.outputPath.split(", ");
+        const zipPath = paths.find((p) => p.endsWith(".zip"));
+        if (zipPath) {
+          const fileContent = await readFile(zipPath);
+          reply.header("Content-Type", "application/zip");
+          reply.header("Content-Disposition", `attachment; filename="delivery-package.zip"`);
+          return await reply.send(fileContent);
+        }
+        return { result };
+      }
+
       const fileContent = await readFile(result.outputPath);
       const mimeTypes: Record<string, string> = {
         html: "text/html",
@@ -703,9 +729,16 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
         pdf: "application/pdf",
         zip: "application/zip",
         markdown: "text/markdown",
+        "combined-md": "text/markdown",
+        json: "application/json",
       };
 
-      const ext = format === "markdown" ? "md" : format;
+      const ext =
+        format === "markdown" || format === "combined-md"
+          ? "md"
+          : format === "json"
+            ? "json"
+            : format;
       reply.header("Content-Type", mimeTypes[format] ?? "application/octet-stream");
       reply.header("Content-Disposition", `attachment; filename="report.${ext}"`);
       return await reply.send(fileContent);
