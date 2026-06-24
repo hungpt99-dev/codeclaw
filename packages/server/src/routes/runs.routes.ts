@@ -58,17 +58,19 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
     const body = request.body as
       | {
           requirement?: string;
+          rawRequirement?: string;
           outputLanguage?: string;
           mode?: string;
         }
       | undefined;
-    if (!body?.requirement || typeof body.requirement !== "string" || !body.requirement.trim()) {
+    const requirement = body?.requirement ?? body?.rawRequirement ?? "";
+    if (!requirement || typeof requirement !== "string" || !requirement.trim()) {
       return reply.status(400).send({ error: "Requirement is required" });
     }
 
-    const rawRequirement = body.requirement.trim();
-    const outputLanguage = body.outputLanguage ?? "English";
-    const mode = body.mode ?? "docs-only";
+    const rawRequirement = requirement.trim();
+    const outputLanguage = body?.outputLanguage ?? "English";
+    const mode = body?.mode ?? "docs-only";
     const runId = createRunId(rawRequirement);
 
     const runRepo = createRunRepository(db);
