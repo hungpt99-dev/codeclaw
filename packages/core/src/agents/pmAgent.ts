@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parsePmOutput } from "./parsers/pmOutputParser.js";
 import { generateJiraReadyMarkdown } from "../integrations/jiraMarkdownGenerator.js";
 
@@ -74,9 +76,38 @@ export async function runPmAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<PmAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a Project Manager. Break down the following requirement into tasks.
+
+Requirement: ${input.requirement}
+Technical Design: ${input.technicalDesign}
+Acceptance Criteria: ${input.acceptanceCriteria ?? "N/A"}
+
+Generate a task breakdown with:
+1. Phases of work
+2. Task IDs, titles, estimates, priorities, and dependencies
+3. Summary with total hours and critical path`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "PROJECT_MANAGER",
+      agentName: "Project Manager",
+      systemPrompt:
+        "You are a senior Project Manager. Break down software requirements into actionable tasks with estimates and dependencies.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parsePmOutput(result.content, input.requirement);
+    }
+  }
 
   if (options?.aiTool) {
     const result = await runAgent({

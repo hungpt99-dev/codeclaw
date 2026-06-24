@@ -10,6 +10,7 @@ import { registerArtifactRoutes } from "./routes/artifacts.routes.js";
 import { registerPromptRoutes } from "./routes/prompts.routes.js";
 import { registerIntegrationRoutes } from "./routes/integrations.routes.js";
 import { registerProgressRoutes } from "./routes/progress.routes.js";
+import { registerProjectRoutes } from "./routes/projects.routes.js";
 
 interface AppOptions {
   dbPath: string;
@@ -39,6 +40,7 @@ export function createApp(options: AppOptions): FastifyInstance {
   registerPromptRoutes(app, options.promptsDir);
   registerIntegrationRoutes(app, db);
   registerProgressRoutes(app);
+  registerProjectRoutes(app);
 
   return app;
 }

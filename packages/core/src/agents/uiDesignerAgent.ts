@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseUiDesignerOutput } from "./parsers/uiDesignerOutputParser.js";
 
 export interface UiDesignerAgentInput {
@@ -100,9 +102,39 @@ export async function runUiDesignerAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<UiDesignerAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a UI designer. Describe screens, components, and states for the following requirement.
+
+Requirement: ${input.requirement}
+Clarified Requirement: ${input.clarifiedRequirement}
+User Personas: ${input.userPersonas}
+User Flows: ${input.userFlows}
+
+Generate the following sections:
+1. Screen Descriptions - purpose, layout, key elements for each screen
+2. Component Tree - hierarchical component structure
+3. States - empty, loading, error, and edge case states for each screen`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "UI_DESIGNER",
+      agentName: "UI Designer",
+      systemPrompt:
+        "You are a senior UI designer. Describe screen layouts, component hierarchies, and state management for software interfaces.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseUiDesignerOutput(result.content, input.requirement);
+    }
+  }
 
   if (options?.aiTool) {
     const result = await runAgent({

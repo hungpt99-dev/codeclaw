@@ -156,6 +156,7 @@ After running, artifacts are written to `.codeclaw/runs/<runId>/` and include:
 ### Planning & Reasoning (AgentBackend)
 
 - **OpenAI-compatible** — any API compatible with OpenAI's chat completions endpoint
+- **Ollama** — local LLM inference via Ollama (no API key, fully offline)
 - **Mock** — deterministic mock for testing (no API key required)
 
 ### Code Execution (CodingAgentAdapter)
@@ -228,9 +229,9 @@ pnpm quality
 - **Docs-only default mode** — assisted and semi-auto workflows exist but require CLI AI tool configuration
 - **No cloud backend** — everything runs locally with SQLite storage
 - **No authentication** — no login, no user management
-- **No external integrations** — no Jira, Slack, or GitHub sync (planned)
-- **Single project** — one `.codeclaw` directory per working directory (multi-project planned)
-- **No web diff viewer** — git diff is available on CLI only (planned)
+- **External integrations are optional** — Jira, Slack, and GitHub integrations exist but are disabled by default
+- **Single project by default** — one `.codeclaw` directory per project; use `codeclaw project` to register and switch between multiple projects
+- **Web diff viewer** — available in the web UI run detail page
 - **No live workflow progress in web UI** — progress events are emitted but not streamed to UI (planned)
 
 ## Roadmap Highlights
@@ -244,9 +245,10 @@ pnpm quality
 - [x] Approval gates before code execution
 - [x] Secret redaction utility
 - [x] Persistent step-level execution tracking
-- [ ] All agents using AgentBackend (currently BA and Architect only)
-- [ ] Ollama/local LLM support
-- [ ] Multi-project/workspace support
+- [x] All agents using AgentBackend
+- [x] Ollama/local LLM support (Ollama provider)
+- [x] Multi-project / workspace support (`codeclaw project`)
+- [x] Secret redaction on all execution paths
+- [x] Jira / Slack / GitHub integration (optional, disabled by default)
+- [x] Web diff viewer (basic)
 - [ ] Live workflow progress in web UI
-- [ ] Jira / Slack / GitHub integration
-- [ ] Web diff viewer

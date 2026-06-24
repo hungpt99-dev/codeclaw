@@ -10,7 +10,7 @@ const aiCliToolConfigSchema = z.object({
 });
 
 const agentBackendConfigSchema = z.object({
-  provider: z.enum(["openai-compatible", "mock", "none"]).default("none"),
+  provider: z.enum(["openai-compatible", "ollama", "mock", "none"]).default("none"),
   model: z.string().default("gpt-4o-mini"),
   baseUrl: z.string().default("https://api.openai.com/v1"),
   apiKeyEnv: z.string().default("CODECLAW_OPENAI_API_KEY"),

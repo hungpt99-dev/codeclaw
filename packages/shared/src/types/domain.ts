@@ -254,7 +254,7 @@ export interface SlackIntegrationConfig {
 }
 
 export interface AgentBackendConfig {
-  provider: "openai-compatible" | "mock" | "none";
+  provider: "openai-compatible" | "ollama" | "mock" | "none";
   model: string;
   baseUrl: string;
   apiKeyEnv: string;

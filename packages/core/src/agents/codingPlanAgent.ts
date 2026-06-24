@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseCodingPlanOutput } from "./parsers/codingPlanOutputParser.js";
 
 export interface CodingPlanAgentInput {
@@ -92,9 +94,45 @@ export async function runCodingPlanAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<CodingPlanAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATE;
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a senior software engineer. Create a detailed coding plan for implementing the following feature.
+
+Requirement: ${input.requirement}
+Clarified Requirement: ${input.clarifiedRequirement}
+Technical Design: ${input.technicalDesign}
+API Design: ${input.apiDesign}
+Database Design: ${input.dbDesign}
+Task Breakdown: ${input.taskBreakdownMd}
+Test Matrix: ${input.testMatrixMd}
+
+Generate the following sections:
+1. Files to Create
+2. Files to Modify
+3. Implementation Order
+4. Patterns and Conventions
+5. Risks and Challenges
+6. Testing Strategy`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "CODING_PLANNER",
+      agentName: "Coding Planner",
+      systemPrompt:
+        "You are a senior software engineer. Create detailed coding plans that guide implementation.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseCodingPlanOutput(result.content);
+    }
+  }
 
   if (options?.aiTool) {
     const result = await runAgent({

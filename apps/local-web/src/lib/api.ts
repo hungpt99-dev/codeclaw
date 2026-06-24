@@ -27,6 +27,11 @@ import type {
   StorageInfo,
   StorageCleanResult,
   WorkflowProgressEvent,
+  StepRun,
+  WorkflowTemplate,
+  ProviderConfig,
+  NativeRunnerStatus,
+  ProjectEntry,
 } from "./types.js";
 
 const BASE = "/api";
@@ -346,5 +351,244 @@ export const api = {
     return () => {
       eventSource.close();
     };
+  },
+
+  async listSteps(runId: string): Promise<StepRun[]> {
+    const data = await request<{ steps: StepRun[] }>(`/runs/${runId}/steps`);
+    return data.steps;
+  },
+
+  async getExecutionReport(runId: string): Promise<{ report: string }> {
+    return request(`/runs/${runId}/execution-report`);
+  },
+
+  async getProviderConfig(): Promise<ProviderConfig> {
+    return request("/settings/providers");
+  },
+
+  async getNativeRunnerStatus(): Promise<NativeRunnerStatus> {
+    return request("/settings/native-runner");
+  },
+
+  listWorkflowTemplates(): Promise<WorkflowTemplate[]> {
+    // For now, return default templates from a hardcoded list
+    const defaultTemplates: WorkflowTemplate[] = [
+      {
+        workflowTemplateId: "default-docs",
+        name: "Docs Only",
+        description: "Generate documentation artifacts without code execution",
+        isDefault: true,
+        steps: [
+          {
+            id: "ba",
+            name: "BA Analysis",
+            agentName: "BA",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "architect",
+            name: "Architecture Design",
+            agentName: "Architect",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "pm",
+            name: "Task Breakdown",
+            agentName: "PM",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "qa",
+            name: "Test Planning",
+            agentName: "QA",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "reporter",
+            name: "Final Report",
+            agentName: "Reporter",
+            enabled: true,
+            producesArtifacts: true,
+          },
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        workflowTemplateId: "default-assisted",
+        name: "Assisted (with UX)",
+        description: "Full assisted workflow with UX research, design, and coding plan",
+        isDefault: false,
+        steps: [
+          {
+            id: "ba",
+            name: "BA Analysis",
+            agentName: "BA",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "architect",
+            name: "Architecture Design",
+            agentName: "Architect",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "ux",
+            name: "UX Research",
+            agentName: "UX Researcher",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "pm",
+            name: "Task Breakdown",
+            agentName: "PM",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "qa",
+            name: "Test Planning",
+            agentName: "QA",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "developer",
+            name: "Implementation",
+            agentName: "Developer",
+            enabled: true,
+            requiresApproval: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "reporter",
+            name: "Final Report",
+            agentName: "Reporter",
+            enabled: true,
+            producesArtifacts: true,
+          },
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        workflowTemplateId: "default-semi-auto",
+        name: "Semi-Auto (with Code)",
+        description: "Full workflow including code generation, testing, and review",
+        isDefault: false,
+        steps: [
+          {
+            id: "ba",
+            name: "BA Analysis",
+            agentName: "BA",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "architect",
+            name: "Architecture Design",
+            agentName: "Architect",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "pm",
+            name: "Task Breakdown",
+            agentName: "PM",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "qa",
+            name: "Test Planning",
+            agentName: "QA",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "developer",
+            name: "Code Generation",
+            agentName: "Developer",
+            enabled: true,
+            requiresApproval: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "reviewer",
+            name: "Code Review",
+            agentName: "Reviewer",
+            enabled: true,
+            producesArtifacts: true,
+          },
+          {
+            id: "reporter",
+            name: "Final Report",
+            agentName: "Reporter",
+            enabled: true,
+            producesArtifacts: true,
+          },
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ];
+    return Promise.resolve(defaultTemplates);
+  },
+
+  saveWorkflowTemplate(template: WorkflowTemplate): Promise<WorkflowTemplate> {
+    // For now, store in localStorage
+    const stored = JSON.parse(
+      localStorage.getItem("codeclaw_workflow_templates") ?? "[]",
+    ) as WorkflowTemplate[];
+    const idx = stored.findIndex((t) => t.workflowTemplateId === template.workflowTemplateId);
+    if (idx >= 0) {
+      stored[idx] = { ...template, updatedAt: new Date().toISOString() };
+    } else {
+      stored.push(template);
+    }
+    localStorage.setItem("codeclaw_workflow_templates", JSON.stringify(stored));
+    return Promise.resolve(template);
+  },
+
+  async listProjects(): Promise<{ projects: ProjectEntry[]; activeProjectId: string | null }> {
+    return request("/projects");
+  },
+
+  async getCurrentProject(): Promise<{ project: ProjectEntry | null }> {
+    return request("/projects/current");
+  },
+
+  async addProject(rootPath: string, name?: string): Promise<{ project: ProjectEntry }> {
+    return request("/projects", {
+      method: "POST",
+      body: JSON.stringify({ rootPath, name }),
+    });
+  },
+
+  async useProject(nameOrId: string): Promise<{ project: ProjectEntry }> {
+    return request("/projects/use", {
+      method: "POST",
+      body: JSON.stringify({ nameOrId }),
+    });
+  },
+
+  async removeProject(projectId: string): Promise<{ success: boolean }> {
+    return request(`/projects/${projectId}`, { method: "DELETE" });
+  },
+
+  async getProjectStatus(projectId: string): Promise<{
+    projectId: string;
+    rootPath: string;
+    pathExists: boolean;
+    codeclawDirExists: boolean;
+  }> {
+    return request(`/projects/${projectId}/status`);
   },
 };

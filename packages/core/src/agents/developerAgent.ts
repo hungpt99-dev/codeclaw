@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 
 export interface DeveloperAgentInput {
   requirement: string;
@@ -92,9 +94,49 @@ export async function runDeveloperAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<DeveloperAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATE;
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a senior software engineer. Create an implementation prompt for the following feature.
+
+Requirement: ${input.requirement}
+Clarified Requirement: ${input.clarifiedRequirement}
+Business Rules: ${input.businessRules}
+Acceptance Criteria: ${input.acceptanceCriteria}
+Technical Design: ${input.technicalDesign}
+API Design: ${input.apiDesign}
+Database Design: ${input.dbDesign}
+Task Breakdown: ${input.taskBreakdownMd}
+Test Matrix: ${input.testMatrixMd}
+Coding Plan: ${input.codingPlanMd}
+
+Generate a comprehensive implementation prompt that includes:
+1. Goal - what to implement
+2. Context - requirements, design, coding plan
+3. Requirements - what to build
+4. Acceptance Criteria
+5. Tasks to complete
+6. Test Expectations
+7. Constraints and conventions`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "DEVELOPER",
+      agentName: "Developer",
+      systemPrompt:
+        "You are a senior software engineer. Create comprehensive implementation prompts that guide AI coding agents to implement features correctly.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return { implementationPrompt: result.content };
+    }
+  }
 
   if (options?.aiTool) {
     const result = await runAgent({

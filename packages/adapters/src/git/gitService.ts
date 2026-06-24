@@ -27,7 +27,7 @@ export async function getGitStatus(
     policy: undefined,
     captureStdout: true,
     captureStderr: true,
-    redactSecrets: false,
+    redactSecrets: true,
   });
 
   if (!branchResponse.success || !branchResponse.stdout) {
@@ -45,7 +45,7 @@ export async function getGitStatus(
     policy: undefined,
     captureStdout: true,
     captureStderr: true,
-    redactSecrets: false,
+    redactSecrets: true,
   });
 
   const clean = statusResponse.success && (statusResponse.stdout ?? "").trim().length === 0;
@@ -71,7 +71,7 @@ export async function saveGitSnapshot(workingDir: string, snapshotPath: string):
     policy: undefined,
     captureStdout: true,
     captureStderr: true,
-    redactSecrets: false,
+    redactSecrets: true,
   });
   await writeFile(join(snapshotPath, "pre-staged.diff"), stagedResult.stdout ?? "", "utf-8");
 
@@ -84,7 +84,7 @@ export async function saveGitSnapshot(workingDir: string, snapshotPath: string):
     policy: undefined,
     captureStdout: true,
     captureStderr: true,
-    redactSecrets: false,
+    redactSecrets: true,
   });
   await writeFile(join(snapshotPath, "pre-unstaged.diff"), unstagedResult.stdout ?? "", "utf-8");
 
@@ -104,7 +104,7 @@ export async function getChangedFiles(workingDir: string): Promise<string[]> {
     policy: undefined,
     captureStdout: true,
     captureStderr: true,
-    redactSecrets: false,
+    redactSecrets: true,
   });
   const unstaged = (unstagedResult.stdout ?? "").trim().split("\n").filter(Boolean);
 
@@ -117,7 +117,7 @@ export async function getChangedFiles(workingDir: string): Promise<string[]> {
     policy: undefined,
     captureStdout: true,
     captureStderr: true,
-    redactSecrets: false,
+    redactSecrets: true,
   });
   const staged = (stagedResult.stdout ?? "").trim().split("\n").filter(Boolean);
 
@@ -130,7 +130,7 @@ export async function getChangedFiles(workingDir: string): Promise<string[]> {
     policy: undefined,
     captureStdout: true,
     captureStderr: true,
-    redactSecrets: false,
+    redactSecrets: true,
   });
   const untracked = (untrackedResult.stdout ?? "").trim().split("\n").filter(Boolean);
 
@@ -151,7 +151,7 @@ export async function generateDiff(workingDir: string, outputPath: string): Prom
     policy: undefined,
     captureStdout: true,
     captureStderr: true,
-    redactSecrets: false,
+    redactSecrets: true,
   });
 
   const content = response.stdout ?? "";
@@ -172,7 +172,7 @@ export async function getDiffStats(
     policy: undefined,
     captureStdout: true,
     captureStderr: true,
-    redactSecrets: false,
+    redactSecrets: true,
   });
 
   const lines = (response.stdout ?? "").trim().split("\n").filter(Boolean);

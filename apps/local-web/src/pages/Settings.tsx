@@ -3,6 +3,8 @@ import { api } from "../lib/api.js";
 import type {
   AiCliToolInfo,
   AiCliTestResult,
+  ProviderConfig,
+  NativeRunnerStatus,
   StorageInfo,
   StorageCleanResult,
   DocArtifactType,
@@ -158,6 +160,10 @@ export function Settings(): ReactElement {
   const [docArtifacts, setDocArtifacts] = useState<Record<string, boolean>>({});
   const [docFormat, setDocFormat] = useState<"markdown" | "json">("markdown");
 
+  /* Provider & Native Runner */
+  const [provider, setProvider] = useState<ProviderConfig | null>(null);
+  const [nativeRunner, setNativeRunner] = useState<NativeRunnerStatus | null>(null);
+
   /* Storage */
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
   const [storageLoading, setStorageLoading] = useState(false);
@@ -267,6 +273,18 @@ export function Settings(): ReactElement {
     void loadSettings();
     void loadAiCliStatus();
     void loadStorageInfo();
+    api
+      .getProviderConfig()
+      .then(setProvider)
+      .catch(() => {
+        /* ignore */
+      });
+    api
+      .getNativeRunnerStatus()
+      .then(setNativeRunner)
+      .catch(() => {
+        /* ignore */
+      });
   }, [loadSettings, loadAiCliStatus, loadStorageInfo]);
 
   const handleChange = (key: keyof SettingsForm, value: string) => {
@@ -472,6 +490,41 @@ export function Settings(): ReactElement {
             {aiTestResult.message}
           </div>
         )}
+      </Section>
+
+      {/* ─── Provider Settings ─── */}
+      <Section title="Provider Settings">
+        <p className="text-sm text-gray-500 mb-3">Current AI provider configuration.</p>
+        <div className="space-y-2 text-sm">
+          <StorageRow label="Provider" value={provider?.provider ?? "Not configured"} />
+          <StorageRow label="Model" value={provider?.model ?? "—"} />
+          <StorageRow label="Base URL" value={provider?.baseUrl ?? "—"} />
+          <StorageRow label="API Key Env" value={provider?.apiKeyEnv ?? "—"} />
+        </div>
+      </Section>
+
+      {/* ─── Native Runner Status ─── */}
+      <Section title="Native Runner Status">
+        <p className="text-sm text-gray-500 mb-3">Native runner availability and version.</p>
+        <div className="space-y-2 text-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-gray-500">Status</span>
+            {nativeRunner === null ? (
+              <span className="text-sm text-gray-400">Checking...</span>
+            ) : nativeRunner.available ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                Available
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                Not found
+              </span>
+            )}
+          </div>
+          <StorageRow label="Version" value={nativeRunner?.version ?? "—"} />
+        </div>
       </Section>
 
       {/* ─── Agent Role Mapping ─── */}

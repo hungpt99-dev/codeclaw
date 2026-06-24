@@ -320,7 +320,7 @@ export async function runAssistedWorkflow(
         apiDesign: architectOutput.apiDesign,
         technicalDesign: architectOutput.technicalDesign,
       },
-      { templateDir, aiTool: integrationPlannerTool },
+      { templateDir, aiTool: integrationPlannerTool, agentBackendConfig: input.agentBackendConfig },
     );
 
     emitWorkflowProgress(runId, "AGENT_COMPLETED", {
@@ -365,7 +365,7 @@ export async function runAssistedWorkflow(
         clarifiedRequirement: baOutput.clarifiedRequirement,
         ...(repoAnalysis ? { repositoryAnalysis: repoAnalysis } : {}),
       },
-      { templateDir, aiTool: frontendPlannerTool },
+      { templateDir, aiTool: frontendPlannerTool, agentBackendConfig: input.agentBackendConfig },
     );
 
     emitWorkflowProgress(runId, "AGENT_COMPLETED", {
@@ -414,7 +414,7 @@ export async function runAssistedWorkflow(
         clarifiedRequirement: baOutput.clarifiedRequirement,
         ...(repoAnalysis ? { repositoryAnalysis: repoAnalysis } : {}),
       },
-      { templateDir, aiTool: backendPlannerTool },
+      { templateDir, aiTool: backendPlannerTool, agentBackendConfig: input.agentBackendConfig },
     );
 
     emitWorkflowProgress(runId, "AGENT_COMPLETED", {
@@ -489,7 +489,7 @@ export async function runAssistedWorkflow(
       requirement: input.requirement,
       technicalDesign: combinedDesign,
     },
-    { templateDir, aiTool: pmTool },
+    { templateDir, aiTool: pmTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   emitWorkflowProgress(runId, "AGENT_COMPLETED", {
@@ -528,7 +528,7 @@ export async function runAssistedWorkflow(
       acceptanceCriteria: baOutput.acceptanceCriteria,
       taskBreakdownJson: pmOutput.taskBreakdownJson,
     },
-    { templateDir, aiTool: qaTool },
+    { templateDir, aiTool: qaTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   emitWorkflowProgress(runId, "AGENT_COMPLETED", {
@@ -571,7 +571,7 @@ export async function runAssistedWorkflow(
       acceptanceCriteria: baOutput.acceptanceCriteria,
       scopeDefinition: "",
     },
-    { templateDir, aiTool: uxResearcherTool },
+    { templateDir, aiTool: uxResearcherTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   emitWorkflowProgress(runId, "AGENT_COMPLETED", {
@@ -617,7 +617,7 @@ export async function runAssistedWorkflow(
       userPersonas: userJourneyOutput.userPersonas,
       userFlows: userJourneyOutput.userFlows,
     },
-    { templateDir, aiTool: uiDesignerTool },
+    { templateDir, aiTool: uiDesignerTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   emitWorkflowProgress(runId, "AGENT_COMPLETED", {
@@ -672,7 +672,7 @@ export async function runAssistedWorkflow(
       screenDescriptions: uiDesignerOutput.screenDescriptions,
       componentTree: uiDesignerOutput.componentTree,
     },
-    { templateDir, aiTool: uxWriterTool },
+    { templateDir, aiTool: uxWriterTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   emitWorkflowProgress(runId, "AGENT_COMPLETED", {
@@ -726,7 +726,7 @@ export async function runAssistedWorkflow(
       testMatrixMd: qaOutput.testMatrixMd,
       targetAgent: input.targetAgent,
     },
-    { templateDir, aiTool: codingPlanTool },
+    { templateDir, aiTool: codingPlanTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   emitWorkflowProgress(runId, "AGENT_COMPLETED", {
@@ -769,7 +769,7 @@ export async function runAssistedWorkflow(
       codingPlanMd: codingPlanOutput.codingPlanMd,
       targetAgent: input.targetAgent,
     },
-    { templateDir, aiTool: developerTool },
+    { templateDir, aiTool: developerTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   emitWorkflowProgress(runId, "AGENT_COMPLETED", {
@@ -812,7 +812,7 @@ export async function runAssistedWorkflow(
         apiDesign: architectOutput.apiDesign,
         taskBreakdownMd: pmOutput.taskBreakdownMd,
       },
-      { templateDir, aiTool: devopsReleaseTool },
+      { templateDir, aiTool: devopsReleaseTool, agentBackendConfig: input.agentBackendConfig },
     );
 
     emitWorkflowProgress(runId, "AGENT_COMPLETED", {
@@ -851,7 +851,7 @@ export async function runAssistedWorkflow(
 
   const traceabilityOutput = await runTraceabilityAgent(
     { runId, artifactPaths: paths },
-    { templateDir, aiTool: traceabilityTool },
+    { templateDir, aiTool: traceabilityTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   emitWorkflowProgress(runId, "AGENT_COMPLETED", {
@@ -906,7 +906,7 @@ export async function runAssistedWorkflow(
       releasePlanSection: devopsReleaseOutput?.releasePlan,
       changelogSection: devopsReleaseOutput?.changelog,
     },
-    { templateDir, aiTool: reporterTool },
+    { templateDir, aiTool: reporterTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   emitWorkflowProgress(runId, "AGENT_COMPLETED", {

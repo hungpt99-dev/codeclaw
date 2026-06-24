@@ -28,7 +28,7 @@ export function createOpenCodeAdapter(config?: OpenCodeAdapterConfig): AiCliAdap
         policy: undefined,
         captureStdout: true,
         captureStderr: true,
-        redactSecrets: false,
+        redactSecrets: true,
       });
       return response.success && response.exitCode === 0;
     } catch {

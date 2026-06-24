@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseIntegrationPlannerOutput } from "./parsers/integrationPlannerOutputParser.js";
 
 export interface IntegrationPlannerAgentInput {
@@ -144,11 +146,43 @@ export async function runIntegrationPlannerAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<IntegrationPlannerAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
 
   const apiContext = buildApiContext(input);
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are an Integration Architect. Plan the integration strategy for the following requirement.
+
+Requirement: ${input.requirement}
+Clarified Requirement: ${input.clarifiedRequirement}
+${apiContext}
+
+Generate an integration plan with:
+1. External System Touchpoints
+2. Integration Contracts (endpoints, auth, timeouts, schemas)
+3. Error Handling and Retry Strategy
+4. Circuit Breaker Configuration
+5. Monitoring and Alerting
+6. Security Considerations`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "INTEGRATION_PLANNER",
+      agentName: "Integration Architect",
+      systemPrompt:
+        "You are a senior Integration Architect. Plan integration strategies including external system contracts, error handling, and monitoring.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement, clarifiedRequirement: input.clarifiedRequirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseIntegrationPlannerOutput(result.content, input.requirement);
+    }
+  }
 
   if (options?.aiTool) {
     const context = {

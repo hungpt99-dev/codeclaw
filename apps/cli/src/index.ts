@@ -26,6 +26,13 @@ import { codeCommand } from "./commands/code.js";
 import { reportCommand } from "./commands/report.js";
 import { newCommand } from "./commands/new.js";
 import {
+  addProjectCommand,
+  listProjectsCommand,
+  useProjectCommand,
+  currentProjectCommand,
+  removeProjectCommand,
+} from "./commands/project.js";
+import {
   githubStatusCommand,
   githubTestCommand,
   githubPRCommand,
@@ -80,6 +87,7 @@ interface RunCliOptions {
   approve?: boolean;
   agent?: string;
   timeout?: string;
+  project?: string;
 }
 
 interface ApproveCliOptions {
@@ -162,8 +170,13 @@ Examples:
   codeclaw clean --runs --older-than 30d Clean old runs
   codeclaw clean --all --older-than 90d  Clean everything
   codeclaw clean --dry-run               Preview without deleting
-  codeclaw rollback <runId>              Rollback code changes
-  codeclaw rollback <runId> --dry-run    Preview changes
+   codeclaw rollback <runId>              Rollback code changes
+   codeclaw rollback <runId> --dry-run    Preview changes
+   codeclaw project add <path>            Register a project
+   codeclaw project list                  List registered projects
+   codeclaw project use <name>            Set active project
+   codeclaw project current               Show active project
+   codeclaw run <requirement> -p <name>   Run on a specific project
 `,
   );
 
@@ -195,6 +208,7 @@ program
   .option("--approve", "Auto-approve non-risky gates")
   .option("--agent <name>", "Selected AI coding agent (claude, codex, gemini, aider)")
   .option("--timeout <seconds>", "Override command timeout in seconds")
+  .option("-p, --project <name>", "Project name or ID")
   .action(async (requirement: string, options: RunCliOptions) => {
     await runCommand(requirement, options);
   });
@@ -202,16 +216,18 @@ program
 program
   .command("list")
   .description("Show recent runs (up to 20)")
-  .action(async () => {
-    await listCommand();
+  .option("-p, --project <name>", "Project name or ID")
+  .action(async (options: { project?: string }) => {
+    await listCommand(options.project);
   });
 
 program
   .command("show")
   .description("Show run details")
   .argument("<runId>", "Run ID to show")
-  .action(async (runId: string) => {
-    await showCommand(runId);
+  .option("-p, --project <name>", "Project name or ID")
+  .action(async (runId: string, options: { project?: string }) => {
+    await showCommand(runId, options.project);
   });
 
 program
@@ -402,6 +418,7 @@ program
   .option("--prompt-only", "Generate prompt only, do not execute")
   .option("--approve", "Auto-approve gates")
   .option("--dry-run", "Show what would happen without executing")
+  .option("-p, --project <name>", "Project name or ID")
   .action(
     async (options: {
       run: string;
@@ -409,6 +426,7 @@ program
       promptOnly?: boolean;
       approve?: boolean;
       dryRun?: boolean;
+      project?: string;
     }) => {
       await codeCommand(options);
     },
@@ -440,6 +458,48 @@ program
   .option("--mode <mode>", "Workflow mode (docs-only, assisted, semi-auto)", "docs-only")
   .action(async (requirement: string, options: { title?: string; mode?: string }) => {
     await newCommand(requirement, options);
+  });
+
+const projectProgram = program.command("project").description("Manage registered projects");
+
+projectProgram
+  .command("add")
+  .description("Register a project directory")
+  .argument("<rootPath>", "Path to project root")
+  .option("--name <name>", "Friendly project name")
+  .action(async (rootPath: string, options: { name?: string }) => {
+    await addProjectCommand(rootPath, options);
+  });
+
+projectProgram
+  .command("list")
+  .description("List registered projects")
+  .option("--json", "Output as JSON")
+  .action(async (options: { json?: boolean }) => {
+    await listProjectsCommand(options);
+  });
+
+projectProgram
+  .command("use")
+  .description("Set active project")
+  .argument("<nameOrId>", "Project name or ID")
+  .action(async (nameOrId: string) => {
+    await useProjectCommand(nameOrId);
+  });
+
+projectProgram
+  .command("current")
+  .description("Show active project")
+  .action(async () => {
+    await currentProjectCommand();
+  });
+
+projectProgram
+  .command("remove")
+  .description("Remove a project from registry")
+  .argument("<nameOrId>", "Project name or ID")
+  .action(async (nameOrId: string) => {
+    await removeProjectCommand(nameOrId);
   });
 
 const githubProgram = program.command("github").description("GitHub integration (optional)");
@@ -557,6 +617,7 @@ program
   .option("--include-diff", "Include diff patch")
   .option("--title <title>", "Document title")
   .option("--author <author>", "Document author")
+  .option("-p, --project <name>", "Project name or ID")
   .action(
     async (
       runId: string,
@@ -567,6 +628,7 @@ program
         includeDiff?: boolean;
         title?: string;
         author?: string;
+        project?: string;
       },
     ) => {
       await exportCommand(runId, options);
@@ -618,7 +680,8 @@ program
   .description("Show project status overview")
   .option("--run <runId>", "Show detailed status for a specific run")
   .option("--json", "Output as JSON")
-  .action(async (options: { run?: string; json?: boolean }) => {
+  .option("-p, --project <name>", "Project name or ID")
+  .action(async (options: { run?: string; json?: boolean; project?: string }) => {
     await statusCommand(options);
   });
 

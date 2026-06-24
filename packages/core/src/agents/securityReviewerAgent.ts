@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseSecurityReviewerOutput } from "./parsers/securityReviewerOutputParser.js";
 import { generateDeterministicSecurityReview } from "../review/deterministicReview.js";
 import type { DeterministicReviewInput } from "../review/deterministicReview.js";
@@ -62,9 +64,41 @@ export async function runSecurityReviewerAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<SecurityReviewerAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATE;
+
+  if (options?.agentBackendConfig) {
+    const contextStr = Object.entries(buildContext(input))
+      .map(([k, v]) => `${k}: ${v}`)
+      .join("\n");
+
+    const agentPrompt = `You are a security engineer. Review the following code changes for security vulnerabilities.
+
+${contextStr}
+
+Generate a security review with:
+1. Security Review Summary - SECURE, MINOR_ISSUES, or CRITICAL_ISSUES
+2. Vulnerabilities Found - severity, issue, file, recommendation
+3. Critical Issues
+4. Recommendations`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "SECURITY_REVIEWER",
+      agentName: "Security Reviewer",
+      systemPrompt:
+        "You are a senior security engineer. Review code changes for security vulnerabilities and provide remediation recommendations.",
+      userPrompt: agentPrompt,
+      context: {},
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseSecurityReviewerOutput(result.content, input.clarifiedRequirement);
+    }
+  }
 
   if (options?.aiTool) {
     const result = await runAgent({

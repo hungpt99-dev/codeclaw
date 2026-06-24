@@ -1,5 +1,6 @@
-import { access, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { resolveProjectDir } from "@codeclaw/core";
 import {
   openDatabase,
   initializeSchema,
@@ -12,18 +13,20 @@ import { execSync } from "node:child_process";
 interface StatusOptions {
   run?: string;
   json?: boolean;
+  project?: string;
 }
 
 export async function statusCommand(options: StatusOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".codeclaw");
+  let aiTeamDir: string;
 
   try {
-    await access(aiTeamDir);
-  } catch {
+    const resolved = await resolveProjectDir(options.project);
+    aiTeamDir = resolved.projectDir;
+  } catch (err) {
     if (options.json) {
-      console.log(JSON.stringify({ error: ".codeclaw not found" }));
+      console.log(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }));
     } else {
-      console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
+      console.log(`❌ ${err instanceof Error ? err.message : String(err)}`);
     }
     process.exit(1);
   }

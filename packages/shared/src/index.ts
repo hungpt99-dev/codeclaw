@@ -25,6 +25,8 @@ export {
 } from "./types/domain.js";
 export type { AgentBackendConfig } from "./types/domain.js";
 
+export type { ProjectRegistry, ProjectRegistryEntry } from "./types/project.js";
+
 export { configSchema, defaultConfig } from "./schemas/config.schema.js";
 export type { Config, SlackNotifyEvent } from "./schemas/config.schema.js";
 

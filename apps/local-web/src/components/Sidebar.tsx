@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import type { ReactElement } from "react";
 import { api } from "../lib/api.js";
+import type { ProjectEntry } from "../lib/types.js";
 
 const navItems = [
   {
@@ -14,6 +15,16 @@ const navItems = [
     label: "Runs",
     path: "/runs",
     icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2",
+  },
+  {
+    label: "Projects",
+    path: "/projects",
+    icon: "M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21",
+  },
+  {
+    label: "Workflows",
+    path: "/workflows",
+    icon: "M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z",
   },
   {
     label: "Integrations",
@@ -30,6 +41,10 @@ const navItems = [
 
 export function Sidebar(): ReactElement {
   const [healthOk, setHealthOk] = useState<boolean | null>(null);
+  const [activeProject, setActiveProject] = useState<ProjectEntry | null>(null);
+  const [projects, setProjects] = useState<ProjectEntry[]>([]);
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     api
@@ -40,7 +55,35 @@ export function Sidebar(): ReactElement {
       .catch(() => {
         setHealthOk(false);
       });
+    api
+      .getCurrentProject()
+      .then((res) => {
+        setActiveProject(res.project);
+      })
+      .catch(() => undefined);
+    api
+      .listProjects()
+      .then((res) => {
+        setProjects(res.projects);
+      })
+      .catch(() => undefined);
   }, []);
+
+  const handleSwitchProject = async (nameOrId: string): Promise<void> => {
+    try {
+      await api.useProject(nameOrId);
+      const res = await api.getCurrentProject();
+      setActiveProject(res.project);
+      setShowProjectDropdown(false);
+      const refreshed = await api.listProjects();
+      setProjects(refreshed.projects);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const safeProjectName =
+    activeProject?.name ?? (projects.length === 0 ? "No project" : "Select project");
 
   return (
     <aside className="w-64 bg-gray-900 text-white min-h-screen flex flex-col">
@@ -48,6 +91,75 @@ export function Sidebar(): ReactElement {
         <h1 className="text-lg font-bold tracking-tight">CodeClaw</h1>
         <p className="text-xs text-gray-500 mt-0.5">Local Web</p>
       </div>
+
+      {/* Project Selector */}
+      <div className="px-3 pt-3 pb-1 relative">
+        <button
+          type="button"
+          onClick={() => {
+            setShowProjectDropdown(!showProjectDropdown);
+          }}
+          className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm bg-gray-800 hover:bg-gray-700 transition-colors text-left"
+        >
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-gray-400">Project</p>
+            <p className="text-sm font-medium text-white truncate">{safeProjectName}</p>
+          </div>
+          <svg
+            className="w-4 h-4 text-gray-400 shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {showProjectDropdown && (
+          <div className="absolute left-3 right-3 top-full mt-1 z-50 bg-gray-800 rounded-lg border border-gray-700 shadow-lg overflow-hidden">
+            {projects.length === 0 ? (
+              <div className="px-3 py-3 text-xs text-gray-400 text-center">
+                No projects registered.
+              </div>
+            ) : (
+              <div className="max-h-48 overflow-y-auto">
+                {projects.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => {
+                      void handleSwitchProject(p.id);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-700 transition-colors ${
+                      activeProject?.id === p.id ? "bg-gray-700 text-white" : "text-gray-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block w-2 h-2 rounded-full mr-2 ${p.exists ? "bg-green-500" : "bg-red-500"}`}
+                    />
+                    {p.name}
+                    {!p.exists && <span className="text-xs text-red-400 ml-1">(missing)</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="border-t border-gray-700">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowProjectDropdown(false);
+                  void navigate("/projects");
+                }}
+                className="w-full text-left px-3 py-2 text-sm text-blue-400 hover:bg-gray-700 transition-colors"
+              >
+                Manage Projects...
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       <nav className="flex-1 p-3 space-y-1">
         {navItems.map((item) => (
           <NavLink
@@ -75,12 +187,16 @@ export function Sidebar(): ReactElement {
           </NavLink>
         ))}
       </nav>
+
       <div className="p-5 border-t border-gray-800 space-y-2">
+        {activeProject && (
+          <p className="text-xs text-gray-500 truncate" title={activeProject.rootPath}>
+            {activeProject.rootPath}
+          </p>
+        )}
         <div className="flex items-center gap-2">
           <span
-            className={`h-2 w-2 rounded-full ${
-              healthOk === true ? "bg-green-500" : healthOk === false ? "bg-red-500" : "bg-gray-500"
-            }`}
+            className={`h-2 w-2 rounded-full ${healthOk === true ? "bg-green-500" : healthOk === false ? "bg-red-500" : "bg-gray-500"}`}
           />
           <span className="text-xs text-gray-400">
             {healthOk === true

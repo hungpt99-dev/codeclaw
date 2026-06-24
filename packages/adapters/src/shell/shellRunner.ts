@@ -48,7 +48,7 @@ export async function runShellCommand(input: ShellRunInput): Promise<ShellRunRes
     policy: undefined,
     captureStdout: true,
     captureStderr: true,
-    redactSecrets: false,
+    redactSecrets: true,
   });
 
   const durationMs = Date.now() - start;

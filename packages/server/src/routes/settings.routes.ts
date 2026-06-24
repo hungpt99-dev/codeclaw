@@ -255,4 +255,31 @@ export function registerSettingsRoutes(app: FastifyInstance, db: DbConnection): 
         return reply.status(400).send({ success: false, message: `Unknown integration: ${type}` });
     }
   });
+
+  app.get("/api/settings/providers", async (_request, _reply) => {
+    try {
+      const configPath = join(process.cwd(), ".codeclaw", "config.json");
+      const raw = await readFile(configPath, "utf-8");
+      const config = JSON.parse(raw) as Record<string, unknown>;
+      const agentBackend = config.agentBackend as Record<string, unknown> | undefined;
+      return {
+        provider: agentBackend?.provider ?? "none",
+        model: agentBackend?.model ?? null,
+        baseUrl: agentBackend?.baseUrl ?? null,
+        apiKeyEnv: agentBackend?.apiKeyEnv ?? null,
+        timeoutMs: agentBackend?.timeoutMs ?? null,
+      };
+    } catch {
+      return { provider: "none", model: null, baseUrl: null, apiKeyEnv: null, timeoutMs: null };
+    }
+  });
+
+  app.get("/api/settings/native-runner", async (_request, _reply) => {
+    try {
+      const available = await checkCliAvailable("codeclaw-runner");
+      return { available, version: available ? "detected" : null };
+    } catch {
+      return { available: false, version: null };
+    }
+  });
 }

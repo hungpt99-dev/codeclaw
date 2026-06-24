@@ -7,6 +7,10 @@ export interface Run {
   status: string;
   createdAt: string;
   updatedAt: string;
+  totalSteps?: number;
+  completedSteps?: number;
+  failedSteps?: number;
+  skippedSteps?: number;
 }
 
 export interface Artifact {
@@ -259,6 +263,75 @@ export interface WorkflowProgressEvent {
   timestamp: string;
   status?: string;
   stages?: string[];
+}
+
+export type StepStatus = "PENDING" | "RUNNING" | "COMPLETED" | "FAILED" | "SKIPPED";
+
+export interface StepRun {
+  id: string;
+  runId: string;
+  stepIndex: number;
+  stepName: string;
+  agentRole: string | null;
+  status: StepStatus;
+  startedAt: string | null;
+  endedAt: string | null;
+  durationMs: number | null;
+  errorMessage: string | null;
+  outputArtifactPath: string | null;
+}
+
+export interface WorkflowStepDefinition {
+  id: string;
+  name: string;
+  agentName?: string;
+  enabled: boolean;
+  requiresApproval?: boolean;
+  producesArtifacts?: boolean;
+  description?: string;
+}
+
+export interface WorkflowTemplate {
+  workflowTemplateId: string;
+  name: string;
+  description?: string;
+  steps: WorkflowStepDefinition[];
+  isDefault?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FileChangeSummary {
+  path: string;
+  status: "added" | "modified" | "deleted" | "renamed" | "unknown";
+  additions?: number;
+  deletions?: number;
+  isBinary?: boolean;
+  isLarge?: boolean;
+  isRisky?: boolean;
+}
+
+export interface ProviderConfig {
+  provider: string;
+  model: string | null;
+  baseUrl: string | null;
+  apiKeyEnv: string | null;
+  timeoutMs: number | null;
+}
+
+export interface NativeRunnerStatus {
+  available: boolean;
+  version: string | null;
+}
+
+export interface ProjectEntry {
+  id: string;
+  name: string;
+  rootPath: string;
+  createdAt: string;
+  updatedAt: string;
+  lastUsedAt: string | null;
+  exists: boolean;
 }
 
 export type DocArtifactType =

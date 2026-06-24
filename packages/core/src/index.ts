@@ -153,3 +153,18 @@ export { runFixLoop } from "./workflows/fixLoop.js";
 export type { FixLoopConfig, FixLoopIteration, FixLoopResult } from "./workflows/fixLoop.js";
 export { generateFixPrompt } from "./workflows/fixPromptGenerator.js";
 export type { ParsedTestFailure } from "./workflows/fixPromptGenerator.js";
+
+export {
+  loadRegistry,
+  saveRegistry,
+  addProject,
+  listProjects,
+  findProject,
+  setActiveProject,
+  getActiveProject,
+  removeProject,
+  updateProjectTimestamp,
+  isProjectDirectory,
+} from "./project/projectRegistry.js";
+export { resolveProjectDir } from "./project/projectResolver.js";
+export type { ResolveResult } from "./project/projectResolver.js";

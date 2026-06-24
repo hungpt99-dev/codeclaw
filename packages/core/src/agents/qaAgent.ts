@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseQaOutput } from "./parsers/qaOutputParser.js";
 
 export interface QaAgentInput {
@@ -73,9 +75,38 @@ export async function runQaAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<QaAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a QA Engineer. Create a comprehensive test matrix for the following requirement.
+
+Requirement: ${input.requirement}
+Acceptance Criteria: ${input.acceptanceCriteria}
+
+Generate the following sections:
+1. Unit Tests
+2. Integration Tests
+3. Edge Cases
+4. Non-Functional Tests`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "QA",
+      agentName: "QA Engineer",
+      systemPrompt:
+        "You are a senior QA Engineer for a software development team. Generate comprehensive test plans and test matrices from requirements.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseQaOutput(result.content, input.requirement);
+    }
+  }
 
   if (options?.aiTool) {
     const result = await runAgent({

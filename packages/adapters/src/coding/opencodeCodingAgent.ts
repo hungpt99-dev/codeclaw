@@ -26,7 +26,7 @@ export function createOpenCodeCodingAgent(config: {
         policy: undefined,
         captureStdout: true,
         captureStderr: true,
-        redactSecrets: false,
+        redactSecrets: true,
       });
 
       if (!result.success || result.exitCode !== 0) {
@@ -45,7 +45,7 @@ export function createOpenCodeCodingAgent(config: {
         policy: undefined,
         captureStdout: true,
         captureStderr: true,
-        redactSecrets: false,
+        redactSecrets: true,
       });
 
       return {

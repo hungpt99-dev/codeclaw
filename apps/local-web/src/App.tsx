@@ -6,6 +6,8 @@ import { Runs } from "./pages/Runs.js";
 import { RunDetail } from "./pages/RunDetail.js";
 import { Settings } from "./pages/Settings.js";
 import { Integrations } from "./pages/Integrations.js";
+import { Workflows } from "./pages/Workflows.js";
+import { Projects } from "./pages/Projects.js";
 import { PromptTemplates } from "./pages/PromptTemplates.js";
 import type { ReactElement } from "react";
 
@@ -20,6 +22,8 @@ export function App(): ReactElement {
           <Route path="runs/:id" element={<RunDetail />} />
           <Route path="settings" element={<Settings />} />
           <Route path="integrations" element={<Integrations />} />
+          <Route path="workflows" element={<Workflows />} />
+          <Route path="projects" element={<Projects />} />
           <Route path="templates" element={<PromptTemplates />} />
         </Route>
       </Routes>

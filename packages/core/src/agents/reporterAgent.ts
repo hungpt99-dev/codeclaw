@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseReporterOutput } from "./parsers/reporterOutputParser.js";
 
 export interface ReporterAgentInput {
@@ -154,9 +156,48 @@ export async function runReporterAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<ReporterAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a technical writer. Generate a comprehensive final report for the following project.
+
+Requirement: ${input.requirement}
+Clarified Requirement: ${input.clarifiedRequirement}
+Business Rules: ${input.businessRules}
+Acceptance Criteria: ${input.acceptanceCriteria}
+Technical Design: ${input.technicalDesign}
+API Design: ${input.apiDesign}
+Database Design: ${input.dbDesign}
+Task Breakdown: ${input.taskBreakdownMd}
+Test Matrix: ${input.testMatrixMd}
+
+Generate a final report with:
+1. Executive Summary
+2. Artifacts Generated
+3. Key Findings (Requirements, Architecture, Planning, QA)
+4. Next Steps
+5. Traceability
+6. Integration Plan
+7. Release Plan & Changelog`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "REPORTER",
+      agentName: "Technical Writer",
+      systemPrompt:
+        "You are a senior technical writer. Generate comprehensive final reports that summarize all project artifacts.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseReporterOutput(result.content);
+    }
+  }
 
   if (options?.aiTool) {
     const result = await runAgent({

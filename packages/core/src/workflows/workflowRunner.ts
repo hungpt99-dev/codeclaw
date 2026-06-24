@@ -140,7 +140,7 @@ export async function runWorkflowWithGates(input: WorkflowInput): Promise<Workfl
       openQuestions: baOutput.openQuestions,
       assumptions: baOutput.assumptions,
     },
-    { templateDir, aiTool: poTool },
+    { templateDir, aiTool: poTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   await writeArtifact(paths.scopeDefinitionPath, poOutput.productGoal);
@@ -217,7 +217,7 @@ export async function runWorkflowWithGates(input: WorkflowInput): Promise<Workfl
         requirement: input.requirement,
         clarifiedRequirement: baOutput.clarifiedRequirement,
       },
-      { templateDir, aiTool: frontendPlannerTool },
+      { templateDir, aiTool: frontendPlannerTool, agentBackendConfig: input.agentBackendConfig },
     );
 
     await writeArtifact(
@@ -242,7 +242,7 @@ export async function runWorkflowWithGates(input: WorkflowInput): Promise<Workfl
         requirement: input.requirement,
         clarifiedRequirement: baOutput.clarifiedRequirement,
       },
-      { templateDir, aiTool: backendPlannerTool },
+      { templateDir, aiTool: backendPlannerTool, agentBackendConfig: input.agentBackendConfig },
     );
 
     await writeArtifact(
@@ -294,7 +294,7 @@ export async function runWorkflowWithGates(input: WorkflowInput): Promise<Workfl
       requirement: input.requirement,
       technicalDesign: combinedDesign,
     },
-    { templateDir, aiTool: pmTool },
+    { templateDir, aiTool: pmTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   await writeArtifact(join(paths.tasksDir, "task-breakdown.md"), pmOutput.taskBreakdownMd);
@@ -309,7 +309,7 @@ export async function runWorkflowWithGates(input: WorkflowInput): Promise<Workfl
       acceptanceCriteria: baOutput.acceptanceCriteria,
       taskBreakdownJson: pmOutput.taskBreakdownJson,
     },
-    { templateDir, aiTool: qaTool },
+    { templateDir, aiTool: qaTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   await writeArtifact(join(paths.testsDir, "test-matrix.md"), qaOutput.testMatrixMd);
@@ -357,7 +357,7 @@ export async function runWorkflowWithGates(input: WorkflowInput): Promise<Workfl
       taskBreakdownMd: pmOutput.taskBreakdownMd,
       testMatrixMd: qaOutput.testMatrixMd,
     },
-    { templateDir, aiTool: reporterTool },
+    { templateDir, aiTool: reporterTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   await writeArtifact(join(paths.reportDir, "final-report.md"), reporterOutput.finalReport);

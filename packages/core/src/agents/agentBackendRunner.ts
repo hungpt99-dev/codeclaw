@@ -1,5 +1,9 @@
 import type { AgentBackend, AgentGenerateResult } from "@codeclaw/adapters";
-import { createMockAgentBackend, createOpenAiCompatibleProvider } from "@codeclaw/adapters";
+import {
+  createMockAgentBackend,
+  createOpenAiCompatibleProvider,
+  createOllamaProvider,
+} from "@codeclaw/adapters";
 import type { AgentBackendConfig } from "@codeclaw/shared";
 
 export interface AgentBackendRunnerInput {
@@ -25,6 +29,15 @@ function resolveBackend(config: AgentBackendConfig): AgentBackend | null {
 
   if (config.provider === "mock") {
     cachedBackend = createMockAgentBackend();
+    return cachedBackend;
+  }
+
+  if (config.provider === "ollama") {
+    cachedBackend = createOllamaProvider({
+      baseUrl: config.baseUrl,
+      model: config.model,
+      timeoutMs: config.timeoutMs,
+    });
     return cachedBackend;
   }
 

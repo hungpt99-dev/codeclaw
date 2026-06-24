@@ -1,8 +1,14 @@
-import { access, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { configSchema } from "@codeclaw/shared";
 import type { AiCliTool } from "@codeclaw/shared";
-import { getArtifactPaths, writeArtifact, runDeveloperAgent, runCodingAgent } from "@codeclaw/core";
+import {
+  getArtifactPaths,
+  writeArtifact,
+  runDeveloperAgent,
+  runCodingAgent,
+  resolveProjectDir,
+} from "@codeclaw/core";
 import {
   openDatabase,
   initializeSchema,
@@ -16,15 +22,17 @@ interface CodeOptions {
   promptOnly?: boolean;
   approve?: boolean;
   dryRun?: boolean;
+  project?: string;
 }
 
 export async function codeCommand(options: CodeOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".codeclaw");
+  let aiTeamDir: string;
 
   try {
-    await access(aiTeamDir);
-  } catch {
-    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
+    const resolved = await resolveProjectDir(options.project);
+    aiTeamDir = resolved.projectDir;
+  } catch (err) {
+    console.log(`❌ ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 

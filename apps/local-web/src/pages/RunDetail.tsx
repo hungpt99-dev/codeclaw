@@ -27,6 +27,10 @@ import type {
 } from "../lib/types.js";
 import type { ReactElement } from "react";
 import type { TimelineStage } from "../components/WorkflowTimeline.js";
+import { StepTimeline } from "../components/runs/StepTimeline.js";
+import { StepDetailPanel } from "../components/runs/StepDetailPanel.js";
+import { RunDetailHeader } from "../components/runs/RunDetailHeader.js";
+import type { StepRun } from "../lib/types.js";
 
 const AGENT_FORMATS = [
   { value: "generic", label: "Generic" },
@@ -116,6 +120,11 @@ export function RunDetail(): ReactElement {
   const [progressConnected, setProgressConnected] = useState(false);
   const progressCleanupRef = useRef<(() => void) | null>(null);
 
+  const [steps, setSteps] = useState<StepRun[]>([]);
+  const [stepsLoading, setStepsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [selectedStep, setSelectedStep] = useState<StepRun | null>(null);
+
   const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
@@ -139,6 +148,19 @@ export function RunDetail(): ReactElement {
     }
   }, [id]);
 
+  const fetchSteps = useCallback(async () => {
+    if (!id) return;
+    setStepsLoading(true);
+    try {
+      const stepData = await api.listSteps(id);
+      setSteps(stepData);
+    } catch {
+      setSteps([]);
+    } finally {
+      setStepsLoading(false);
+    }
+  }, [id]);
+
   const handleAnalyze = useCallback(async () => {
     if (!id) return;
     try {
@@ -151,7 +173,8 @@ export function RunDetail(): ReactElement {
 
   useEffect(() => {
     void load();
-  }, [load]);
+    void fetchSteps();
+  }, [load, fetchSteps]);
 
   useEffect(() => {
     if (!id || !run) return;
@@ -181,10 +204,16 @@ export function RunDetail(): ReactElement {
       (event) => {
         setProgressEvents((prev) => [...prev, event]);
         if (event.type === "WORKFLOW_COMPLETED" || event.type === "ERROR") {
-          setTimeout(() => void load(), 500);
+          setTimeout(() => {
+            void load();
+            void fetchSteps();
+          }, 500);
         }
         if (event.type === "ARTIFACT_GENERATED") {
-          setTimeout(() => void load(), 300);
+          setTimeout(() => {
+            void load();
+            void fetchSteps();
+          }, 300);
         }
       },
       () => {
@@ -1390,44 +1419,344 @@ export function RunDetail(): ReactElement {
         </section>
       )}
 
-      {GROUPS.map((group) => {
-        const groupArtifacts = grouped[group.key];
-        const isImplementation = group.key === "implementation";
+      {(() => {
+        const runningStepName = steps.find((s) => s.status === "RUNNING")?.stepName;
         return (
-          <section key={group.key} className="rounded-lg border bg-white p-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-900">{group.title}</h2>
-              {isImplementation && groupArtifacts && groupArtifacts.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500">Format:</span>
-                  <select
-                    value={agentFormat}
-                    onChange={(e) => {
-                      setAgentFormat(e.target.value);
+          <RunDetailHeader
+            run={run}
+            totalSteps={steps.length}
+            completedSteps={steps.filter((s) => s.status === "COMPLETED").length}
+            failedSteps={steps.filter((s) => s.status === "FAILED").length}
+            {...(runningStepName !== undefined ? { currentStepName: runningStepName } : {})}
+          />
+        );
+      })()}
+
+      {(() => {
+        const TABS = [
+          { id: "overview", label: "Overview" },
+          { id: "steps", label: `Steps${steps.length > 0 ? ` (${String(steps.length)})` : ""}` },
+          {
+            id: "artifacts",
+            label: `Artifacts${artifacts.length > 0 ? ` (${String(artifacts.length)})` : ""}`,
+          },
+          { id: "execution", label: "Execution" },
+          { id: "diff", label: "Diff" },
+          { id: "logs", label: "Logs" },
+          { id: "report", label: "Report" },
+        ];
+
+        return (
+          <div className="space-y-4">
+            <div className="border-b border-gray-200 mb-4">
+              <nav className="flex space-x-1 overflow-x-auto" role="tablist">
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    role="tab"
+                    aria-selected={activeTab === tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id);
                     }}
-                    className="text-xs rounded border border-gray-300 px-2 py-1 bg-white text-gray-700"
+                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      activeTab === tab.id
+                        ? "border-blue-600 text-blue-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    }`}
                   >
-                    {AGENT_FORMATS.map((fmt) => (
-                      <option key={fmt.value} value={fmt.value}>
-                        {fmt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+                    {tab.label}
+                  </button>
+                ))}
+              </nav>
             </div>
-            {groupArtifacts && groupArtifacts.length > 0 ? (
+
+            {activeTab === "overview" && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-gray-900">Run Overview</h3>
+                {progressConnected ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2">
+                      {(() => {
+                        const startedEvent = progressEvents.find(
+                          (e) => e.type === "WORKFLOW_STARTED",
+                        );
+                        const stageNames = startedEvent?.stages ?? [];
+                        const completedStages = new Set(
+                          progressEvents
+                            .filter((e) => e.type === "STAGE_COMPLETED" && e.stage)
+                            .map((e) => e.stage),
+                        );
+                        let activeStage: string | null = null;
+                        for (const event of progressEvents) {
+                          if (event.type === "STAGE_STARTED" && event.stage) {
+                            activeStage = event.stage;
+                          }
+                        }
+                        const timelineStages: TimelineStage[] = stageNames.map((name) => ({
+                          id: name.replace(/\s+/g, "-").toLowerCase(),
+                          label: name,
+                          status: completedStages.has(name)
+                            ? "completed"
+                            : activeStage === name
+                              ? "active"
+                              : "pending",
+                        }));
+                        return <WorkflowTimeline stages={timelineStages} />;
+                      })()}
+                    </div>
+                    <div>
+                      {(() => {
+                        const agentStarted = progressEvents
+                          .filter((e) => e.type === "AGENT_STARTED" && e.agentRole)
+                          .map((e) => e.agentRole);
+                        const agentCompleted = new Set(
+                          progressEvents
+                            .filter((e) => e.type === "AGENT_COMPLETED" && e.agentRole)
+                            .map((e) => e.agentRole),
+                        );
+                        const activeAgent =
+                          agentStarted.length > 0
+                            ? (agentStarted.reverse().find((a) => a && !agentCompleted.has(a)) ??
+                              null)
+                            : null;
+                        const stages = progressEvents.filter(
+                          (e) => e.type === "STAGE_COMPLETED",
+                        ).length;
+                        const total =
+                          progressEvents.find((e) => e.type === "WORKFLOW_STARTED")?.stages
+                            ?.length ?? 0;
+                        return activeAgent ? (
+                          <AgentActivityIndicator
+                            agentRole={activeAgent}
+                            stage="Working..."
+                            completedStages={stages}
+                            totalStages={total}
+                          />
+                        ) : (
+                          <div />
+                        );
+                      })()}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400 italic">No active workflow.</p>
+                )}
+              </div>
+            )}
+
+            {activeTab === "steps" && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-gray-900">Step Timeline</h3>
+                {stepsLoading ? (
+                  <div className="rounded-lg border bg-white p-6 flex items-center justify-center">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        />
+                      </svg>
+                      Loading steps...
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <StepTimeline
+                      steps={steps}
+                      onStepClick={(step) => {
+                        setSelectedStep(selectedStep?.id === step.id ? null : step);
+                      }}
+                    />
+                    {selectedStep && (
+                      <StepDetailPanel
+                        step={selectedStep}
+                        isExpanded={true}
+                        onClose={() => {
+                          setSelectedStep(null);
+                        }}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {activeTab === "artifacts" && (
               <div className="space-y-4">
-                {groupArtifacts.map((a) => (
-                  <div key={a.id}>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-medium text-gray-700">
-                        {a.name.replace(/\.(md|json)$/, "")}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        {isImplementation && (
-                          <span className="text-xs text-gray-400">Agent: {agentFormat}</span>
+                {GROUPS.map((group) => {
+                  const groupArtifacts = grouped[group.key];
+                  const isImplementation = group.key === "implementation";
+                  return (
+                    <section key={group.key} className="rounded-lg border bg-white p-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-lg font-semibold text-gray-900">{group.title}</h2>
+                        {isImplementation && groupArtifacts && groupArtifacts.length > 0 && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">Format:</span>
+                            <select
+                              value={agentFormat}
+                              onChange={(e) => {
+                                setAgentFormat(e.target.value);
+                              }}
+                              className="text-xs rounded border border-gray-300 px-2 py-1 bg-white text-gray-700"
+                            >
+                              {AGENT_FORMATS.map((fmt) => (
+                                <option key={fmt.value} value={fmt.value}>
+                                  {fmt.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         )}
+                      </div>
+                      {groupArtifacts && groupArtifacts.length > 0 ? (
+                        <div className="space-y-4">
+                          {groupArtifacts.map((a) => (
+                            <div key={a.id}>
+                              <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-sm font-medium text-gray-700">
+                                  {a.name.replace(/\.(md|json)$/, "")}
+                                </h3>
+                                <div className="flex items-center gap-2">
+                                  {isImplementation && (
+                                    <span className="text-xs text-gray-400">
+                                      Agent: {agentFormat}
+                                    </span>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={(): void => {
+                                      handleCopy(a.content ?? "", a.id);
+                                    }}
+                                    className="text-xs px-2 py-1 rounded border bg-white text-gray-500 hover:bg-gray-50 transition-colors"
+                                  >
+                                    {copiedId === a.id ? "Copied!" : "Copy to Clipboard"}
+                                  </button>
+                                </div>
+                              </div>
+                              {a.content ? (
+                                <div className="rounded-md bg-gray-50 p-4">
+                                  <MarkdownViewer content={a.content} />
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-400 italic">
+                                  No content available.
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-400 italic">
+                          No {group.title.toLowerCase()} artifacts yet. Run an assisted workflow to
+                          generate an implementation prompt.
+                        </p>
+                      )}
+                    </section>
+                  );
+                })}
+              </div>
+            )}
+
+            {activeTab === "execution" && (
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-900">Execution & Test Results</h3>
+                {testRunResult ? (
+                  <div className="space-y-4">
+                    <div
+                      className={`rounded-lg border p-4 ${
+                        testRunResult.overallStatus === "PASSED"
+                          ? "bg-green-50 border-green-200"
+                          : "bg-red-50 border-red-200"
+                      }`}
+                    >
+                      <p className="text-sm font-semibold">
+                        {testRunResult.overallStatus === "PASSED"
+                          ? "All Tests Passed"
+                          : "Some Tests Failed"}
+                      </p>
+                    </div>
+                    {testRunResult.results.map((result, i) => (
+                      <div key={i} className="rounded-lg border bg-white p-4">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-gray-900">{result.name}</p>
+                          <span
+                            className={`text-xs font-medium ${
+                              result.status === "PASSED" ? "text-green-600" : "text-red-600"
+                            }`}
+                          >
+                            {result.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Exit code: {result.exitCode ?? "—"} · Duration:{" "}
+                          {(result.durationMs / 1000).toFixed(1)}s
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-lg border bg-white p-6 text-center">
+                    <p className="text-sm text-gray-400">No test results for this run.</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Run tests from the CLI or trigger them from the workflow.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "diff" && diffContent && (
+              <div className="space-y-4">
+                <DiffViewer
+                  diffContent={diffContent}
+                  warnFiles={codeResult?.fileSafety?.warnings ?? []}
+                  renderMode="full"
+                />
+              </div>
+            )}
+
+            {activeTab === "diff" && !diffContent && (
+              <div className="rounded-lg border bg-white p-6 text-center">
+                <p className="text-sm text-gray-400">No diff content available.</p>
+              </div>
+            )}
+
+            {activeTab === "logs" && (
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-900">Logs</h3>
+                {agentLog ? (
+                  <div className="rounded-lg border bg-gray-900 p-4 overflow-x-auto">
+                    <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap">
+                      {agentLog}
+                    </pre>
+                  </div>
+                ) : (
+                  <div className="rounded-lg border bg-white p-6 text-center">
+                    <p className="text-sm text-gray-400">No logs available for this run.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "report" && (
+              <div className="space-y-4">
+                {grouped.report && grouped.report.length > 0 ? (
+                  grouped.report.map((a) => (
+                    <div key={a.id} className="rounded-lg border bg-white p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-medium text-gray-700">
+                          {a.name.replace(/\.(md|json)$/, "")}
+                        </h3>
                         <button
                           type="button"
                           onClick={(): void => {
@@ -1438,26 +1767,25 @@ export function RunDetail(): ReactElement {
                           {copiedId === a.id ? "Copied!" : "Copy to Clipboard"}
                         </button>
                       </div>
+                      {a.content ? (
+                        <div className="rounded-md bg-gray-50 p-4">
+                          <MarkdownViewer content={a.content} />
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-400 italic">No content available.</p>
+                      )}
                     </div>
-                    {a.content ? (
-                      <div className="rounded-md bg-gray-50 p-4">
-                        <MarkdownViewer content={a.content} />
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-400 italic">No content available.</p>
-                    )}
+                  ))
+                ) : (
+                  <div className="rounded-lg border bg-white p-6 text-center">
+                    <p className="text-sm text-gray-400">No report artifacts available.</p>
                   </div>
-                ))}
+                )}
               </div>
-            ) : (
-              <p className="text-sm text-gray-400 italic">
-                No {group.title.toLowerCase()} artifacts yet. Run an assisted workflow to generate
-                an implementation prompt.
-              </p>
             )}
-          </section>
+          </div>
         );
-      })}
+      })()}
 
       <section className="rounded-lg border bg-white p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-3">GitHub</h2>
@@ -1765,26 +2093,6 @@ export function RunDetail(): ReactElement {
                 : (slackPostResult.error ?? "Unknown")}
             </div>
           )}
-        </div>
-      </section>
-
-      <section className="rounded-lg border bg-white p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Logs</h2>
-        <div className="flex items-center gap-2 text-sm text-gray-400 italic">
-          <svg
-            className="h-4 w-4 shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.5}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          Logs are not available yet.
         </div>
       </section>
     </div>

@@ -1,4 +1,4 @@
-import { access, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join, basename, extname } from "node:path";
 import { createRunId, nowIso, configSchema } from "@codeclaw/shared";
 import type { Config, RunMode, RunStatus } from "@codeclaw/shared";
@@ -8,6 +8,7 @@ import {
   runSemiAutoWorkflow,
   runWorkflowWithGates,
   defaultSafetyPolicy,
+  resolveProjectDir,
 } from "@codeclaw/core";
 import {
   openDatabase,
@@ -27,6 +28,7 @@ interface RunOptions {
   approve?: boolean;
   agent?: string;
   timeout?: string;
+  project?: string;
 }
 
 function inferArtifactType(filePath: string): ArtifactType {
@@ -57,24 +59,25 @@ function inferFormat(filePath: string): string {
   return "markdown";
 }
 
-async function loadConfig(): Promise<Config> {
-  const configPath = join(process.cwd(), ".codeclaw", "config.json");
+async function loadConfig(aiTeamDir: string): Promise<Config> {
+  const configPath = join(aiTeamDir, "config.json");
   const raw = await readFile(configPath, "utf-8");
   const parsed: unknown = JSON.parse(raw);
   return configSchema.parse(parsed);
 }
 
 export async function runCommand(requirement: string, options: RunOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".codeclaw");
+  let aiTeamDir: string;
 
   try {
-    await access(aiTeamDir);
-  } catch {
-    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
+    const resolved = await resolveProjectDir(options.project);
+    aiTeamDir = resolved.projectDir;
+  } catch (err) {
+    console.log(`❌ ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 
-  const config = await loadConfig();
+  const config = await loadConfig(aiTeamDir);
   const runId = createRunId(requirement);
   const title = options.title ?? requirement.slice(0, 80);
 

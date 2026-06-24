@@ -1,5 +1,5 @@
-import { access } from "node:fs/promises";
 import { join } from "node:path";
+import { resolveProjectDir } from "@codeclaw/core";
 import {
   openDatabase,
   initializeSchema,
@@ -7,13 +7,14 @@ import {
   createArtifactRepository,
 } from "@codeclaw/storage";
 
-export async function showCommand(runId: string): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".codeclaw");
+export async function showCommand(runId: string, projectName?: string): Promise<void> {
+  let aiTeamDir: string;
 
   try {
-    await access(aiTeamDir);
-  } catch {
-    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
+    const resolved = await resolveProjectDir(projectName);
+    aiTeamDir = resolved.projectDir;
+  } catch (err) {
+    console.log(`❌ ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 

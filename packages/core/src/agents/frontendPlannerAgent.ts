@@ -2,7 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
-import type { RepositoryAnalysis } from "@codeclaw/shared";
+import type { RepositoryAnalysis, AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseFrontendPlannerOutput } from "./parsers/frontendPlannerOutputParser.js";
 
 export interface FrontendPlannerAgentInput {
@@ -213,6 +214,7 @@ export async function runFrontendPlannerAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<FrontendPlannerAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
@@ -220,6 +222,36 @@ export async function runFrontendPlannerAgent(
   const projectContext = buildProjectContext(input);
   const uxContext = buildUxContext(input);
   const extraContext = [projectContext, uxContext].filter(Boolean).join("\n");
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a Frontend Architect. Design the frontend architecture for the following requirement.
+
+Requirement: ${input.requirement}
+Clarified Requirement: ${input.clarifiedRequirement}
+${projectContext}
+${uxContext}
+
+Generate the following sections:
+1. Component Tree - hierarchy and responsibilities
+2. State Management - global, server, and local state
+3. Routing Design - routes, navigation flow, guards
+4. Data Fetching Strategy - patterns, query strategy, error handling`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "FRONTEND_PLANNER",
+      agentName: "Frontend Architect",
+      systemPrompt:
+        "You are a senior Frontend Architect. Design comprehensive frontend architecture including component trees, state management, and routing.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement, clarifiedRequirement: input.clarifiedRequirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseFrontendPlannerOutput(result.content, input.requirement);
+    }
+  }
 
   if (options?.aiTool) {
     const context = {

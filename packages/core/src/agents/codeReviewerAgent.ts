@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseCodeReviewerOutput } from "./parsers/codeReviewerOutputParser.js";
 import { generateDeterministicCodeReview } from "../review/deterministicReview.js";
 import type { DeterministicReviewInput } from "../review/deterministicReview.js";
@@ -71,9 +73,43 @@ export async function runCodeReviewerAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<CodeReviewerAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATE;
+
+  if (options?.agentBackendConfig) {
+    const contextStr = Object.entries(buildContext(input))
+      .map(([k, v]) => `${k}: ${v}`)
+      .join("\n");
+
+    const agentPrompt = `You are a senior code reviewer. Review the following code changes against requirements.
+
+${contextStr}
+
+Generate a review report with:
+1. Review Summary - overall status (APPROVED, APPROVED_WITH_WARNINGS, CHANGES_REQUIRED)
+2. Requirement Coverage - how well the implementation covers requirements
+3. Code Quality observations
+4. Test Quality observations
+5. Security observations
+6. Required Fixes`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "CODE_REVIEWER",
+      agentName: "Code Reviewer",
+      systemPrompt:
+        "You are a senior code reviewer. Review code changes for correctness, quality, test coverage, and security.",
+      userPrompt: agentPrompt,
+      context: {},
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseCodeReviewerOutput(result.content, input.clarifiedRequirement);
+    }
+  }
 
   if (options?.aiTool) {
     const result = await runAgent({

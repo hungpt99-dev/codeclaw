@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { access } from "node:fs/promises";
+import { resolveProjectDir } from "@codeclaw/core";
 import {
   openDatabase,
   initializeSchema,
@@ -16,6 +16,7 @@ interface ExportCliOptions {
   includeDiff?: boolean;
   title?: string;
   author?: string;
+  project?: string;
 }
 
 function bytesToSize(bytes: number): string {
@@ -27,11 +28,13 @@ function bytesToSize(bytes: number): string {
 }
 
 export async function exportCommand(runId: string, options: ExportCliOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".codeclaw");
+  let aiTeamDir: string;
+
   try {
-    await access(aiTeamDir);
-  } catch {
-    console.log("Error: .codeclaw not found. Run 'codeclaw init' first.");
+    const resolved = await resolveProjectDir(options.project);
+    aiTeamDir = resolved.projectDir;
+  } catch (err) {
+    console.log(`Error: ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 
@@ -75,7 +78,7 @@ export async function exportCommand(runId: string, options: ExportCliOptions): P
 
   let outputPath = options.output;
   if (!outputPath) {
-    const defaultDir = join(process.cwd(), ".codeclaw", "runs", runId, "export");
+    const defaultDir = join(aiTeamDir, "runs", runId, "export");
     if (format === "markdown") {
       outputPath = join(defaultDir, "markdown");
     } else if (format === "combined-md") {

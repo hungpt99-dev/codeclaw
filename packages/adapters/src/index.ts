@@ -24,6 +24,7 @@ export type {
 
 export { createMockAgentBackend } from "./agentBackend/mockAgentBackend.js";
 export { createOpenAiCompatibleProvider } from "./agentBackend/openaiCompatibleProvider.js";
+export { createOllamaProvider } from "./agentBackend/ollamaProvider.js";
 export type {
   AgentBackend,
   AgentBackendAvailability,

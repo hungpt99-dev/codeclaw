@@ -167,7 +167,7 @@ async function executeCodeGeneration(
       policy: undefined,
       captureStdout: true,
       captureStderr: true,
-      redactSecrets: false,
+      redactSecrets: true,
     });
 
     if (!response.success && response.error?.code === "RUNNER_NOT_FOUND") {
@@ -365,7 +365,7 @@ export async function runSemiAutoWorkflow(
         apiDesign: architectOutput.apiDesign,
         technicalDesign: architectOutput.technicalDesign,
       },
-      { templateDir, aiTool: integrationPlannerTool },
+      { templateDir, aiTool: integrationPlannerTool, agentBackendConfig: input.agentBackendConfig },
     );
 
     await writeArtifact(paths.integrationPlanPath, integrationPlanOutput.integrationPlan);
@@ -387,7 +387,7 @@ export async function runSemiAutoWorkflow(
         clarifiedRequirement: baOutput.clarifiedRequirement,
         ...(repoAnalysis ? { repositoryAnalysis: repoAnalysis } : {}),
       },
-      { templateDir, aiTool: frontendPlannerTool },
+      { templateDir, aiTool: frontendPlannerTool, agentBackendConfig: input.agentBackendConfig },
     );
 
     await writeArtifact(
@@ -413,7 +413,7 @@ export async function runSemiAutoWorkflow(
         clarifiedRequirement: baOutput.clarifiedRequirement,
         ...(repoAnalysis ? { repositoryAnalysis: repoAnalysis } : {}),
       },
-      { templateDir, aiTool: backendPlannerTool },
+      { templateDir, aiTool: backendPlannerTool, agentBackendConfig: input.agentBackendConfig },
     );
 
     await writeArtifact(
@@ -465,7 +465,7 @@ export async function runSemiAutoWorkflow(
       requirement: input.requirement,
       technicalDesign: combinedDesign,
     },
-    { templateDir, aiTool: pmTool },
+    { templateDir, aiTool: pmTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   await writeArtifact(join(paths.tasksDir, "task-breakdown.md"), pmOutput.taskBreakdownMd);
@@ -480,7 +480,7 @@ export async function runSemiAutoWorkflow(
       acceptanceCriteria: baOutput.acceptanceCriteria,
       taskBreakdownJson: pmOutput.taskBreakdownJson,
     },
-    { templateDir, aiTool: qaTool },
+    { templateDir, aiTool: qaTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   await writeArtifact(join(paths.testsDir, "test-matrix.md"), qaOutput.testMatrixMd);
@@ -501,7 +501,7 @@ export async function runSemiAutoWorkflow(
       taskBreakdownMd: pmOutput.taskBreakdownMd,
       testMatrixMd: qaOutput.testMatrixMd,
     },
-    { templateDir, aiTool: codingPlanTool },
+    { templateDir, aiTool: codingPlanTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   await writeArtifact(paths.codingPlanPath, codingPlanOutput.codingPlanMd);
@@ -520,7 +520,7 @@ export async function runSemiAutoWorkflow(
       testMatrixMd: qaOutput.testMatrixMd,
       codingPlanMd: codingPlanOutput.codingPlanMd,
     },
-    { templateDir, aiTool: developerTool },
+    { templateDir, aiTool: developerTool, agentBackendConfig: input.agentBackendConfig },
   );
 
   await writeArtifact(paths.implementationPromptPath, developerOutput.implementationPrompt);
@@ -628,6 +628,7 @@ export async function runSemiAutoWorkflow(
     integrationPlanOutput,
     templateDir,
     techDocTool,
+    agentBackendConfig: input.agentBackendConfig,
   });
 }
 
@@ -653,6 +654,7 @@ interface PostCodeContext {
   integrationPlanOutput: Awaited<ReturnType<typeof runIntegrationPlannerAgent>> | undefined;
   templateDir: string | undefined;
   techDocTool: AiToolConfig | undefined;
+  agentBackendConfig?: AgentBackendConfig | undefined;
 }
 
 async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkflowOutput> {
@@ -823,7 +825,7 @@ async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkfl
         apiDesign,
         taskBreakdownMd,
       },
-      { templateDir, aiTool: ctx.devopsReleaseTool },
+      { templateDir, aiTool: ctx.devopsReleaseTool, agentBackendConfig: ctx.agentBackendConfig },
     );
 
     await writeArtifact(paths.releasePlanPath, devopsReleaseOutput.releasePlan);
@@ -835,7 +837,7 @@ async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkfl
 
   const traceabilityOutput = await runTraceabilityAgent(
     { runId, artifactPaths: paths, changedFilesPath: paths.changedFilesPath },
-    { templateDir, aiTool: traceabilityTool },
+    { templateDir, aiTool: traceabilityTool, agentBackendConfig: ctx.agentBackendConfig },
   );
 
   const traceabilityMd = traceabilityToEnhancedMarkdown(traceabilityOutput);
@@ -861,7 +863,7 @@ async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkfl
         integrationPlanSection: ctx.integrationPlanOutput?.integrationPlan,
         releasePlanSection: devopsReleaseOutput?.releasePlan,
       },
-      { templateDir, aiTool: techDocTool },
+      { templateDir, aiTool: techDocTool, agentBackendConfig: ctx.agentBackendConfig },
     );
 
     await writeArtifact(paths.apiReferencePath, techDocOutput.apiReference);
@@ -893,7 +895,7 @@ async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkfl
       releasePlanSection: devopsReleaseOutput?.releasePlan,
       changelogSection: devopsReleaseOutput?.changelog,
     },
-    { templateDir, aiTool: reporterTool },
+    { templateDir, aiTool: reporterTool, agentBackendConfig: ctx.agentBackendConfig },
   );
 
   await writeArtifact(join(paths.reportDir, "final-report.md"), reporterOutput.finalReport);

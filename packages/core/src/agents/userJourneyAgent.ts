@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseUserJourneyOutput } from "./parsers/userJourneyOutputParser.js";
 
 export interface UserJourneyAgentInput {
@@ -96,9 +98,39 @@ export async function runUserJourneyAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<UserJourneyAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a UX researcher. Define user personas, flows, and journey maps for the following requirement.
+
+Requirement: ${input.requirement}
+Clarified Requirement: ${input.clarifiedRequirement}
+Acceptance Criteria: ${input.acceptanceCriteria}
+Scope Definition: ${input.scopeDefinition}
+
+Generate the following sections:
+1. User Personas - primary and secondary personas with attributes
+2. User Flows - main flow, error flow, empty state flow
+3. Journey Map - phases, user actions, touchpoints, emotions`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "UX_RESEARCHER",
+      agentName: "UX Researcher",
+      systemPrompt:
+        "You are a senior UX researcher. Define user personas, user flows, and journey maps from requirements.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseUserJourneyOutput(result.content, input.requirement);
+    }
+  }
 
   if (options?.aiTool) {
     const result = await runAgent({

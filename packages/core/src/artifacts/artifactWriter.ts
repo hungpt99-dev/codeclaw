@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 
 export interface ArtifactPaths {
   runDir: string;
+  opencodeExecutionReportPath?: string;
   inputFile: string;
   requirementDir: string;
   scopeDir: string;
@@ -52,6 +53,7 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
   const runDir = join(".codeclaw", "runs", runId);
   return {
     runDir,
+    opencodeExecutionReportPath: join(runDir, "opencode-execution-report.md"),
     inputFile: join(runDir, "input.md"),
     requirementDir: join(runDir, "requirement"),
     scopeDir: join(runDir, "scope"),

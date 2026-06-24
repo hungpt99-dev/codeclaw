@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseDevopsReleaseOutput } from "./parsers/devopsReleaseOutputParser.js";
 
 export interface DevopsReleaseAgentInput {
@@ -146,11 +148,39 @@ export async function runDevopsReleaseAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<DevopsReleaseAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
 
   const designContext = buildDesignContext(input);
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a DevOps engineer. Create release plan and changelog for the following project.
+
+Requirement: ${input.requirement}
+Clarified Requirement: ${input.clarifiedRequirement}
+${designContext}
+
+Generate the following sections:
+1. Release Plan - version strategy, phases, deployment considerations, rollback plan
+2. Changelog - added, changed, fixed items`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "DEVOPS_RELEASE",
+      agentName: "DevOps Engineer",
+      systemPrompt:
+        "You are a senior DevOps engineer. Create comprehensive release plans and changelogs for software deployments.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement, clarifiedRequirement: input.clarifiedRequirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseDevopsReleaseOutput(result.content, input.requirement);
+    }
+  }
 
   if (options?.aiTool) {
     const context = {

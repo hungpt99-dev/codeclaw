@@ -2,7 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
-import type { RepositoryAnalysis } from "@codeclaw/shared";
+import type { RepositoryAnalysis, AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseBackendPlannerOutput } from "./parsers/backendPlannerOutputParser.js";
 
 export interface BackendPlannerAgentInput {
@@ -226,11 +227,41 @@ export async function runBackendPlannerAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<BackendPlannerAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
 
   const projectContext = buildProjectContext(input);
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a Backend Architect. Design the backend architecture for the following requirement.
+
+Requirement: ${input.requirement}
+Clarified Requirement: ${input.clarifiedRequirement}
+${projectContext}
+
+Generate the following sections:
+1. Service Layer - services, responsibilities, transaction boundaries
+2. Controller Design - endpoints, validation, response formatting
+3. Middleware Chain - pipeline, configuration, error propagation
+4. Error Handling Strategy - exception hierarchy, error codes, logging`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "BACKEND_PLANNER",
+      agentName: "Backend Architect",
+      systemPrompt:
+        "You are a senior Backend Architect. Design comprehensive backend architecture including services, controllers, middleware, and error handling.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement, clarifiedRequirement: input.clarifiedRequirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseBackendPlannerOutput(result.content, input.requirement);
+    }
+  }
 
   if (options?.aiTool) {
     const context = {

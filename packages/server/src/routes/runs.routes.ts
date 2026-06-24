@@ -49,7 +49,22 @@ export function registerRunsRoutes(
   app.get("/api/runs", async (_request, _reply) => {
     const repo = createRunRepository(db);
     const runs = repo.findAll();
-    return { runs };
+    const { createStepExecutionRepository } = await import("@codeclaw/storage");
+    const stepRepo = createStepExecutionRepository(db);
+    const runsWithSteps = runs.map((run) => {
+      const steps = stepRepo.findByRunId(run.id);
+      const completedSteps = steps.filter((s) => s.status === "COMPLETED").length;
+      const failedSteps = steps.filter((s) => s.status === "FAILED").length;
+      const skippedSteps = steps.filter((s) => s.status === "SKIPPED").length;
+      return {
+        ...run,
+        totalSteps: steps.length,
+        completedSteps,
+        failedSteps,
+        skippedSteps,
+      };
+    });
+    return { runs: runsWithSteps };
   });
 
   app.get("/api/runs/:id", async (request, reply) => {
@@ -721,5 +736,28 @@ export function registerRunsRoutes(
       format: result.format,
       fileSize: result.fileSize,
     };
+  });
+
+  app.get("/api/runs/:id/steps", async (request, _reply) => {
+    const params = request.params as { id: string };
+    const { createStepExecutionRepository } = await import("@codeclaw/storage");
+    const stepRepo = createStepExecutionRepository(db);
+    const steps = stepRepo.findByRunId(params.id);
+    return { steps };
+  });
+
+  app.get("/api/runs/:id/execution-report", async (request, reply) => {
+    const params = request.params as { id: string };
+    const paths = getArtifactPaths(params.id);
+    const reportPath = paths.opencodeExecutionReportPath;
+    if (!reportPath) {
+      return reply.status(404).send({ error: "Execution report not found" });
+    }
+    try {
+      const content = await readFile(reportPath, "utf-8");
+      return { report: content };
+    } catch {
+      return reply.status(404).send({ error: "Execution report not found" });
+    }
   });
 }

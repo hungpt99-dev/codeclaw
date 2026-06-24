@@ -53,7 +53,7 @@ export async function runAgentPrompt(
       policy: undefined,
       captureStdout: true,
       captureStderr: true,
-      redactSecrets: false,
+      redactSecrets: true,
     });
 
     if (!response.success && response.error?.code === "RUNNER_NOT_FOUND") {

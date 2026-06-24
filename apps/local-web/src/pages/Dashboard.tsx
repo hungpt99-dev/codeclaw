@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { StatusBadge } from "../components/StatusBadge.js";
+import { DashboardSummaryCards } from "../components/dashboard/DashboardSummaryCards.js";
 import { api } from "../lib/api.js";
-import type { Run } from "../lib/types.js";
+import type { Run, ProviderConfig, NativeRunnerStatus } from "../lib/types.js";
 import type { ReactElement } from "react";
 
 export function Dashboard(): ReactElement {
@@ -11,6 +12,8 @@ export function Dashboard(): ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [healthOk, setHealthOk] = useState<boolean | null>(null);
   const [projectName, setProjectName] = useState("auto-code");
+  const [provider, setProvider] = useState<ProviderConfig | null>(null);
+  const [nativeRunner, setNativeRunner] = useState<NativeRunnerStatus | null>(null);
 
   useEffect(() => {
     api
@@ -29,7 +32,21 @@ export function Dashboard(): ReactElement {
         if (proj) setProjectName(proj.value);
       })
       .catch(() => {
-        /* ignore */
+        void 0;
+      });
+
+    api
+      .getProviderConfig()
+      .then(setProvider)
+      .catch(() => {
+        void 0;
+      });
+
+    api
+      .getNativeRunnerStatus()
+      .then(setNativeRunner)
+      .catch(() => {
+        void 0;
       });
 
     api
@@ -43,9 +60,7 @@ export function Dashboard(): ReactElement {
       });
   }, []);
 
-  const total = runs.length;
-  const completed = runs.filter((r) => r.status === "REPORT_GENERATED").length;
-  const failed = runs.filter((r) => r.status === "FAILED").length;
+  const latestRuns = runs.slice(0, 5);
 
   return (
     <div className="space-y-6">
@@ -75,74 +90,16 @@ export function Dashboard(): ReactElement {
         </div>
       </div>
 
+      {/* Project Summary */}
       <div className="rounded-lg border bg-white p-4">
         <p className="text-sm text-gray-500">Current Project</p>
         <p className="text-lg font-semibold text-gray-900 mt-0.5">{projectName}</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border bg-white p-5">
-          <p className="text-sm text-gray-500">Total Runs</p>
-          <p className="text-2xl font-semibold text-gray-900 mt-1">
-            {loading ? "..." : String(total)}
-          </p>
-        </div>
-        <div className="rounded-lg border bg-white p-5">
-          <p className="text-sm text-gray-500">Completed</p>
-          <p className="text-2xl font-semibold text-green-600 mt-1">
-            {loading ? "..." : String(completed)}
-          </p>
-        </div>
-        <div className="rounded-lg border bg-white p-5">
-          <p className="text-sm text-gray-500">Failed</p>
-          <p className="text-2xl font-semibold text-red-600 mt-1">
-            {loading ? "..." : String(failed)}
-          </p>
-        </div>
-      </div>
-
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Quick Actions</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Link
-            to="/new"
-            className="rounded-lg border bg-white p-5 hover:shadow-sm transition-shadow"
-          >
-            <h3 className="font-semibold text-gray-900">New Requirement</h3>
-            <p className="text-sm text-gray-500 mt-1">
-              Create a new requirement to run the AI pipeline.
-            </p>
-          </Link>
-          <Link
-            to="/runs"
-            className="rounded-lg border bg-white p-5 hover:shadow-sm transition-shadow"
-          >
-            <h3 className="font-semibold text-gray-900">View Runs</h3>
-            <p className="text-sm text-gray-500 mt-1">
-              Browse all execution runs and their artifacts.
-            </p>
-          </Link>
-          <Link
-            to="/settings"
-            className="rounded-lg border bg-white p-5 hover:shadow-sm transition-shadow"
-          >
-            <h3 className="font-semibold text-gray-900">Settings</h3>
-            <p className="text-sm text-gray-500 mt-1">Configure the local web application.</p>
-          </Link>
-        </div>
-      </div>
-
-      <div className="rounded-lg border bg-white p-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-gray-900">Latest Runs</h2>
-          {!loading && runs.length > 5 && (
-            <Link to="/runs" className="text-sm font-medium text-blue-600 hover:text-blue-500">
-              View all →
-            </Link>
-          )}
-        </div>
-        {loading ? (
-          <div className="flex items-center gap-2 text-sm text-gray-500 py-4">
+      {/* Loading State */}
+      {loading && (
+        <div className="rounded-lg border bg-white p-6 flex items-center justify-center">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
             <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
               <circle
                 className="opacity-25"
@@ -160,56 +117,141 @@ export function Dashboard(): ReactElement {
             </svg>
             Loading runs...
           </div>
-        ) : error ? (
-          <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 mt-3">
-            <p className="text-sm text-red-700">{error}</p>
-          </div>
-        ) : runs.length === 0 ? (
-          <div className="text-center py-8">
+        </div>
+      )}
+
+      {/* Error State */}
+      {!loading && error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6">
+          <div className="flex items-center gap-2">
             <svg
-              className="mx-auto h-10 w-10 text-gray-300"
+              className="h-5 w-5 text-red-500 shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
-              strokeWidth={1}
+              strokeWidth={2}
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p className="mt-3 text-sm text-gray-500">
-              No runs yet. Create a new requirement to get started.
-            </p>
-            <Link
-              to="/new"
-              className="inline-block mt-3 text-sm font-medium text-blue-600 hover:text-blue-500"
-            >
-              Create your first requirement →
-            </Link>
+            <p className="text-sm text-red-700">{error}</p>
           </div>
-        ) : (
-          <ul className="mt-3 divide-y divide-gray-100">
-            {runs.slice(0, 5).map((run) => (
-              <li key={run.id}>
-                <Link
-                  to={`/runs/${run.id}`}
-                  className="flex items-center justify-between py-3 hover:bg-gray-50 rounded px-2 -mx-2 transition-colors"
-                >
-                  <span className="text-sm font-medium text-gray-900 truncate mr-4">
-                    {run.title}
-                  </span>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-gray-500">{run.mode}</span>
-                    <StatusBadge status={run.status} />
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+        </div>
+      )}
+
+      {/* Summary Cards */}
+      {!loading && !error && <DashboardSummaryCards runs={runs} />}
+
+      {/* System Status */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-lg border bg-white p-4">
+          <p className="text-sm text-gray-500">AI Provider</p>
+          <p className="text-sm font-semibold text-gray-900 mt-1">
+            {provider?.provider ?? "Not configured"}
+          </p>
+          {provider?.model && (
+            <p className="text-xs text-gray-400 mt-0.5">Model: {provider.model}</p>
+          )}
+        </div>
+        <div className="rounded-lg border bg-white p-4">
+          <p className="text-sm text-gray-500">Native Runner</p>
+          <p className="text-sm font-semibold text-gray-900 mt-1">
+            {nativeRunner === null
+              ? "Checking..."
+              : nativeRunner.available
+                ? "Available"
+                : "Not found"}
+          </p>
+        </div>
+        <div className="rounded-lg border bg-white p-4">
+          <p className="text-sm text-gray-500">Total Runs</p>
+          <p className="text-sm font-semibold text-gray-900 mt-1">{runs.length}</p>
+        </div>
       </div>
+
+      {/* Latest Runs */}
+      {!loading && !error && latestRuns.length > 0 && (
+        <div className="rounded-lg border bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-200">
+            <h2 className="text-sm font-semibold text-gray-900">Latest Runs</h2>
+          </div>
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Title
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Status
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Steps
+                </th>
+                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                  Created
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {latestRuns.map((run) => (
+                <tr key={run.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-2">
+                    <Link
+                      to={`/runs/${run.id}`}
+                      className="text-sm font-medium text-blue-600 hover:text-blue-500"
+                    >
+                      {run.title}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-2">
+                    <StatusBadge status={run.status} />
+                  </td>
+                  <td className="px-4 py-2 text-sm text-gray-500">
+                    {run.totalSteps !== undefined
+                      ? `${String(run.completedSteps ?? 0)}/${String(run.totalSteps)}`
+                      : "—"}
+                  </td>
+                  <td className="px-4 py-2 text-sm text-gray-500 text-right whitespace-nowrap">
+                    {new Date(run.createdAt).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && runs.length === 0 && (
+        <div className="rounded-lg border bg-white p-6 text-center py-12">
+          <svg
+            className="mx-auto h-12 w-12 text-gray-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
+          </svg>
+          <p className="mt-4 text-sm font-medium text-gray-900">No runs yet</p>
+          <p className="mt-1 text-sm text-gray-500">
+            Create a new requirement to see runs and stats here.
+          </p>
+          <Link
+            to="/new"
+            className="inline-block mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+          >
+            New Requirement
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

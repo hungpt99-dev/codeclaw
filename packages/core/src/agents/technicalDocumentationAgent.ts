@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseTechnicalDocOutput } from "./parsers/technicalDocOutputParser.js";
 
 export interface TechnicalDocumentationAgentInput {
@@ -395,9 +397,42 @@ export async function runTechnicalDocumentationAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<TechnicalDocumentationAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? buildCombinedTemplate();
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a technical writer. Create comprehensive technical documentation for the following project.
+
+Requirement: ${input.requirement}
+Clarified Requirement: ${input.clarifiedRequirement}
+Technical Design: ${input.technicalDesign}
+API Design: ${input.apiDesign}
+Database Design: ${input.dbDesign}
+Task Breakdown: ${input.taskBreakdownMd}
+
+Generate the following sections:
+1. API Reference - endpoints, authentication, rate limiting
+2. Setup Guide - prerequisites, installation, configuration
+3. Technical Reference - architecture, modules, data flow
+4. Operations Guide - deployment, monitoring, logging, backup`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "TECHNICAL_DOCUMENTATION",
+      agentName: "Technical Writer",
+      systemPrompt:
+        "You are a senior technical writer. Create comprehensive technical documentation including API references, setup guides, and operations manuals.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseTechnicalDocOutput(result.content, input.requirement);
+    }
+  }
 
   if (options?.aiTool) {
     const result = await runAgent({

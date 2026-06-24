@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parseUxWriterOutput } from "./parsers/uxWriterOutputParser.js";
 
 export interface UxWriterAgentInput {
@@ -83,9 +85,39 @@ export async function runUxWriterAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<UxWriterAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a UX writer. Create interface copy for the following screens.
+
+Requirement: ${input.requirement}
+Screen Descriptions: ${input.screenDescriptions}
+Component Tree: ${input.componentTree}
+
+Generate the following sections:
+1. Interface Labels - screen, element, label, purpose
+2. Error Messages - screen, condition, message, tone
+3. Empty State Text - screen, message, call to action
+4. Tooltips and Help Text - screen, element, tooltip text`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "UX_WRITER",
+      agentName: "UX Writer",
+      systemPrompt:
+        "You are a senior UX writer. Create clear, concise interface labels, error messages, and help text for software applications.",
+      userPrompt: agentPrompt,
+      context: { requirement: input.requirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parseUxWriterOutput(result.content, input.requirement);
+    }
+  }
 
   if (options?.aiTool) {
     const result = await runAgent({

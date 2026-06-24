@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import type { ArtifactPaths } from "../artifacts/artifactWriter.js";
 import {
   generateTraceability,
@@ -156,6 +158,7 @@ export async function runTraceabilityAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<TraceabilityAgentOutput> {
   const matrix =
@@ -163,6 +166,47 @@ export async function runTraceabilityAgent(
     (await generateTraceability(input.runId, input.artifactPaths, input.changedFilesPath));
 
   const markdown = traceabilityToMarkdown(matrix);
+
+  if (options?.agentBackendConfig) {
+    const changedFiles = input.changedFilesPath
+      ? await readFile(input.changedFilesPath, "utf-8").catch(() => "No changed files available.")
+      : "No changed files available.";
+
+    const agentPrompt = `You are a traceability analyst. Analyze the traceability matrix and changed files.
+
+Traceability Matrix:
+${markdown}
+
+Changed Files:
+${changedFiles}
+
+Generate the following sections:
+1. Coverage Analysis - status overview, per-requirement breakdown
+2. Gap Detection - requirements without tasks or tests
+3. Recommendations - actionable items to improve coverage`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "TRACEABILITY",
+      agentName: "Traceability Analyst",
+      systemPrompt:
+        "You are a traceability analyst. Analyze traceability matrices to identify coverage gaps and provide recommendations.",
+      userPrompt: agentPrompt,
+      context: {},
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      const parsed = parseTraceabilityOutput(result.content);
+      return {
+        matrix,
+        markdown,
+        coverageAnalysis: parsed.coverageAnalysis,
+        gapDetection: parsed.gapDetection,
+        recommendations: parsed.recommendations,
+      };
+    }
+  }
 
   if (options?.aiTool) {
     const template = await loadTemplate(options.templateDir);

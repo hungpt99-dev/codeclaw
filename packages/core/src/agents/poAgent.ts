@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { runAgent, renderPrompt } from "@codeclaw/adapters";
 import type { AiCliTool } from "@codeclaw/adapters";
+import type { AgentBackendConfig } from "@codeclaw/shared";
+import { runWithAgentBackend } from "./agentBackendRunner.js";
 import { parsePoOutput } from "./parsers/poOutputParser.js";
 
 export interface PoAgentInput {
@@ -105,9 +107,40 @@ export async function runPoAgent(
   options?: {
     templateDir?: string | undefined;
     aiTool?: { tool: AiCliTool; command: string; timeoutSeconds: number } | undefined;
+    agentBackendConfig?: AgentBackendConfig | undefined;
   },
 ): Promise<PoAgentOutput> {
   const template = (await loadTemplate(options?.templateDir)) ?? FALLBACK_TEMPLATES;
+
+  if (options?.agentBackendConfig) {
+    const agentPrompt = `You are a Product Owner. Analyze the following clarified requirement and produce a structured output.
+
+Clarified Requirement: ${input.clarifiedRequirement}
+Acceptance Criteria: ${input.acceptanceCriteria}
+Open Questions: ${input.openQuestions}
+Assumptions: ${input.assumptions}
+
+Generate the following sections:
+1. Product Goal - the vision and objectives
+2. MVP Scope - core features and deliverables
+3. Out of Scope - future considerations and exclusions
+4. Success Criteria - functional, quality, and delivery success`;
+
+    const result = await runWithAgentBackend({
+      config: options.agentBackendConfig,
+      agentId: "PRODUCT_OWNER",
+      agentName: "Product Owner",
+      systemPrompt:
+        "You are a senior Product Owner for a software development team. Define product goals, scope, and success criteria from clarified requirements.",
+      userPrompt: agentPrompt,
+      context: { clarifiedRequirement: input.clarifiedRequirement },
+      outputFormat: "markdown",
+    });
+
+    if (result?.content) {
+      return parsePoOutput(result.content);
+    }
+  }
 
   if (options?.aiTool) {
     const result = await runAgent({
