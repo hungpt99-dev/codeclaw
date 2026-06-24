@@ -6,6 +6,8 @@ import { getArtifactPaths, createArtifactDirs, writeArtifact } from "./artifacts
 import { runDocsOnlyWorkflow } from "./workflows/docsOnlyWorkflow.js";
 import { runBaAgent } from "./agents/baAgent.js";
 import { runArchitectAgent } from "./agents/architectAgent.js";
+import { runFrontendPlannerAgent } from "./agents/frontendPlannerAgent.js";
+import { runBackendPlannerAgent } from "./agents/backendPlannerAgent.js";
 import { runPmAgent } from "./agents/pmAgent.js";
 import { runQaAgent } from "./agents/qaAgent.js";
 import { runReporterAgent } from "./agents/reporterAgent.js";
@@ -126,7 +128,7 @@ describe("docsOnlyWorkflow", () => {
   it("creates exactly 17 artifact files", async () => {
     const result = await runDocsOnlyWorkflow(defaultInput);
 
-    expect(result.artifacts).toHaveLength(25);
+    expect(result.artifacts).toHaveLength(27);
   });
 
   it("creates all expected artifact paths", async () => {
@@ -158,6 +160,8 @@ describe("docsOnlyWorkflow", () => {
       join(".ai-team", "runs", result.runId, "ux", "ux-design.md"),
       join(".ai-team", "runs", result.runId, "ux", "component-breakdown.md"),
       join(".ai-team", "runs", result.runId, "ux", "ux-copy.md"),
+      join(".ai-team", "runs", result.runId, "design", "frontend-design.md"),
+      join(".ai-team", "runs", result.runId, "design", "backend-design.md"),
     ];
 
     for (const expectedPath of expectedPaths) {
@@ -249,6 +253,36 @@ describe("agents", () => {
     expect(output.technicalDesign).toContain("Test requirement");
     expect(output.apiDesign).toContain("Test requirement");
     expect(output.dbDesign).toContain("Test requirement");
+  });
+
+  it("frontendPlannerAgent returns all expected output fields", async () => {
+    const output = await runFrontendPlannerAgent({
+      requirement: "Test requirement",
+      clarifiedRequirement: "Clarified",
+    });
+    expect(output).toHaveProperty("componentTree");
+    expect(output).toHaveProperty("stateManagement");
+    expect(output).toHaveProperty("routingDesign");
+    expect(output).toHaveProperty("dataFetchingStrategy");
+    expect(output.componentTree).toContain("Test requirement");
+    expect(output.stateManagement).toContain("State");
+    expect(output.routingDesign).toContain("Routing");
+    expect(output.dataFetchingStrategy).toContain("Data Fetching");
+  });
+
+  it("backendPlannerAgent returns all expected output fields", async () => {
+    const output = await runBackendPlannerAgent({
+      requirement: "Test requirement",
+      clarifiedRequirement: "Clarified",
+    });
+    expect(output).toHaveProperty("serviceLayer");
+    expect(output).toHaveProperty("controllerDesign");
+    expect(output).toHaveProperty("middlewareChain");
+    expect(output).toHaveProperty("errorHandlingStrategy");
+    expect(output.serviceLayer).toContain("Test requirement");
+    expect(output.controllerDesign).toContain("Controller");
+    expect(output.middlewareChain).toContain("Middleware");
+    expect(output.errorHandlingStrategy).toContain("Error");
   });
 
   it("pmAgent returns markdown and JSON task breakdown", async () => {

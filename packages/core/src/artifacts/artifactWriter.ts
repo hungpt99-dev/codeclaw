@@ -34,6 +34,8 @@ export interface ArtifactPaths {
   uxDesignPath: string;
   uxCopyPath: string;
   componentBreakdownPath: string;
+  frontendDesignPath: string;
+  backendDesignPath: string;
 }
 
 export function getArtifactPaths(runId: string): ArtifactPaths {
@@ -71,6 +73,8 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
     uxDesignPath: join(runDir, "ux", "ux-design.md"),
     uxCopyPath: join(runDir, "ux", "ux-copy.md"),
     componentBreakdownPath: join(runDir, "ux", "component-breakdown.md"),
+    frontendDesignPath: join(runDir, "design", "frontend-design.md"),
+    backendDesignPath: join(runDir, "design", "backend-design.md"),
   };
 }
 

@@ -4,6 +4,8 @@ import type { SlackIntegrationConfig } from "@aiteam/shared";
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
 import { runBaAgent } from "../agents/baAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
+import { runFrontendPlannerAgent } from "../agents/frontendPlannerAgent.js";
+import { runBackendPlannerAgent } from "../agents/backendPlannerAgent.js";
 import { runPmAgent } from "../agents/pmAgent.js";
 import { runQaAgent } from "../agents/qaAgent.js";
 import { runUserJourneyAgent } from "../agents/userJourneyAgent.js";
@@ -12,8 +14,8 @@ import { runUxWriterAgent } from "../agents/uxWriterAgent.js";
 import { runDeveloperAgent } from "../agents/developerAgent.js";
 import { runReporterAgent } from "../agents/reporterAgent.js";
 import { analyzeRepository, analysisToMarkdown } from "../repoAnalyzer/repoAnalyzer.js";
-import { getAiToolConfig } from "./workflowHelpers.js";
-import type { AiToolConfig } from "./workflowHelpers.js";
+import { getAiToolConfig, resolvePlannerSelection } from "./workflowHelpers.js";
+import type { AiToolConfig, PlannerSelection } from "./workflowHelpers.js";
 import {
   generateTraceability,
   traceabilityToMarkdown,
@@ -36,6 +38,7 @@ export interface AssistedWorkflowInput {
   cliConfigs?: Record<string, { enabled: boolean; command: string; timeoutSeconds: number }>;
   targetAgent?: "claude-code" | "codex" | "gemini" | "aider" | "generic";
   slackConfig?: SlackIntegrationConfig;
+  plannerSelection?: PlannerSelection;
 }
 
 export interface AssistedWorkflowOutput {
@@ -103,6 +106,16 @@ export async function runAssistedWorkflow(
       ? getAiToolConfig("DEVELOPER", input.agentMapping, input.cliConfigs)
       : undefined;
 
+  const frontendPlannerTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("FRONTEND_PLANNER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const backendPlannerTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("BACKEND_PLANNER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
   const reporterTool: AiToolConfig | undefined =
     input.agentMapping && input.cliConfigs
       ? getAiToolConfig("REPORTER", input.agentMapping, input.cliConfigs)
@@ -168,10 +181,98 @@ export async function runAssistedWorkflow(
   await writeArtifact(join(paths.designDir, "db-design.md"), architectOutput.dbDesign);
   artifacts.push(join(paths.designDir, "db-design.md"));
 
+  const plannerSelection = resolvePlannerSelection(
+    input.plannerSelection,
+    repoAnalysis?.projectType,
+  );
+
+  let frontendPlannerOutput: Awaited<ReturnType<typeof runFrontendPlannerAgent>> | undefined;
+  let backendPlannerOutput: Awaited<ReturnType<typeof runBackendPlannerAgent>> | undefined;
+
+  if (plannerSelection.runFrontend) {
+    frontendPlannerOutput = await runFrontendPlannerAgent(
+      {
+        requirement: input.requirement,
+        clarifiedRequirement: baOutput.clarifiedRequirement,
+        ...(repoAnalysis ? { repositoryAnalysis: repoAnalysis } : {}),
+      },
+      { templateDir, aiTool: frontendPlannerTool },
+    );
+
+    await writeArtifact(
+      paths.frontendDesignPath,
+      [
+        "## Component Tree\n",
+        frontendPlannerOutput.componentTree,
+        "\n\n## State Management\n",
+        frontendPlannerOutput.stateManagement,
+        "\n\n## Routing Design\n",
+        frontendPlannerOutput.routingDesign,
+        "\n\n## Data Fetching Strategy\n",
+        frontendPlannerOutput.dataFetchingStrategy,
+      ].join("\n"),
+    );
+    artifacts.push(paths.frontendDesignPath);
+  }
+
+  if (plannerSelection.runBackend) {
+    backendPlannerOutput = await runBackendPlannerAgent(
+      {
+        requirement: input.requirement,
+        clarifiedRequirement: baOutput.clarifiedRequirement,
+        ...(repoAnalysis ? { repositoryAnalysis: repoAnalysis } : {}),
+      },
+      { templateDir, aiTool: backendPlannerTool },
+    );
+
+    await writeArtifact(
+      paths.backendDesignPath,
+      [
+        "## Service Layer\n",
+        backendPlannerOutput.serviceLayer,
+        "\n\n## Controller Design\n",
+        backendPlannerOutput.controllerDesign,
+        "\n\n## Middleware Chain\n",
+        backendPlannerOutput.middlewareChain,
+        "\n\n## Error Handling Strategy\n",
+        backendPlannerOutput.errorHandlingStrategy,
+      ].join("\n"),
+    );
+    artifacts.push(paths.backendDesignPath);
+  }
+
+  const combinedDesign = [
+    architectOutput.technicalDesign,
+    ...(frontendPlannerOutput
+      ? [
+          "\n\n# Frontend Design\n\n## Component Tree\n",
+          frontendPlannerOutput.componentTree,
+          "\n\n## State Management\n",
+          frontendPlannerOutput.stateManagement,
+          "\n\n## Routing Design\n",
+          frontendPlannerOutput.routingDesign,
+          "\n\n## Data Fetching Strategy\n",
+          frontendPlannerOutput.dataFetchingStrategy,
+        ]
+      : []),
+    ...(backendPlannerOutput
+      ? [
+          "\n\n# Backend Design\n\n## Service Layer\n",
+          backendPlannerOutput.serviceLayer,
+          "\n\n## Controller Design\n",
+          backendPlannerOutput.controllerDesign,
+          "\n\n## Middleware Chain\n",
+          backendPlannerOutput.middlewareChain,
+          "\n\n## Error Handling Strategy\n",
+          backendPlannerOutput.errorHandlingStrategy,
+        ]
+      : []),
+  ].join("");
+
   const pmOutput = await runPmAgent(
     {
       requirement: input.requirement,
-      technicalDesign: architectOutput.technicalDesign,
+      technicalDesign: combinedDesign,
     },
     { templateDir, aiTool: pmTool },
   );
@@ -279,7 +380,7 @@ export async function runAssistedWorkflow(
       clarifiedRequirement: baOutput.clarifiedRequirement,
       businessRules: baOutput.businessRules,
       acceptanceCriteria: baOutput.acceptanceCriteria,
-      technicalDesign: architectOutput.technicalDesign,
+      technicalDesign: combinedDesign,
       apiDesign: architectOutput.apiDesign,
       dbDesign: architectOutput.dbDesign,
       taskBreakdownMd: pmOutput.taskBreakdownMd,
@@ -310,7 +411,7 @@ export async function runAssistedWorkflow(
       clarifiedRequirement: baOutput.clarifiedRequirement,
       businessRules: baOutput.businessRules,
       acceptanceCriteria: baOutput.acceptanceCriteria,
-      technicalDesign: architectOutput.technicalDesign,
+      technicalDesign: combinedDesign,
       apiDesign: architectOutput.apiDesign,
       dbDesign: architectOutput.dbDesign,
       taskBreakdownMd: pmOutput.taskBreakdownMd,

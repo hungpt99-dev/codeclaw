@@ -5,6 +5,8 @@ import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.j
 import { runBaAgent } from "../agents/baAgent.js";
 import { runPoAgent } from "../agents/poAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
+import { runFrontendPlannerAgent } from "../agents/frontendPlannerAgent.js";
+import { runBackendPlannerAgent } from "../agents/backendPlannerAgent.js";
 import { runPmAgent } from "../agents/pmAgent.js";
 import { runQaAgent } from "../agents/qaAgent.js";
 import { runUserJourneyAgent } from "../agents/userJourneyAgent.js";
@@ -12,8 +14,8 @@ import { runUiDesignerAgent } from "../agents/uiDesignerAgent.js";
 import { runUxWriterAgent } from "../agents/uxWriterAgent.js";
 import { runReporterAgent } from "../agents/reporterAgent.js";
 import { analyzeRepository, analysisToMarkdown } from "../repoAnalyzer/repoAnalyzer.js";
-import { getAiToolConfig } from "./workflowHelpers.js";
-import type { AiToolConfig } from "./workflowHelpers.js";
+import { getAiToolConfig, resolvePlannerSelection } from "./workflowHelpers.js";
+import type { AiToolConfig, PlannerSelection } from "./workflowHelpers.js";
 import {
   generateTraceability,
   traceabilityToMarkdown,
@@ -35,6 +37,7 @@ export interface DocsOnlyWorkflowInput {
   agentMapping?: Record<string, string>;
   cliConfigs?: Record<string, { enabled: boolean; command: string; timeoutSeconds: number }>;
   slackConfig?: SlackIntegrationConfig;
+  plannerSelection?: PlannerSelection;
 }
 
 export interface DocsOnlyWorkflowOutput {
@@ -102,6 +105,16 @@ export async function runDocsOnlyWorkflow(
       ? getAiToolConfig("UX_WRITER", input.agentMapping, input.cliConfigs)
       : undefined;
 
+  const frontendPlannerTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("FRONTEND_PLANNER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const backendPlannerTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("BACKEND_PLANNER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
   const reporterTool: AiToolConfig | undefined =
     input.agentMapping && input.cliConfigs
       ? getAiToolConfig("REPORTER", input.agentMapping, input.cliConfigs)
@@ -165,67 +178,6 @@ export async function runDocsOnlyWorkflow(
 
   await writeArtifact(paths.successCriteriaPath, poOutput.successCriteria);
   artifacts.push(paths.successCriteriaPath);
-
-  const architectInput: Parameters<typeof runArchitectAgent>[0] = {
-    requirement: input.requirement,
-    clarifiedRequirement: baOutput.clarifiedRequirement,
-    scopeDefinition: poOutput.productGoal,
-    mvpScope: poOutput.mvpScope,
-    successCriteria: poOutput.successCriteria,
-    ...(repoAnalysis ? { repositoryAnalysis: repoAnalysis } : {}),
-  };
-
-  const architectOutput = await runArchitectAgent(architectInput, {
-    templateDir,
-    aiTool: architectTool,
-  });
-
-  await writeArtifact(
-    join(paths.designDir, "technical-design.md"),
-    architectOutput.technicalDesign,
-  );
-  artifacts.push(join(paths.designDir, "technical-design.md"));
-
-  await writeArtifact(join(paths.designDir, "api-design.md"), architectOutput.apiDesign);
-  artifacts.push(join(paths.designDir, "api-design.md"));
-
-  await writeArtifact(join(paths.designDir, "db-design.md"), architectOutput.dbDesign);
-  artifacts.push(join(paths.designDir, "db-design.md"));
-
-  const pmOutput = await runPmAgent(
-    {
-      requirement: input.requirement,
-      technicalDesign: architectOutput.technicalDesign,
-      acceptanceCriteria: baOutput.acceptanceCriteria,
-    },
-    { templateDir, aiTool: pmTool },
-  );
-
-  await writeArtifact(join(paths.tasksDir, "task-breakdown.md"), pmOutput.taskBreakdownMd);
-  artifacts.push(join(paths.tasksDir, "task-breakdown.md"));
-
-  await writeArtifact(join(paths.tasksDir, "task-breakdown.json"), pmOutput.taskBreakdownJson);
-  artifacts.push(join(paths.tasksDir, "task-breakdown.json"));
-
-  if (pmOutput.jiraReadyMd) {
-    await writeArtifact(join(paths.tasksDir, "jira-ready-tasks.md"), pmOutput.jiraReadyMd);
-    artifacts.push(join(paths.tasksDir, "jira-ready-tasks.md"));
-  }
-
-  const qaOutput = await runQaAgent(
-    {
-      requirement: input.requirement,
-      acceptanceCriteria: baOutput.acceptanceCriteria,
-      taskBreakdownJson: pmOutput.taskBreakdownJson,
-    },
-    { templateDir, aiTool: qaTool },
-  );
-
-  await writeArtifact(join(paths.testsDir, "test-matrix.md"), qaOutput.testMatrixMd);
-  artifacts.push(join(paths.testsDir, "test-matrix.md"));
-
-  await writeArtifact(join(paths.testsDir, "test-matrix.json"), qaOutput.testMatrixJson);
-  artifacts.push(join(paths.testsDir, "test-matrix.json"));
 
   const userJourneyOutput = await runUserJourneyAgent(
     {
@@ -303,6 +255,165 @@ export async function runDocsOnlyWorkflow(
   );
   artifacts.push(paths.uxCopyPath);
 
+  const architectInput: Parameters<typeof runArchitectAgent>[0] = {
+    requirement: input.requirement,
+    clarifiedRequirement: baOutput.clarifiedRequirement,
+    scopeDefinition: poOutput.productGoal,
+    mvpScope: poOutput.mvpScope,
+    successCriteria: poOutput.successCriteria,
+    ...(repoAnalysis ? { repositoryAnalysis: repoAnalysis } : {}),
+  };
+
+  const architectOutput = await runArchitectAgent(architectInput, {
+    templateDir,
+    aiTool: architectTool,
+  });
+
+  await writeArtifact(
+    join(paths.designDir, "technical-design.md"),
+    architectOutput.technicalDesign,
+  );
+  artifacts.push(join(paths.designDir, "technical-design.md"));
+
+  await writeArtifact(join(paths.designDir, "api-design.md"), architectOutput.apiDesign);
+  artifacts.push(join(paths.designDir, "api-design.md"));
+
+  await writeArtifact(join(paths.designDir, "db-design.md"), architectOutput.dbDesign);
+  artifacts.push(join(paths.designDir, "db-design.md"));
+
+  const plannerSelection = resolvePlannerSelection(
+    input.plannerSelection,
+    repoAnalysis?.projectType,
+  );
+
+  let frontendPlannerOutput: Awaited<ReturnType<typeof runFrontendPlannerAgent>> | undefined;
+  let backendPlannerOutput: Awaited<ReturnType<typeof runBackendPlannerAgent>> | undefined;
+
+  if (plannerSelection.runFrontend) {
+    frontendPlannerOutput = await runFrontendPlannerAgent(
+      {
+        requirement: input.requirement,
+        clarifiedRequirement: baOutput.clarifiedRequirement,
+        scopeDefinition: poOutput.productGoal,
+        mvpScope: poOutput.mvpScope,
+        successCriteria: poOutput.successCriteria,
+        ...(repoAnalysis ? { repositoryAnalysis: repoAnalysis } : {}),
+        userPersonas: userJourneyOutput.userPersonas,
+        userFlows: userJourneyOutput.userFlows,
+        screenDescriptions: uiDesignerOutput.screenDescriptions,
+        componentBreakdown: uiDesignerOutput.componentTree,
+      },
+      { templateDir, aiTool: frontendPlannerTool },
+    );
+
+    await writeArtifact(
+      paths.frontendDesignPath,
+      [
+        "## Component Tree\n",
+        frontendPlannerOutput.componentTree,
+        "\n\n## State Management\n",
+        frontendPlannerOutput.stateManagement,
+        "\n\n## Routing Design\n",
+        frontendPlannerOutput.routingDesign,
+        "\n\n## Data Fetching Strategy\n",
+        frontendPlannerOutput.dataFetchingStrategy,
+      ].join("\n"),
+    );
+    artifacts.push(paths.frontendDesignPath);
+  }
+
+  if (plannerSelection.runBackend) {
+    backendPlannerOutput = await runBackendPlannerAgent(
+      {
+        requirement: input.requirement,
+        clarifiedRequirement: baOutput.clarifiedRequirement,
+        scopeDefinition: poOutput.productGoal,
+        mvpScope: poOutput.mvpScope,
+        successCriteria: poOutput.successCriteria,
+        ...(repoAnalysis ? { repositoryAnalysis: repoAnalysis } : {}),
+      },
+      { templateDir, aiTool: backendPlannerTool },
+    );
+
+    await writeArtifact(
+      paths.backendDesignPath,
+      [
+        "## Service Layer\n",
+        backendPlannerOutput.serviceLayer,
+        "\n\n## Controller Design\n",
+        backendPlannerOutput.controllerDesign,
+        "\n\n## Middleware Chain\n",
+        backendPlannerOutput.middlewareChain,
+        "\n\n## Error Handling Strategy\n",
+        backendPlannerOutput.errorHandlingStrategy,
+      ].join("\n"),
+    );
+    artifacts.push(paths.backendDesignPath);
+  }
+
+  const combinedDesign = [
+    architectOutput.technicalDesign,
+    ...(frontendPlannerOutput
+      ? [
+          "\n\n# Frontend Design\n\n## Component Tree\n",
+          frontendPlannerOutput.componentTree,
+          "\n\n## State Management\n",
+          frontendPlannerOutput.stateManagement,
+          "\n\n## Routing Design\n",
+          frontendPlannerOutput.routingDesign,
+          "\n\n## Data Fetching Strategy\n",
+          frontendPlannerOutput.dataFetchingStrategy,
+        ]
+      : []),
+    ...(backendPlannerOutput
+      ? [
+          "\n\n# Backend Design\n\n## Service Layer\n",
+          backendPlannerOutput.serviceLayer,
+          "\n\n## Controller Design\n",
+          backendPlannerOutput.controllerDesign,
+          "\n\n## Middleware Chain\n",
+          backendPlannerOutput.middlewareChain,
+          "\n\n## Error Handling Strategy\n",
+          backendPlannerOutput.errorHandlingStrategy,
+        ]
+      : []),
+  ].join("");
+
+  const pmOutput = await runPmAgent(
+    {
+      requirement: input.requirement,
+      technicalDesign: combinedDesign,
+      acceptanceCriteria: baOutput.acceptanceCriteria,
+    },
+    { templateDir, aiTool: pmTool },
+  );
+
+  await writeArtifact(join(paths.tasksDir, "task-breakdown.md"), pmOutput.taskBreakdownMd);
+  artifacts.push(join(paths.tasksDir, "task-breakdown.md"));
+
+  await writeArtifact(join(paths.tasksDir, "task-breakdown.json"), pmOutput.taskBreakdownJson);
+  artifacts.push(join(paths.tasksDir, "task-breakdown.json"));
+
+  if (pmOutput.jiraReadyMd) {
+    await writeArtifact(join(paths.tasksDir, "jira-ready-tasks.md"), pmOutput.jiraReadyMd);
+    artifacts.push(join(paths.tasksDir, "jira-ready-tasks.md"));
+  }
+
+  const qaOutput = await runQaAgent(
+    {
+      requirement: input.requirement,
+      acceptanceCriteria: baOutput.acceptanceCriteria,
+      taskBreakdownJson: pmOutput.taskBreakdownJson,
+    },
+    { templateDir, aiTool: qaTool },
+  );
+
+  await writeArtifact(join(paths.testsDir, "test-matrix.md"), qaOutput.testMatrixMd);
+  artifacts.push(join(paths.testsDir, "test-matrix.md"));
+
+  await writeArtifact(join(paths.testsDir, "test-matrix.json"), qaOutput.testMatrixJson);
+  artifacts.push(join(paths.testsDir, "test-matrix.json"));
+
   const traceability = await generateTraceability(runId, paths);
   await writeArtifact(paths.traceabilityMd, traceabilityToMarkdown(traceability));
   artifacts.push(paths.traceabilityMd);
@@ -318,7 +429,7 @@ export async function runDocsOnlyWorkflow(
       clarifiedRequirement: baOutput.clarifiedRequirement,
       businessRules: baOutput.businessRules,
       acceptanceCriteria: baOutput.acceptanceCriteria,
-      technicalDesign: architectOutput.technicalDesign,
+      technicalDesign: combinedDesign,
       apiDesign: architectOutput.apiDesign,
       dbDesign: architectOutput.dbDesign,
       taskBreakdownMd: pmOutput.taskBreakdownMd,

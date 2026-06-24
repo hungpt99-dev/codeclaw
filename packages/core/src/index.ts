@@ -9,6 +9,16 @@ export { runPoAgent } from "./agents/poAgent.js";
 export type { PoAgentInput, PoAgentOutput } from "./agents/poAgent.js";
 export { runArchitectAgent } from "./agents/architectAgent.js";
 export type { ArchitectAgentInput, ArchitectAgentOutput } from "./agents/architectAgent.js";
+export { runFrontendPlannerAgent } from "./agents/frontendPlannerAgent.js";
+export type {
+  FrontendPlannerAgentInput,
+  FrontendPlannerAgentOutput,
+} from "./agents/frontendPlannerAgent.js";
+export { runBackendPlannerAgent } from "./agents/backendPlannerAgent.js";
+export type {
+  BackendPlannerAgentInput,
+  BackendPlannerAgentOutput,
+} from "./agents/backendPlannerAgent.js";
 export { runPmAgent } from "./agents/pmAgent.js";
 export type { PmAgentInput, PmAgentOutput } from "./agents/pmAgent.js";
 export { runQaAgent } from "./agents/qaAgent.js";
@@ -56,7 +66,8 @@ export {
   buildReportReadyMessage,
 } from "./integrations/slackMessageTemplates.js";
 export type { SlackMessageInput } from "./integrations/slackMessageTemplates.js";
-export type { AiToolConfig } from "./workflows/workflowHelpers.js";
+export type { AiToolConfig, PlannerSelection } from "./workflows/workflowHelpers.js";
+export { resolvePlannerSelection, detectPlannerSelection } from "./workflows/workflowHelpers.js";
 export { runWorkflowWithGates } from "./workflows/workflowRunner.js";
 export { analyzeRepository, analysisToMarkdown } from "./repoAnalyzer/repoAnalyzer.js";
 export type { RepositoryAnalysis } from "@aiteam/shared";

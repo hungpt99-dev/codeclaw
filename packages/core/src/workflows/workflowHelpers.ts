@@ -1,4 +1,7 @@
 import type { AiCliTool } from "@aiteam/adapters";
+import type { ProjectType } from "@aiteam/shared";
+
+export type PlannerSelection = "frontend" | "backend" | "both" | "auto";
 
 type AgentRoleKey =
   | "BA"
@@ -12,7 +15,9 @@ type AgentRoleKey =
   | "REPORTER"
   | "UX_RESEARCHER"
   | "UI_DESIGNER"
-  | "UX_WRITER";
+  | "UX_WRITER"
+  | "FRONTEND_PLANNER"
+  | "BACKEND_PLANNER";
 
 const AGENT_TO_CONFIG_KEY: Record<string, string> = {
   BA: "defaultBa",
@@ -25,6 +30,8 @@ const AGENT_TO_CONFIG_KEY: Record<string, string> = {
   UX_RESEARCHER: "defaultUxResearcher",
   UI_DESIGNER: "defaultUiDesigner",
   UX_WRITER: "defaultUxWriter",
+  FRONTEND_PLANNER: "defaultFrontendPlanner",
+  BACKEND_PLANNER: "defaultBackendPlanner",
 };
 
 export interface AiToolConfig {
@@ -52,4 +59,33 @@ export function getAiToolConfig(
     command: cliConfig.command,
     timeoutSeconds: cliConfig.timeoutSeconds,
   };
+}
+
+export function detectPlannerSelection(
+  projectType: ProjectType | null | undefined,
+): PlannerSelection {
+  switch (projectType) {
+    case "react-vite":
+      return "frontend";
+    case "java-spring-boot":
+    case "node-nestjs":
+    case "node-express":
+      return "backend";
+    default:
+      return "both";
+  }
+}
+
+export function resolvePlannerSelection(
+  selection: PlannerSelection | undefined,
+  projectType: ProjectType | null | undefined,
+): { runFrontend: boolean; runBackend: boolean } {
+  const effective = selection ?? "auto";
+  if (effective === "frontend") return { runFrontend: true, runBackend: false };
+  if (effective === "backend") return { runFrontend: false, runBackend: true };
+  if (effective === "both") return { runFrontend: true, runBackend: true };
+  const detected = detectPlannerSelection(projectType);
+  if (detected === "frontend") return { runFrontend: true, runBackend: false };
+  if (detected === "backend") return { runFrontend: false, runBackend: true };
+  return { runFrontend: true, runBackend: true };
 }

@@ -42,6 +42,8 @@ const mockPaths = {
   uxDesignPath: "/test/.ai-team/runs/run_123/ux/ux-design.md",
   uxCopyPath: "/test/.ai-team/runs/run_123/ux/ux-copy.md",
   componentBreakdownPath: "/test/.ai-team/runs/run_123/ux/component-breakdown.md",
+  frontendDesignPath: "/test/.ai-team/runs/run_123/design/frontend-design.md",
+  backendDesignPath: "/test/.ai-team/runs/run_123/design/backend-design.md",
 };
 
 const mockRun = {

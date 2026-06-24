@@ -14,7 +14,9 @@ export type AgentRole =
   | "REPORTER"
   | "UX_RESEARCHER"
   | "UI_DESIGNER"
-  | "UX_WRITER";
+  | "UX_WRITER"
+  | "FRONTEND_PLANNER"
+  | "BACKEND_PLANNER";
 
 export interface AgentRunInput {
   role: AgentRole;
