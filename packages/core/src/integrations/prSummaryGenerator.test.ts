@@ -37,6 +37,11 @@ const mockPaths = {
   securityReviewPath: "/test/.ai-team/runs/run_123/review/security-review.md",
   requirementCoveragePath: "/test/.ai-team/runs/run_123/review/requirement-coverage.md",
   fixLoopDir: "/test/.ai-team/runs/run_123/implementation/fix-loop",
+  uxDir: "/test/.ai-team/runs/run_123/ux",
+  userJourneyPath: "/test/.ai-team/runs/run_123/ux/user-journey.md",
+  uxDesignPath: "/test/.ai-team/runs/run_123/ux/ux-design.md",
+  uxCopyPath: "/test/.ai-team/runs/run_123/ux/ux-copy.md",
+  componentBreakdownPath: "/test/.ai-team/runs/run_123/ux/component-breakdown.md",
 };
 
 const mockRun = {

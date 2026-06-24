@@ -11,7 +11,10 @@ export type AgentRole =
   | "QA"
   | "CODE_REVIEWER"
   | "SECURITY_REVIEWER"
-  | "REPORTER";
+  | "REPORTER"
+  | "UX_RESEARCHER"
+  | "UI_DESIGNER"
+  | "UX_WRITER";
 
 export interface AgentRunInput {
   role: AgentRole;

@@ -9,7 +9,10 @@ type AgentRoleKey =
   | "QA"
   | "CODE_REVIEWER"
   | "SECURITY_REVIEWER"
-  | "REPORTER";
+  | "REPORTER"
+  | "UX_RESEARCHER"
+  | "UI_DESIGNER"
+  | "UX_WRITER";
 
 const AGENT_TO_CONFIG_KEY: Record<string, string> = {
   BA: "defaultBa",
@@ -19,6 +22,9 @@ const AGENT_TO_CONFIG_KEY: Record<string, string> = {
   QA: "defaultQa",
   DEVELOPER: "defaultDeveloper",
   REPORTER: "defaultReporter",
+  UX_RESEARCHER: "defaultUxResearcher",
+  UI_DESIGNER: "defaultUiDesigner",
+  UX_WRITER: "defaultUxWriter",
 };
 
 export interface AiToolConfig {

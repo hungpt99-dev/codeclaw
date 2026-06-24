@@ -37,6 +37,11 @@ const mockPaths = {
   securityReviewPath: "/fake/runs/run-1/review/security-review.md",
   requirementCoveragePath: "/fake/runs/run-1/review/requirement-coverage.md",
   fixLoopDir: "/fake/runs/run-1/implementation/fix-loop",
+  uxDir: "/fake/runs/run-1/ux",
+  userJourneyPath: "/fake/runs/run-1/ux/user-journey.md",
+  uxDesignPath: "/fake/runs/run-1/ux/ux-design.md",
+  uxCopyPath: "/fake/runs/run-1/ux/ux-copy.md",
+  componentBreakdownPath: "/fake/runs/run-1/ux/component-breakdown.md",
 };
 
 describe("traceabilityEngine", () => {

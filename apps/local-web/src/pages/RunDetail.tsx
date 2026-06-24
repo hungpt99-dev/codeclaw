@@ -37,6 +37,7 @@ const GROUPS = [
   { key: "design", title: "Design", prefix: "design/" },
   { key: "tasks", title: "Tasks", prefix: "tasks/" },
   { key: "tests", title: "Tests", prefix: "tests/" },
+  { key: "ux", title: "UX / Design", prefix: "ux/" },
   { key: "implementation", title: "Implementation", prefix: "implementation/" },
   { key: "report", title: "Report", prefix: "report/" },
 ];

@@ -253,7 +253,11 @@ export type DocArtifactType =
   | "review_report"
   | "security_review"
   | "traceability_matrix"
-  | "final_report";
+  | "final_report"
+  | "user_journey"
+  | "ux_design"
+  | "ux_copy"
+  | "component_breakdown";
 
 export const DOC_ARTIFACT_LABELS: Record<DocArtifactType, string> = {
   clarified_requirement: "Clarified Requirement",
@@ -271,4 +275,8 @@ export const DOC_ARTIFACT_LABELS: Record<DocArtifactType, string> = {
   security_review: "Security Review",
   traceability_matrix: "Traceability Matrix",
   final_report: "Final Report",
+  user_journey: "User Journey",
+  ux_design: "UX Design",
+  ux_copy: "UX Copy",
+  component_breakdown: "Component Breakdown",
 };

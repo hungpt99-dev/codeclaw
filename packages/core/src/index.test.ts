@@ -126,7 +126,7 @@ describe("docsOnlyWorkflow", () => {
   it("creates exactly 17 artifact files", async () => {
     const result = await runDocsOnlyWorkflow(defaultInput);
 
-    expect(result.artifacts).toHaveLength(21);
+    expect(result.artifacts).toHaveLength(25);
   });
 
   it("creates all expected artifact paths", async () => {
@@ -154,6 +154,10 @@ describe("docsOnlyWorkflow", () => {
       join(".ai-team", "runs", result.runId, "report", "traceability.md"),
       join(".ai-team", "runs", result.runId, "report", "traceability.json"),
       join(".ai-team", "runs", result.runId, "report", "final-report.md"),
+      join(".ai-team", "runs", result.runId, "ux", "user-journey.md"),
+      join(".ai-team", "runs", result.runId, "ux", "ux-design.md"),
+      join(".ai-team", "runs", result.runId, "ux", "component-breakdown.md"),
+      join(".ai-team", "runs", result.runId, "ux", "ux-copy.md"),
     ];
 
     for (const expectedPath of expectedPaths) {

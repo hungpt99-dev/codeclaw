@@ -6,6 +6,9 @@ import { runBaAgent } from "../agents/baAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
 import { runPmAgent } from "../agents/pmAgent.js";
 import { runQaAgent } from "../agents/qaAgent.js";
+import { runUserJourneyAgent } from "../agents/userJourneyAgent.js";
+import { runUiDesignerAgent } from "../agents/uiDesignerAgent.js";
+import { runUxWriterAgent } from "../agents/uxWriterAgent.js";
 import { runDeveloperAgent } from "../agents/developerAgent.js";
 import { runReporterAgent } from "../agents/reporterAgent.js";
 import { analyzeRepository, analysisToMarkdown } from "../repoAnalyzer/repoAnalyzer.js";
@@ -78,6 +81,21 @@ export async function runAssistedWorkflow(
   const qaTool: AiToolConfig | undefined =
     input.agentMapping && input.cliConfigs
       ? getAiToolConfig("QA", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const uxResearcherTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("UX_RESEARCHER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const uiDesignerTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("UI_DESIGNER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const uxWriterTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("UX_WRITER", input.agentMapping, input.cliConfigs)
       : undefined;
 
   const developerTool: AiToolConfig | undefined =
@@ -178,6 +196,82 @@ export async function runAssistedWorkflow(
 
   await writeArtifact(join(paths.testsDir, "test-matrix.json"), qaOutput.testMatrixJson);
   artifacts.push(join(paths.testsDir, "test-matrix.json"));
+
+  const userJourneyOutput = await runUserJourneyAgent(
+    {
+      requirement: input.requirement,
+      clarifiedRequirement: baOutput.clarifiedRequirement,
+      acceptanceCriteria: baOutput.acceptanceCriteria,
+      scopeDefinition: "",
+    },
+    { templateDir, aiTool: uxResearcherTool },
+  );
+
+  await writeArtifact(
+    paths.userJourneyPath,
+    [
+      "## User Personas\n",
+      userJourneyOutput.userPersonas,
+      "\n\n## User Flows\n",
+      userJourneyOutput.userFlows,
+      "\n\n## Journey Map\n",
+      userJourneyOutput.journeyMap,
+    ].join("\n"),
+  );
+  artifacts.push(paths.userJourneyPath);
+
+  const uiDesignerOutput = await runUiDesignerAgent(
+    {
+      requirement: input.requirement,
+      clarifiedRequirement: baOutput.clarifiedRequirement,
+      userPersonas: userJourneyOutput.userPersonas,
+      userFlows: userJourneyOutput.userFlows,
+    },
+    { templateDir, aiTool: uiDesignerTool },
+  );
+
+  await writeArtifact(
+    paths.uxDesignPath,
+    [
+      "## Screen Descriptions\n",
+      uiDesignerOutput.screenDescriptions,
+      "\n\n## Component Tree\n",
+      uiDesignerOutput.componentTree,
+      "\n\n## States\n",
+      uiDesignerOutput.states,
+    ].join("\n"),
+  );
+  artifacts.push(paths.uxDesignPath);
+
+  await writeArtifact(
+    paths.componentBreakdownPath,
+    ["## Component Tree\n", uiDesignerOutput.componentTree].join("\n"),
+  );
+  artifacts.push(paths.componentBreakdownPath);
+
+  const uxWriterOutput = await runUxWriterAgent(
+    {
+      requirement: input.requirement,
+      screenDescriptions: uiDesignerOutput.screenDescriptions,
+      componentTree: uiDesignerOutput.componentTree,
+    },
+    { templateDir, aiTool: uxWriterTool },
+  );
+
+  await writeArtifact(
+    paths.uxCopyPath,
+    [
+      "## Interface Labels\n",
+      uxWriterOutput.interfaceLabels,
+      "\n\n## Error Messages\n",
+      uxWriterOutput.errorMessages,
+      "\n\n## Empty State Text\n",
+      uxWriterOutput.emptyStateText,
+      "\n\n## Tooltips & Help Text\n",
+      uxWriterOutput.tooltips,
+    ].join("\n"),
+  );
+  artifacts.push(paths.uxCopyPath);
 
   const developerOutput = await runDeveloperAgent(
     {

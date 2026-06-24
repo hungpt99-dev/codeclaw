@@ -29,6 +29,11 @@ export interface ArtifactPaths {
   securityReviewPath: string;
   requirementCoveragePath: string;
   fixLoopDir: string;
+  uxDir: string;
+  userJourneyPath: string;
+  uxDesignPath: string;
+  uxCopyPath: string;
+  componentBreakdownPath: string;
 }
 
 export function getArtifactPaths(runId: string): ArtifactPaths {
@@ -61,6 +66,11 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
     securityReviewPath: join(runDir, "review", "security-review.md"),
     requirementCoveragePath: join(runDir, "review", "requirement-coverage.md"),
     fixLoopDir: join(runDir, "implementation", "fix-loop"),
+    uxDir: join(runDir, "ux"),
+    userJourneyPath: join(runDir, "ux", "user-journey.md"),
+    uxDesignPath: join(runDir, "ux", "ux-design.md"),
+    uxCopyPath: join(runDir, "ux", "ux-copy.md"),
+    componentBreakdownPath: join(runDir, "ux", "component-breakdown.md"),
   };
 }
 
@@ -77,6 +87,7 @@ export async function createArtifactDirs(runId: string): Promise<ArtifactPaths> 
   await mkdir(paths.logsDir, { recursive: true });
   await mkdir(paths.reviewDir, { recursive: true });
   await mkdir(paths.fixLoopDir, { recursive: true });
+  await mkdir(paths.uxDir, { recursive: true });
   return paths;
 }
 
