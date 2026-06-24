@@ -5,7 +5,7 @@ set -Eeuo pipefail
 # OpenCode Roadmap Runner
 # =============================================================================
 # Automatically runs OpenCode step by step through the Local AI Software Team
-# roadmap (36 steps, 00-docs-preflight through 36-web-ui-integrations-and-settings).
+# roadmap (50 steps, 00-docs-preflight through 50-git-diff-review-enhancement-in-web-ui).
 # Resumes from last completed step stored in state file, or starts fresh.
 # =============================================================================
 
@@ -65,6 +65,20 @@ STEP_IDS=(
   "34-cli-management-commands"
   "35-approval-gates-4-6"
   "36-web-ui-integrations-and-settings"
+  "37-intake-and-clarification-workflow"
+  "38-ui-ux-design-and-user-journey-workflow"
+  "39-frontend-and-backend-planner-agents"
+  "40-api-and-data-design-agents"
+  "41-integration-planner-and-devops-release-agent"
+  "42-technical-documentation-agent"
+  "43-dedicated-code-review-and-security-review-agents"
+  "44-traceability-agent-enhancement"
+  "45-implementation-coding-plan-placeholder"
+  "46-live-workflow-progress-in-web-ui"
+  "47-real-llm-provider-integration"
+  "48-additional-ai-cli-adapters-gemini-aider"
+  "49-export-delivery-package-enhancement"
+  "50-git-diff-review-enhancement-in-web-ui"
 )
 
 # Commit messages for each step (index-aligned with STEP_IDS)
@@ -105,6 +119,20 @@ STEP_COMMIT_MESSAGES=(
   "feat(cli): add management commands"
   "feat(core): add approval gates 4-6"
   "feat(web): add integrations page and full settings"
+  "feat(core): add intake and clarification workflow"
+  "feat(core): add UI/UX design and user journey workflow"
+  "feat(core): add frontend and backend planner agents"
+  "feat(core): add API and data design agents"
+  "feat(core): add integration planner and devops/release agent"
+  "feat(core): add technical documentation agent"
+  "feat(core): add dedicated code review and security review agents"
+  "feat(core): add traceability agent enhancement"
+  "feat(core): add implementation coding plan placeholder"
+  "feat(web): add live workflow progress in web UI"
+  "feat(core): add real LLM provider integration"
+  "feat(adapters): add Gemini CLI and Aider adapters"
+  "feat(core): add export delivery package enhancement"
+  "feat(web): add git diff review enhancement in web UI"
 )
 
 # Lookup commit message by step ID
