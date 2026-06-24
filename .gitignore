@@ -12,6 +12,7 @@ coverage
 .codeclaw/runs
 .codeclaw/logs
 .codeclaw/tmp
+apps/local-server/.codeclaw/
 # Legacy .ai-team directory (deprecated)
 .ai-team/
 
