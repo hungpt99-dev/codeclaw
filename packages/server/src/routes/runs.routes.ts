@@ -203,6 +203,7 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
       "SCOPE",
       "REQUIREMENT",
       "PLAN",
+      "CODING_PLAN",
       "CODE_GENERATION",
       "RISKY_FILE",
       "EXTERNAL_UPDATE",

@@ -47,6 +47,8 @@ export async function resumeCommand(runId: string): Promise<void> {
     gateToCheck = "REQUIREMENT";
   } else if (run.status === "WAITING_FOR_PLAN_APPROVAL") {
     gateToCheck = "PLAN";
+  } else if (run.status === "WAITING_FOR_CODING_PLAN_APPROVAL") {
+    gateToCheck = "CODING_PLAN";
   } else if (run.status === "WAITING_FOR_CODE_APPROVAL") {
     gateToCheck = "CODE_GENERATION";
   } else if (run.status === "WAITING_FOR_RISKY_FILE_APPROVAL") {

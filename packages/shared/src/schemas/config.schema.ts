@@ -38,6 +38,7 @@ export const configSchema = z.object({
     defaultReporter: aiCliToolSchema.default("claude"),
     defaultIntegrationPlanner: aiCliToolSchema.default("claude"),
     defaultDevopsRelease: aiCliToolSchema.default("claude"),
+    defaultCodingPlanner: aiCliToolSchema.default("claude"),
   }),
   cli: z.object({
     claude: aiCliToolConfigSchema,
@@ -116,6 +117,7 @@ export const defaultConfig: Config = {
     defaultReporter: "claude",
     defaultIntegrationPlanner: "claude",
     defaultDevopsRelease: "claude",
+    defaultCodingPlanner: "claude",
   },
   cli: {
     claude: { enabled: false, command: "claude", timeoutSeconds: 900 },

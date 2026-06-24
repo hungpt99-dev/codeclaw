@@ -40,6 +40,7 @@ export async function approveCommand(runId: string, options: ApproveOptions): Pr
     "SCOPE",
     "REQUIREMENT",
     "PLAN",
+    "CODING_PLAN",
     "CODE_GENERATION",
     "RISKY_FILE",
     "EXTERNAL_UPDATE",

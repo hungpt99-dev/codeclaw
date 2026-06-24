@@ -13,6 +13,7 @@ import { runQaAgent } from "../agents/qaAgent.js";
 import { runUserJourneyAgent } from "../agents/userJourneyAgent.js";
 import { runUiDesignerAgent } from "../agents/uiDesignerAgent.js";
 import { runUxWriterAgent } from "../agents/uxWriterAgent.js";
+import { runCodingPlanAgent } from "../agents/codingPlanAgent.js";
 import { runDeveloperAgent } from "../agents/developerAgent.js";
 import { runReporterAgent } from "../agents/reporterAgent.js";
 import {
@@ -103,6 +104,11 @@ export async function runAssistedWorkflow(
   const uxWriterTool: AiToolConfig | undefined =
     input.agentMapping && input.cliConfigs
       ? getAiToolConfig("UX_WRITER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const codingPlanTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("CODING_PLANNER", input.agentMapping, input.cliConfigs)
       : undefined;
 
   const developerTool: AiToolConfig | undefined =
@@ -410,6 +416,25 @@ export async function runAssistedWorkflow(
   );
   artifacts.push(paths.uxCopyPath);
 
+  const codingPlanOutput = await runCodingPlanAgent(
+    {
+      requirement: input.requirement,
+      clarifiedRequirement: baOutput.clarifiedRequirement,
+      businessRules: baOutput.businessRules,
+      acceptanceCriteria: baOutput.acceptanceCriteria,
+      technicalDesign: combinedDesign,
+      apiDesign: architectOutput.apiDesign,
+      dbDesign: architectOutput.dbDesign,
+      taskBreakdownMd: pmOutput.taskBreakdownMd,
+      testMatrixMd: qaOutput.testMatrixMd,
+      targetAgent: input.targetAgent,
+    },
+    { templateDir, aiTool: codingPlanTool },
+  );
+
+  await writeArtifact(paths.codingPlanPath, codingPlanOutput.codingPlanMd);
+  artifacts.push(paths.codingPlanPath);
+
   const developerOutput = await runDeveloperAgent(
     {
       requirement: input.requirement,
@@ -421,6 +446,7 @@ export async function runAssistedWorkflow(
       dbDesign: architectOutput.dbDesign,
       taskBreakdownMd: pmOutput.taskBreakdownMd,
       testMatrixMd: qaOutput.testMatrixMd,
+      codingPlanMd: codingPlanOutput.codingPlanMd,
       targetAgent: input.targetAgent,
     },
     { templateDir, aiTool: developerTool },

@@ -20,6 +20,8 @@ const mockPaths = {
   designDir: "/test/.ai-team/runs/run_123/design",
   tasksDir: "/test/.ai-team/runs/run_123/tasks",
   testsDir: "/test/.ai-team/runs/run_123/tests",
+  codingPlanDir: "/test/.ai-team/runs/run_123/coding-plan",
+  codingPlanPath: "/test/.ai-team/runs/run_123/coding-plan/coding-plan.md",
   implementationDir: "/test/.ai-team/runs/run_123/implementation",
   implementationPromptPath: "/test/.ai-team/runs/run_123/implementation/implementation-prompt.md",
   agentLogPath: "/test/.ai-team/runs/run_123/implementation/agent-output.log",

@@ -13,6 +13,7 @@ export interface DeveloperAgentInput {
   dbDesign: string;
   taskBreakdownMd: string;
   testMatrixMd: string;
+  codingPlanMd: string;
   targetAgent?: "claude-code" | "codex" | "gemini" | "aider" | "generic" | undefined;
 }
 
@@ -38,12 +39,15 @@ Implement the feature described in the requirement below based on the provided d
 
 **Database Design**: {{dbDesign}}
 
+**Coding Plan**: {{codingPlanMd}}
+
 ## Requirements
 
 1. Implement according to the clarified requirement and acceptance criteria.
 2. Follow the technical design and API design specifications.
 3. Implement all tasks from the task breakdown.
 4. Ensure all test cases from the test matrix pass.
+5. Follow the coding plan implementation order and file specifications.
 
 ## Acceptance Criteria
 
@@ -106,6 +110,7 @@ export async function runDeveloperAgent(
         dbDesign: input.dbDesign,
         taskBreakdown: input.taskBreakdownMd,
         testMatrix: input.testMatrixMd,
+        codingPlan: input.codingPlanMd,
       },
       aiToolConfig: options.aiTool,
     });
@@ -125,6 +130,7 @@ export async function runDeveloperAgent(
     dbDesign: input.dbDesign,
     taskBreakdownMd: input.taskBreakdownMd,
     testMatrixMd: input.testMatrixMd,
+    codingPlanMd: input.codingPlanMd,
   };
 
   return {

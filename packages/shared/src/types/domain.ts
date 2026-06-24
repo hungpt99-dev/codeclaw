@@ -16,6 +16,7 @@ export const RunStatus = {
   PLAN_GENERATED: "PLAN_GENERATED",
   WAITING_FOR_PLAN_APPROVAL: "WAITING_FOR_PLAN_APPROVAL",
   WAITING_FOR_CODE_APPROVAL: "WAITING_FOR_CODE_APPROVAL",
+  WAITING_FOR_CODING_PLAN_APPROVAL: "WAITING_FOR_CODING_PLAN_APPROVAL",
   WAITING_FOR_RISKY_FILE_APPROVAL: "WAITING_FOR_RISKY_FILE_APPROVAL",
   CODING: "CODING",
   CODE_GENERATED: "CODE_GENERATED",
@@ -37,6 +38,7 @@ export type ApprovalGate =
   | "SCOPE"
   | "REQUIREMENT"
   | "PLAN"
+  | "CODING_PLAN"
   | "CODE_GENERATION"
   | "RISKY_FILE"
   | "EXTERNAL_UPDATE"
@@ -66,6 +68,7 @@ export const ArtifactType = {
   TASK_BREAKDOWN: "TASK_BREAKDOWN",
   JIRA_READY_TASKS: "JIRA_READY_TASKS",
   TEST_MATRIX: "TEST_MATRIX",
+  CODING_PLAN: "CODING_PLAN",
   SCOPE_DEFINITION: "SCOPE_DEFINITION",
   IMPLEMENTATION_PROMPT: "IMPLEMENTATION_PROMPT",
   AGENT_LOG: "AGENT_LOG",
@@ -148,7 +151,8 @@ export type AgentRole =
   | "UI_DESIGNER"
   | "UX_WRITER"
   | "INTEGRATION_PLANNER"
-  | "DEVOPS_RELEASE";
+  | "DEVOPS_RELEASE"
+  | "CODING_PLANNER";
 
 export interface AiCliToolConfig {
   enabled: boolean;
@@ -252,6 +256,7 @@ export interface AiTeamConfig {
     defaultReporter: AiCliTool;
     defaultIntegrationPlanner: AiCliTool;
     defaultDevopsRelease: AiCliTool;
+    defaultCodingPlanner: AiCliTool;
   };
   cli: {
     claude: AiCliToolConfig;

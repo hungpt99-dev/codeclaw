@@ -44,6 +44,7 @@ function inferArtifactType(filePath: string): ArtifactType {
     "task-breakdown": "TASK_BREAKDOWN",
     "jira-ready-tasks": "JIRA_READY_TASKS",
     "test-matrix": "TEST_MATRIX",
+    "coding-plan": "CODING_PLAN",
     "implementation-prompt": "IMPLEMENTATION_PROMPT",
     "final-report": "FINAL_REPORT",
   };

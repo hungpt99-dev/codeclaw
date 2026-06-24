@@ -33,6 +33,8 @@ export { runReporterAgent } from "./agents/reporterAgent.js";
 export type { ReporterAgentInput, ReporterAgentOutput } from "./agents/reporterAgent.js";
 export { runDeveloperAgent } from "./agents/developerAgent.js";
 export type { DeveloperAgentInput, DeveloperAgentOutput } from "./agents/developerAgent.js";
+export { runCodingPlanAgent } from "./agents/codingPlanAgent.js";
+export type { CodingPlanAgentInput, CodingPlanAgentOutput } from "./agents/codingPlanAgent.js";
 export { runIntegrationPlannerAgent } from "./agents/integrationPlannerAgent.js";
 export type {
   IntegrationPlannerAgentInput,

@@ -39,6 +39,7 @@ export async function rejectCommand(runId: string, options: RejectOptions): Prom
   const validGates: ApprovalGate[] = [
     "REQUIREMENT",
     "PLAN",
+    "CODING_PLAN",
     "CODE_GENERATION",
     "RISKY_FILE",
     "EXTERNAL_UPDATE",

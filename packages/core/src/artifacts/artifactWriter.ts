@@ -12,6 +12,8 @@ export interface ArtifactPaths {
   designDir: string;
   tasksDir: string;
   testsDir: string;
+  codingPlanDir: string;
+  codingPlanPath: string;
   implementationDir: string;
   implementationPromptPath: string;
   agentLogPath: string;
@@ -59,6 +61,8 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
     designDir: join(runDir, "design"),
     tasksDir: join(runDir, "tasks"),
     testsDir: join(runDir, "tests"),
+    codingPlanDir: join(runDir, "coding-plan"),
+    codingPlanPath: join(runDir, "coding-plan", "coding-plan.md"),
     implementationDir: join(runDir, "implementation"),
     implementationPromptPath: join(runDir, "implementation", "implementation-prompt.md"),
     agentLogPath: join(runDir, "implementation", "agent-output.log"),
@@ -102,6 +106,7 @@ export async function createArtifactDirs(runId: string): Promise<ArtifactPaths> 
   await mkdir(paths.designDir, { recursive: true });
   await mkdir(paths.tasksDir, { recursive: true });
   await mkdir(paths.testsDir, { recursive: true });
+  await mkdir(paths.codingPlanDir, { recursive: true });
   await mkdir(paths.implementationDir, { recursive: true });
   await mkdir(paths.reportDir, { recursive: true });
   await mkdir(paths.logsDir, { recursive: true });

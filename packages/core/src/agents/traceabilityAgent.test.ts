@@ -14,6 +14,8 @@ const mockArtifactPaths: ArtifactPaths = {
   designDir: ".ai-team/runs/test-run/design",
   tasksDir: ".ai-team/runs/test-run/tasks",
   testsDir: ".ai-team/runs/test-run/tests",
+  codingPlanDir: ".ai-team/runs/test-run/coding-plan",
+  codingPlanPath: ".ai-team/runs/test-run/coding-plan/coding-plan.md",
   implementationDir: ".ai-team/runs/test-run/implementation",
   implementationPromptPath: ".ai-team/runs/test-run/implementation/implementation-prompt.md",
   agentLogPath: ".ai-team/runs/test-run/implementation/agent-output.log",

@@ -16,6 +16,7 @@ import { runIntegrationPlannerAgent } from "../agents/integrationPlannerAgent.js
 import { runDevopsReleaseAgent } from "../agents/devopsReleaseAgent.js";
 import { runPmAgent } from "../agents/pmAgent.js";
 import { runQaAgent } from "../agents/qaAgent.js";
+import { runCodingPlanAgent } from "../agents/codingPlanAgent.js";
 import { runDeveloperAgent } from "../agents/developerAgent.js";
 import { runReporterAgent } from "../agents/reporterAgent.js";
 import { runTechnicalDocumentationAgent } from "../agents/technicalDocumentationAgent.js";
@@ -241,6 +242,11 @@ export async function runSemiAutoWorkflow(
   const qaTool: AiToolConfig | undefined =
     input.agentMapping && input.cliConfigs
       ? getAiToolConfig("QA", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const codingPlanTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs
+      ? getAiToolConfig("CODING_PLANNER", input.agentMapping, input.cliConfigs)
       : undefined;
 
   const developerTool: AiToolConfig | undefined =
@@ -477,6 +483,24 @@ export async function runSemiAutoWorkflow(
   await writeArtifact(join(paths.testsDir, "test-matrix.json"), qaOutput.testMatrixJson);
   artifacts.push(join(paths.testsDir, "test-matrix.json"));
 
+  const codingPlanOutput = await runCodingPlanAgent(
+    {
+      requirement: input.requirement,
+      clarifiedRequirement: baOutput.clarifiedRequirement,
+      businessRules: baOutput.businessRules,
+      acceptanceCriteria: baOutput.acceptanceCriteria,
+      technicalDesign: combinedDesign,
+      apiDesign: architectOutput.apiDesign,
+      dbDesign: architectOutput.dbDesign,
+      taskBreakdownMd: pmOutput.taskBreakdownMd,
+      testMatrixMd: qaOutput.testMatrixMd,
+    },
+    { templateDir, aiTool: codingPlanTool },
+  );
+
+  await writeArtifact(paths.codingPlanPath, codingPlanOutput.codingPlanMd);
+  artifacts.push(paths.codingPlanPath);
+
   const developerOutput = await runDeveloperAgent(
     {
       requirement: input.requirement,
@@ -488,6 +512,7 @@ export async function runSemiAutoWorkflow(
       dbDesign: architectOutput.dbDesign,
       taskBreakdownMd: pmOutput.taskBreakdownMd,
       testMatrixMd: qaOutput.testMatrixMd,
+      codingPlanMd: codingPlanOutput.codingPlanMd,
     },
     { templateDir, aiTool: developerTool },
   );
@@ -509,7 +534,7 @@ export async function runSemiAutoWorkflow(
         gate: "CODE_GENERATION",
         status: "PENDING",
         summary: `Review and approve code generation. Agent: ${input.selectedAgent}`,
-        artifacts: [paths.implementationPromptPath],
+        artifacts: [paths.codingPlanPath, paths.implementationPromptPath],
       },
       memoryUsed: input.memoryContext
         ? {
@@ -587,6 +612,7 @@ export async function runSemiAutoWorkflow(
     taskBreakdownMd: pmOutput.taskBreakdownMd,
     testMatrixMd: qaOutput.testMatrixMd,
     implementationPrompt: developerOutput.implementationPrompt,
+    codingPlanMd: codingPlanOutput.codingPlanMd,
     devTool: devTool
       ? { tool: devTool.tool, command: devTool.command, timeoutSeconds: devTool.timeoutSeconds }
       : undefined,
@@ -612,6 +638,7 @@ interface PostCodeContext {
   dbDesign: string;
   taskBreakdownMd: string;
   testMatrixMd: string;
+  codingPlanMd: string;
   implementationPrompt: string;
   devTool: AiToolConfig | undefined;
   reporterTool: AiToolConfig | undefined;
@@ -951,6 +978,7 @@ export async function continueAfterRiskyFileApproval(
     () => "",
   );
   const testMatrixMd = await rf(join(paths.testsDir, "test-matrix.md"), "utf-8").catch(() => "");
+  const codingPlanMd = await rf(paths.codingPlanPath, "utf-8").catch(() => "");
 
   return runPostCodePipeline({
     runId: input.runId,
@@ -966,6 +994,7 @@ export async function continueAfterRiskyFileApproval(
     taskBreakdownMd,
     testMatrixMd,
     implementationPrompt,
+    codingPlanMd,
     devTool:
       input.agentMapping && input.cliConfigs
         ? getAiToolConfig("DEVELOPER", input.agentMapping, input.cliConfigs)

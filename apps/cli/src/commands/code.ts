@@ -62,6 +62,7 @@ export async function codeCommand(options: CodeOptions): Promise<void> {
   const dbDesign = await readReq(join(paths.designDir, "db-design.md"));
   const taskBreakdownMd = await readReq(join(paths.tasksDir, "task-breakdown.md"));
   const testMatrixMd = await readReq(join(paths.testsDir, "test-matrix.md"));
+  const codingPlanMd = await readReq(paths.codingPlanPath);
 
   if (!clarifiedRequirement || !technicalDesign) {
     console.log("❌ Prerequisite artifacts not found. Run 'aiteam spec' and 'aiteam plan' first.");
@@ -98,6 +99,7 @@ export async function codeCommand(options: CodeOptions): Promise<void> {
       dbDesign,
       taskBreakdownMd,
       testMatrixMd,
+      codingPlanMd,
     },
     { templateDir, aiTool: tool },
   );

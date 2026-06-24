@@ -344,6 +344,7 @@ describe("agents", () => {
       dbDesign: "Users table with email and password_hash",
       taskBreakdownMd: "T-001: Create login endpoint",
       testMatrixMd: "TC-001: Valid login returns token",
+      codingPlanMd: "## Files to Create\nsrc/login.ts",
     });
     expect(output).toHaveProperty("implementationPrompt");
     expect(output.implementationPrompt).toContain("Build a login page");
@@ -362,6 +363,7 @@ describe("agents", () => {
       dbDesign: "DB",
       taskBreakdownMd: "Tasks",
       testMatrixMd: "Tests",
+      codingPlanMd: "## Files to Create\nsrc/test.ts",
       targetAgent: "claude-code",
     });
     expect(output).toHaveProperty("implementationPrompt");
