@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 export interface ArtifactPaths {
   runDir: string;
@@ -120,5 +120,6 @@ export async function createArtifactDirs(runId: string): Promise<ArtifactPaths> 
 }
 
 export async function writeArtifact(filePath: string, content: string): Promise<void> {
+  await mkdir(dirname(filePath), { recursive: true });
   await writeFile(filePath, content, "utf-8");
 }

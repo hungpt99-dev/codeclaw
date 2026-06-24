@@ -7,6 +7,7 @@ vi.mock("node:fs/promises", () => ({
   readFile: (...args: unknown[]) => mockReadFile(...args) as Promise<string>,
   access: (...args: unknown[]) => mockAccess(...args) as Promise<void>,
   writeFile: vi.fn(),
+  mkdir: vi.fn(),
 }));
 import { runReview, loadAndReview, persistReview } from "./reviewService.js";
 

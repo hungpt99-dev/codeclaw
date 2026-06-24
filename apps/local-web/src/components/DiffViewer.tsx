@@ -1,77 +1,51 @@
-import type { ReactElement } from "react";
+import { useState, useMemo, type ReactElement } from "react";
+import { parseDiffContent, computeStats } from "../lib/diff.js";
+import { DiffStats } from "./DiffStats.js";
+import { DiffFileList } from "./DiffFileList.js";
+import { DiffFileView } from "./DiffFileView.js";
 
 interface DiffViewerProps {
   diffContent: string;
   fileName?: string;
+  warnFiles?: string[] | undefined;
+  renderMode?: "auto" | "simple" | "full";
 }
 
-interface DiffLine {
-  type: "add" | "remove" | "header" | "context" | "empty";
-  content: string;
-  oldLine?: number;
-  newLine?: number;
-}
+export function DiffViewer({
+  diffContent,
+  fileName,
+  warnFiles,
+  renderMode = "auto",
+}: DiffViewerProps): ReactElement {
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [outputFormat, setOutputFormat] = useState<"line-by-line" | "side-by-side">("line-by-line");
+  const [reviewedFiles, setReviewedFiles] = useState<Set<string>>(new Set());
 
-function parseDiff(diffContent: string): DiffLine[] {
-  const lines = diffContent.split("\n");
-  const result: DiffLine[] = [];
-  let oldLine = 0;
-  let newLine = 0;
+  const files = useMemo(() => {
+    if (!diffContent) return [];
+    return parseDiffContent(diffContent, warnFiles);
+  }, [diffContent, warnFiles]);
 
-  for (const line of lines) {
-    if (
-      line.startsWith("diff --git") ||
-      line.startsWith("index ") ||
-      line.startsWith("--- ") ||
-      line.startsWith("+++ ")
-    ) {
-      result.push({ type: "header", content: line });
-      continue;
-    }
+  const stats = useMemo(() => computeStats(files), [files]);
 
-    if (line.startsWith("@@")) {
-      const match = /@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(line);
-      if (match) {
-        oldLine = Number(match[1]) - 1;
-        newLine = Number(match[2]) - 1;
+  const effectiveMode =
+    renderMode === "auto"
+      ? files.length > 1 || (files.length === 1 && fileName === undefined)
+        ? "full"
+        : "simple"
+      : renderMode;
+
+  const handleToggleReviewed = (filePath: string): void => {
+    setReviewedFiles((prev) => {
+      const next = new Set(prev);
+      if (next.has(filePath)) {
+        next.delete(filePath);
+      } else {
+        next.add(filePath);
       }
-      result.push({ type: "header", content: line });
-      continue;
-    }
-
-    if (line === "") {
-      result.push({ type: "empty", content: "" });
-      continue;
-    }
-
-    if (line.startsWith("+")) {
-      newLine++;
-      result.push({ type: "add", content: line, newLine });
-    } else if (line.startsWith("-")) {
-      oldLine++;
-      result.push({ type: "remove", content: line, oldLine });
-    } else if (line.startsWith(" ")) {
-      oldLine++;
-      newLine++;
-      result.push({ type: "context", content: line, oldLine, newLine });
-    } else {
-      result.push({ type: "context", content: line });
-    }
-  }
-
-  return result;
-}
-
-const LINE_STYLES: Record<DiffLine["type"], string> = {
-  add: "bg-green-50 text-green-800 border-l-2 border-green-500",
-  remove: "bg-red-50 text-red-800 border-l-2 border-red-500",
-  header: "text-gray-500 bg-gray-100 font-mono text-xs",
-  context: "text-gray-700",
-  empty: "",
-};
-
-export function DiffViewer({ diffContent, fileName }: DiffViewerProps): ReactElement {
-  const lines = parseDiff(diffContent);
+      return next;
+    });
+  };
 
   if (!diffContent || diffContent.trim() === "") {
     return (
@@ -81,30 +55,94 @@ export function DiffViewer({ diffContent, fileName }: DiffViewerProps): ReactEle
     );
   }
 
-  return (
-    <div className="rounded-md border border-gray-200 overflow-hidden">
-      {fileName && (
-        <div className="px-3 py-2 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
-          {fileName}
+  if (effectiveMode === "simple") {
+    const displayName = fileName ?? files[0]?.filePath;
+    return (
+      <div className="rounded-md border border-gray-200 overflow-hidden">
+        {displayName && (
+          <div className="px-3 py-2 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
+            {displayName}
+          </div>
+        )}
+        <div className="overflow-x-auto">
+          <DiffFileView
+            diffContent={diffContent}
+            selectedFile={files[0]?.filePath ?? null}
+            outputFormat={outputFormat}
+          />
         </div>
-      )}
-      <div className="overflow-x-auto">
-        <table className="min-w-full font-mono text-xs leading-5">
-          <tbody>
-            {lines.map((line, i) => (
-              <tr key={i} className={LINE_STYLES[line.type]}>
-                <td className="w-12 text-right pr-2 text-gray-400 select-none">
-                  {line.oldLine !== undefined ? String(line.oldLine) : ""}
-                </td>
-                <td className="w-12 text-right pr-2 text-gray-400 select-none">
-                  {line.newLine !== undefined ? String(line.newLine) : ""}
-                </td>
-                <td className="px-1 whitespace-pre">{line.content || " "}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
+    );
+  }
+
+  if (files.length === 0) {
+    return (
+      <div className="rounded-md bg-gray-50 p-4 text-sm text-gray-400 italic">
+        No parseable diff content available.
+      </div>
+    );
+  }
+
+  const currentFile = selectedFile ?? files[0]?.filePath ?? null;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <DiffStats stats={stats} />
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setReviewedFiles(new Set(files.map((f) => f.filePath)));
+            }}
+            className="text-xs px-2 py-1 rounded border bg-white text-gray-500 hover:bg-gray-50 transition-colors"
+          >
+            Mark All Reviewed
+          </button>
+          <div className="flex items-center gap-1 text-xs border border-gray-200 rounded-md overflow-hidden">
+            <button
+              type="button"
+              onClick={() => {
+                setOutputFormat("line-by-line");
+              }}
+              className={`px-2 py-1 transition-colors ${
+                outputFormat === "line-by-line"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              Unified
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setOutputFormat("side-by-side");
+              }}
+              className={`px-2 py-1 transition-colors ${
+                outputFormat === "side-by-side"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              Side-by-side
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <DiffFileList
+        files={files}
+        selectedFile={currentFile}
+        onSelectFile={setSelectedFile}
+        onToggleReviewed={handleToggleReviewed}
+        reviewedFiles={reviewedFiles}
+      />
+
+      <DiffFileView
+        diffContent={diffContent}
+        selectedFile={currentFile}
+        outputFormat={outputFormat}
+      />
     </div>
   );
 }

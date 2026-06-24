@@ -1052,47 +1052,7 @@ export function RunDetail(): ReactElement {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium text-gray-700">
-                    Changed Files ({codeResult.changedFiles.length})
-                  </h4>
-                </div>
-                {codeResult.changedFiles.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-xs">
-                      <thead>
-                        <tr className="border-b text-left text-gray-500">
-                          <th className="pb-1 pr-4 font-medium">File</th>
-                          <th className="pb-1 font-medium">Risk</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {codeResult.changedFiles.map((f) => {
-                          const isBlocked = codeResult.fileSafety?.blocked.includes(f);
-                          const isWarned = codeResult.fileSafety?.warnings.includes(f);
-                          const riskClass = isBlocked
-                            ? "text-red-600"
-                            : isWarned
-                              ? "text-yellow-600"
-                              : "text-green-600";
-                          const riskLabel = isBlocked ? "Blocked" : isWarned ? "Warning" : "Safe";
-                          return (
-                            <tr key={f} className="border-b hover:bg-gray-50">
-                              <td className="py-1 pr-4 font-mono">{f}</td>
-                              <td className={`py-1 ${riskClass}`}>{riskLabel}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-400 italic">No files changed.</p>
-                )}
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium text-gray-700">Diff Viewer</h4>
+                  <h4 className="text-sm font-medium text-gray-700">Code Changes</h4>
                   <button
                     type="button"
                     onClick={() => {
@@ -1104,9 +1064,11 @@ export function RunDetail(): ReactElement {
                   </button>
                 </div>
                 {diffContent ? (
-                  <div className="max-h-96 overflow-y-auto">
-                    <DiffViewer diffContent={diffContent} />
-                  </div>
+                  <DiffViewer
+                    diffContent={diffContent}
+                    warnFiles={codeResult.fileSafety?.warnings ?? []}
+                    renderMode="full"
+                  />
                 ) : (
                   <p className="text-sm text-gray-400 italic">
                     Click "Load Diff" to view the generated patch.
@@ -1141,6 +1103,28 @@ export function RunDetail(): ReactElement {
           )}
         </div>
       </section>
+
+      {diffContent && (
+        <section className="rounded-lg border bg-white p-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-gray-900">Code Changes Review</h2>
+            <button
+              type="button"
+              onClick={() => {
+                void handleLoadDiff();
+              }}
+              className="text-xs px-2 py-1 rounded border bg-white text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              Refresh
+            </button>
+          </div>
+          <DiffViewer
+            diffContent={diffContent}
+            warnFiles={codeResult?.fileSafety?.warnings ?? []}
+            renderMode="full"
+          />
+        </section>
+      )}
 
       <section className="rounded-lg border bg-white p-6">
         <div className="flex items-center justify-between mb-3">
