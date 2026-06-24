@@ -715,41 +715,11 @@ export function registerRunsRoutes(
       return reply.status(500).send({ error: result.error ?? "Export failed" });
     }
 
-    try {
-      if (format === "all") {
-        const paths = result.outputPath.split(", ");
-        const zipPath = paths.find((p) => p.endsWith(".zip"));
-        if (zipPath) {
-          const fileContent = await readFile(zipPath);
-          reply.header("Content-Type", "application/zip");
-          reply.header("Content-Disposition", `attachment; filename="delivery-package.zip"`);
-          return await reply.send(fileContent);
-        }
-        return { result };
-      }
-
-      const fileContent = await readFile(result.outputPath);
-      const mimeTypes: Record<string, string> = {
-        html: "text/html",
-        docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        pdf: "application/pdf",
-        zip: "application/zip",
-        markdown: "text/markdown",
-        "combined-md": "text/markdown",
-        json: "application/json",
-      };
-
-      const ext =
-        format === "markdown" || format === "combined-md"
-          ? "md"
-          : format === "json"
-            ? "json"
-            : format;
-      reply.header("Content-Type", mimeTypes[format] ?? "application/octet-stream");
-      reply.header("Content-Disposition", `attachment; filename="report.${ext}"`);
-      return await reply.send(fileContent);
-    } catch {
-      return { result };
-    }
+    return {
+      success: true,
+      outputPath: result.outputPath,
+      format: result.format,
+      fileSize: result.fileSize,
+    };
   });
 }

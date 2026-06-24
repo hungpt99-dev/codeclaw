@@ -250,7 +250,7 @@ export const api = {
   async exportRun(
     runId: string,
     options: ExportOptions,
-  ): Promise<{ success: boolean; downloadUrl?: string; result?: ExportResult }> {
+  ): Promise<{ success: boolean; outputPath?: string; result?: ExportResult }> {
     return request(`/runs/${runId}/export`, {
       method: "POST",
       body: JSON.stringify(options),

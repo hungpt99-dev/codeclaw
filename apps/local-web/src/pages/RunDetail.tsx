@@ -382,7 +382,7 @@ export function RunDetail(): ReactElement {
       if (exportDocAuthor) options.author = exportDocAuthor;
       const result = await api.exportRun(id, options);
       if (result.success) {
-        setExportResult("Export completed successfully! Check the file in the exported directory.");
+        setExportResult(`Export completed! File saved to: ${result.outputPath ?? ""}`);
       } else {
         setExportResult(`Export failed: ${result.result?.error ?? "Unknown error"}`);
       }
