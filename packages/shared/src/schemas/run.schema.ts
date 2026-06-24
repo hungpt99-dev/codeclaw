@@ -15,7 +15,8 @@ export const runSchema = z.object({
 export type RunSchema = z.infer<typeof runSchema>;
 
 export const createRunRequestSchema = z.object({
-  requirement: z.string().min(1, "Requirement is required"),
+  requirement: z.string().min(1).optional(),
+  rawRequirement: z.string().min(1).optional(),
   outputLanguage: z.string().optional().default("English"),
   mode: z
     .enum(Object.values(RunMode) as [string, ...string[]])

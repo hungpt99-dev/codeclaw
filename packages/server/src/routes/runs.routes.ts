@@ -18,6 +18,7 @@ import type {
   AiAdapterName,
 } from "@codeclaw/shared";
 import { createRunId, ArtifactTypeValues } from "@codeclaw/shared";
+import { createRunRequestSchema } from "@codeclaw/shared";
 import {
   runDocsOnlyWorkflow,
   runAssistedWorkflow,
@@ -55,22 +56,18 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
   });
 
   app.post("/api/runs", async (request, reply) => {
-    const body = request.body as
-      | {
-          requirement?: string;
-          rawRequirement?: string;
-          outputLanguage?: string;
-          mode?: string;
-        }
-      | undefined;
-    const requirement = body?.requirement ?? body?.rawRequirement ?? "";
-    if (!requirement || typeof requirement !== "string" || !requirement.trim()) {
+    const result = createRunRequestSchema.safeParse(request.body);
+    if (!result.success) {
       return reply.status(400).send({ error: "Requirement is required" });
     }
 
-    const rawRequirement = requirement.trim();
-    const outputLanguage = body?.outputLanguage ?? "English";
-    const mode = body?.mode ?? "docs-only";
+    const rawRequirement = (result.data.requirement ?? result.data.rawRequirement ?? "").trim();
+    if (!rawRequirement) {
+      return reply.status(400).send({ error: "Requirement is required" });
+    }
+
+    const outputLanguage = result.data.outputLanguage;
+    const mode = result.data.mode;
     const runId = createRunId(rawRequirement);
 
     const runRepo = createRunRepository(db);

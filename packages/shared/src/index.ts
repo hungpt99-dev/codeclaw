@@ -28,7 +28,7 @@ export type { AgentBackendConfig } from "./types/domain.js";
 export { configSchema, defaultConfig } from "./schemas/config.schema.js";
 export type { Config, SlackNotifyEvent } from "./schemas/config.schema.js";
 
-export { runSchema } from "./schemas/run.schema.js";
+export { runSchema, createRunRequestSchema } from "./schemas/run.schema.js";
 export type { RunSchema, CreateRunRequest } from "./schemas/run.schema.js";
 
 export { createRunId, slugify } from "./utils/ids.js";
