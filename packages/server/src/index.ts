@@ -17,6 +17,16 @@ interface AppOptions {
 
 export function createApp(options: AppOptions): FastifyInstance {
   const app = Fastify({ logger: false });
+
+  // Allow empty JSON body (web UI sends POST with empty body)
+  app.addContentTypeParser("application/json", { parseAs: "string" }, (_req, body, done) => {
+    try {
+      done(null, body ? JSON.parse(body as string) : {});
+    } catch (err) {
+      done(err as Error, undefined);
+    }
+  });
+
   const db = openDatabase(options.dbPath);
   initializeSchema(db);
 
