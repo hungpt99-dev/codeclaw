@@ -4,6 +4,13 @@ CodeClaw is a local-first AI software team that turns a rough idea into a comple
 
 CodeClaw helps users generate clarified requirements, product requirement documents, UI/UX design documentation, user journeys, technical architecture, frontend plans, backend plans, API designs, data designs, task breakdowns, implementation prompts, coding plans, test plans, review checklists, security reviews, release plans, technical documentation, traceability matrices, and final delivery reports.
 
+CodeClaw supports multiple AI backends:
+
+- **OpenAI-compatible providers** (OpenAI, Azure OpenAI, Anthropic via API, etc.) for planning/reasoning agents
+- **OpenCode CLI** for code execution (with approval gate)
+- **Claude Code CLI**, **Codex CLI**, **Gemini CLI**, **Aider** for agent output and code execution
+- **Deterministic templates** as fallback (no AI required)
+
 ## Install
 
 ```bash
@@ -34,38 +41,82 @@ pnpm quality
 
 The monorepo uses **pnpm workspaces** with these packages:
 
-| Package                  | Description                               |
-| ------------------------ | ----------------------------------------- |
-| `@codeclaw/cli`          | CLI tool (`codeclaw`)                     |
-| `@codeclaw/local-web`    | Local web UI (React + Vite + Tailwind)    |
-| `@codeclaw/local-server` | Standalone server entry point             |
-| `@codeclaw/core`         | Workflow pipeline and artifact generation |
-| `@codeclaw/server`       | Fastify API server                        |
-| `@codeclaw/shared`       | Shared types, schemas, and utilities      |
-| `@codeclaw/storage`      | SQLite database layer                     |
-| `@codeclaw/memory`       | Runtime memory management                 |
-| `@codeclaw/adapters`     | External integrations (stub)              |
+| Package                  | Description                                  |
+| ------------------------ | -------------------------------------------- |
+| `@codeclaw/cli`          | CLI tool (`codeclaw`, legacy `aiteam` alias) |
+| `@codeclaw/local-web`    | Local web UI (React + Vite + Tailwind)       |
+| `@codeclaw/local-server` | Standalone server entry point                |
+| `@codeclaw/core`         | Workflow pipeline and artifact generation    |
+| `@codeclaw/server`       | Fastify API server                           |
+| `@codeclaw/shared`       | Shared types, schemas, and utilities         |
+| `@codeclaw/storage`      | SQLite database layer                        |
+| `@codeclaw/memory`       | Runtime memory management                    |
+| `@codeclaw/adapters`     | AI backends, CLI tool adapters, integrations |
+
+## Quick Start
+
+```bash
+# Initialize in your project directory
+codeclaw init
+
+# Check configuration
+codeclaw doctor
+
+# Run a workflow (docs-only by default, no AI required)
+codeclaw run "Add a user login page with email and password authentication" --title "User Login"
+
+# List all runs
+codeclaw list
+
+# View a specific run
+codeclaw show run_20260623_120000_user-login
+
+# View step-level execution status
+codeclaw status --run <runId>
+
+# Retry a failed step
+codeclaw retry <runId> --step 0
+
+# Start the web UI
+codeclaw ui --open
+```
+
+## AI Provider Setup (Optional)
+
+To use LLM-powered agents for planning/reasoning, configure an AI backend:
+
+```bash
+# Set your API key (never store in config.json)
+export CODECLAW_OPENAI_API_KEY=sk-...
+
+# Enable the provider in config.json
+codeclaw config set agentBackend.provider openai-compatible
+codeclaw config set agentBackend.model gpt-4o-mini
+```
+
+See `.env.example` for all supported environment variables.
 
 ## CLI Commands
 
-| Command                      | Description                                     |
-| ---------------------------- | ----------------------------------------------- |
-| `codeclaw init`              | Initialize `.codeclaw` in the current directory |
-| `codeclaw doctor`            | Check that `.codeclaw` is properly configured   |
-| `codeclaw run <requirement>` | Run a docs-only workflow from a raw requirement |
-| `codeclaw list`              | Show recent runs                                |
-| `codeclaw show <runId>`      | Show run details                                |
-| `codeclaw ui`                | Start the local web UI server                   |
-| `codeclaw memory status`     | Show runtime memory status                      |
-| `codeclaw memory index`      | Re-index runtime memory files into SQLite       |
-
-Run any command with `--help` for detailed usage:
-
-```bash
-codeclaw --help
-codeclaw run --help
-codeclaw ui --help
-```
+| Command                      | Description                                        |
+| ---------------------------- | -------------------------------------------------- |
+| `codeclaw init`              | Initialize `.codeclaw` in the current directory    |
+| `codeclaw doctor`            | Check that `.codeclaw` is properly configured      |
+| `codeclaw run <requirement>` | Run a workflow from a raw requirement              |
+| `codeclaw code --run <id>`   | Generate implementation prompt or run coding agent |
+| `codeclaw status [--run]`    | Show project or run status with step details       |
+| `codeclaw list`              | Show recent runs                                   |
+| `codeclaw show <runId>`      | Show run details                                   |
+| `codeclaw resume <runId>`    | Resume a paused or interrupted workflow            |
+| `codeclaw retry <runId>`     | Retry a failed step                                |
+| `codeclaw cancel <runId>`    | Cancel a running workflow                          |
+| `codeclaw approve <runId>`   | Approve a pending workflow gate                    |
+| `codeclaw reject <runId>`    | Reject a pending workflow gate                     |
+| `codeclaw export <runId>`    | Export run artifacts                               |
+| `codeclaw ui`                | Start the local web UI server                      |
+| `codeclaw memory status`     | Show runtime memory status                         |
+| `codeclaw memory index`      | Re-index runtime memory files into SQLite          |
+| `codeclaw config set/get`    | Manage configuration                               |
 
 ## Local Web UI
 
@@ -84,27 +135,7 @@ This starts a Fastify server (default `http://127.0.0.1:4317`) serving the React
 - **Settings** — configure project-level settings
 - **Prompt Templates** — view and edit agent prompt templates
 
-## Example Workflow
-
-```bash
-# Initialize in your project directory
-codeclaw init
-
-# Check configuration
-codeclaw doctor
-
-# Run a workflow
-codeclaw run "Add a user login page with email and password authentication" --title "User Login"
-
-# List all runs
-codeclaw list
-
-# View a specific run
-codeclaw show run_20260623_120000_user-login
-
-# Start the web UI
-codeclaw ui --open
-```
+## Artifacts
 
 After running, artifacts are written to `.codeclaw/runs/<runId>/` and include:
 
@@ -117,21 +148,105 @@ After running, artifacts are written to `.codeclaw/runs/<runId>/` and include:
 - `tasks/task-breakdown.md`
 - `tests/test-matrix.md`
 - `report/final-report.md`
+- `coding/implementation-prompt.md` (when coding is enabled)
+- `opencode-execution-report.md` (when OpenCode is used)
+
+## Supported AI Backends
+
+### Planning & Reasoning (AgentBackend)
+
+- **OpenAI-compatible** — any API compatible with OpenAI's chat completions endpoint
+- **Mock** — deterministic mock for testing (no API key required)
+
+### Code Execution (CodingAgentAdapter)
+
+- **OpenCode CLI** — requires `opencode` on PATH
+- **Claude Code CLI** — requires `claude` on PATH
+- **Codex CLI** — requires `codex` on PATH
+- **Gemini CLI** — requires `gemini` on PATH
+- **Aider** — requires `aider` on PATH
+
+### Deterministic Fallback
+
+If no AI backend is configured, all agents use built-in deterministic templates. No AI calls are made, and the system works fully offline.
+
+## Security
+
+- **Never store API keys or tokens in config.json** — use environment variables only
+- API keys are read from `CODECLAW_OPENAI_API_KEY` and similar env vars
+- Secrets are redacted from logs, artifacts, and reports
+- Code execution requires explicit user approval
+- See `.env.example` for required environment variables
+- See `docs/SECURITY.md` for full security guide
+
+## Example Workflow
+
+```bash
+# Initialize in your project directory
+codeclaw init
+
+# Check configuration
+codeclaw doctor
+
+# Run a full docs workflow
+codeclaw run "Add a user login page with email and password authentication" --title "User Login"
+
+# Generate implementation prompt for a coding agent
+codeclaw code --run <runId>
+
+# Generate the final report
+codeclaw report --run <runId>
+
+# Export run artifacts
+codeclaw export <runId> --format zip
+```
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+
+# Run tests
+pnpm test
+
+# Run lint
+pnpm lint
+
+# Run typecheck
+pnpm typecheck
+
+# Run all quality checks
+pnpm quality
+```
 
 ## Current Limitations
 
-- **Docs-only only** — only the `docs-only` workflow mode is implemented
-- **No AI calls** — all agent outputs are deterministic template renderings
+- **Docs-only default mode** — assisted and semi-auto workflows exist but require CLI AI tool configuration
 - **No cloud backend** — everything runs locally with SQLite storage
 - **No authentication** — no login, no user management
-- **No external integrations** — no Jira, Slack, or GitHub sync
-- **Single project** — one `.codeclaw` directory per working directory
+- **No external integrations** — no Jira, Slack, or GitHub sync (planned)
+- **Single project** — one `.codeclaw` directory per working directory (multi-project planned)
+- **No web diff viewer** — git diff is available on CLI only (planned)
+- **No live workflow progress in web UI** — progress events are emitted but not streamed to UI (planned)
 
-## Roadmap
+## Roadmap Highlights
 
-- [ ] Real AI integration (LLM-powered agents)
-- [ ] Semi-auto and multi-agent workflow modes
-- [ ] Assisted coding mode with file generation
-- [ ] Web UI dashboard improvements
-- [ ] Cloud backend with team collaboration
+- [x] Docs-only workflow (deterministic templates)
+- [x] Assisted workflow mode (implementation prompt generation)
+- [x] Semi-auto workflow mode (AI CLI code execution)
+- [x] AgentBackend abstraction (OpenAI-compatible + Mock)
+- [x] OpenCode CLI adapter
+- [x] Claude Code, Codex, Gemini CLI, Aider adapters
+- [x] Approval gates before code execution
+- [x] Secret redaction utility
+- [x] Persistent step-level execution tracking
+- [ ] All agents using AgentBackend (currently BA and Architect only)
+- [ ] Ollama/local LLM support
+- [ ] Multi-project/workspace support
+- [ ] Live workflow progress in web UI
 - [ ] Jira / Slack / GitHub integration
+- [ ] Web diff viewer

@@ -5,8 +5,8 @@
 Prettier enforces consistent code style. Configuration in `.prettierrc`.
 
 ```bash
-pnpm format        # Auto-fix formatting
-pnpm format:check  # Check formatting only
+pnpm format        # Auto-fix formatting (writes files in place)
+pnpm format:check  # Check formatting only (exits 1 if unformatted)
 ```
 
 ## Linting
