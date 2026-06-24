@@ -1,8 +1,12 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { configSchema } from "@aiteam/shared";
-import type { ApprovalGate, RunStatus } from "@aiteam/shared";
-import { runWorkflowWithGates } from "@aiteam/core";
+import type { ApprovalGate, RunStatus, SlackIntegrationConfig } from "@aiteam/shared";
+import {
+  runWorkflowWithGates,
+  continueSemiAutoWorkflow,
+  continueAfterRiskyFileApproval,
+} from "@aiteam/core";
 import {
   openDatabase,
   initializeSchema,
@@ -36,13 +40,17 @@ export async function resumeCommand(runId: string): Promise<void> {
 
   const approvalRepo = createApprovalRepository(db);
 
-  let gateToCheck: ApprovalGate;
+  let gateToCheck: ApprovalGate | undefined;
   if (run.status === "WAITING_FOR_SCOPE_APPROVAL") {
     gateToCheck = "SCOPE";
   } else if (run.status === "WAITING_FOR_REQUIREMENT_APPROVAL") {
     gateToCheck = "REQUIREMENT";
   } else if (run.status === "WAITING_FOR_PLAN_APPROVAL") {
     gateToCheck = "PLAN";
+  } else if (run.status === "WAITING_FOR_CODE_APPROVAL") {
+    gateToCheck = "CODE_GENERATION";
+  } else if (run.status === "WAITING_FOR_RISKY_FILE_APPROVAL") {
+    gateToCheck = "RISKY_FILE";
   } else {
     console.log(`⚠️ Run ${runId} is not waiting for approval. Current status: ${run.status}`);
     db.close();
@@ -66,6 +74,96 @@ export async function resumeCommand(runId: string): Promise<void> {
   const memoryStatus = await getMemoryStatus(process.cwd());
   const templateDir = join(aiTeamDir, "prompts");
 
+  console.log(`▶️ Resuming run ${runId} after ${gateToCheck} approval...`);
+
+  if (gateToCheck === "CODE_GENERATION") {
+    const result = await continueSemiAutoWorkflow({
+      runId,
+      requirement: run.rawRequirement,
+      projectRoot: process.cwd(),
+      selectedAgent: "claude",
+      memoryContext: memoryStatus.exists
+        ? {
+            projectMemoryCount: memoryStatus.projectMemoryCount,
+            decisionMemoryCount: memoryStatus.decisionMemoryCount,
+            agentMemoryCount: memoryStatus.agentMemoryCount,
+          }
+        : undefined,
+      templateDir,
+      agentMapping: config.agents,
+      cliConfigs: config.cli,
+      safetyPolicy: {
+        denyFiles: config.safety.denyFiles,
+        warnFiles: config.safety.warnFiles,
+        denyCommands: config.safety.denyCommands,
+        maxIterations: config.safety.maxIterations,
+        commandTimeoutSeconds: config.safety.commandTimeoutSeconds,
+      },
+      commandTimeoutSeconds: config.safety.commandTimeoutSeconds,
+      slackConfig: config.integrations.slack as SlackIntegrationConfig,
+      testCommands: config.commands,
+      skipTests: false,
+      maxIterations: config.safety.maxIterations,
+    });
+
+    if (memoryStatus.exists) {
+      await addRunMemory(process.cwd(), runId, run.title, run.rawRequirement);
+    }
+
+    runRepo.updateStatus(runId, result.status as RunStatus);
+
+    if (result.pendingGate) {
+      console.log(`⏸️ ${result.pendingGate.summary}`);
+      console.log(`   Run: aiteam approve ${runId} --gate ${result.pendingGate.gate}`);
+    } else {
+      console.log(`\n🚀 Run completed: ${runId}`);
+      console.log(`   Status: ${result.status}`);
+    }
+
+    db.close();
+    return;
+  }
+
+  if (gateToCheck === "RISKY_FILE") {
+    const result = await continueAfterRiskyFileApproval({
+      runId,
+      requirement: run.rawRequirement,
+      projectRoot: process.cwd(),
+      selectedAgent: "claude",
+      memoryContext: memoryStatus.exists
+        ? {
+            projectMemoryCount: memoryStatus.projectMemoryCount,
+            decisionMemoryCount: memoryStatus.decisionMemoryCount,
+            agentMemoryCount: memoryStatus.agentMemoryCount,
+          }
+        : undefined,
+      templateDir,
+      agentMapping: config.agents,
+      cliConfigs: config.cli,
+      slackConfig: config.integrations.slack as SlackIntegrationConfig,
+      testCommands: config.commands,
+      skipTests: false,
+      maxIterations: config.safety.maxIterations,
+    });
+
+    if (memoryStatus.exists) {
+      await addRunMemory(process.cwd(), runId, run.title, run.rawRequirement);
+    }
+
+    runRepo.updateStatus(runId, result.status as RunStatus);
+
+    if (result.pendingGate) {
+      console.log(`⏸️ ${result.pendingGate.summary}`);
+      console.log(`   Run: aiteam approve ${runId} --gate ${result.pendingGate.gate}`);
+    } else {
+      console.log(`\n🚀 Run completed: ${runId}`);
+      console.log(`   Status: ${result.status}`);
+    }
+
+    db.close();
+    return;
+  }
+
   const workflowInput = {
     requirement: run.rawRequirement,
     projectRoot: process.cwd(),
@@ -81,8 +179,6 @@ export async function resumeCommand(runId: string): Promise<void> {
     cliConfigs: config.cli,
     approvedGate: gateToCheck,
   };
-
-  console.log(`▶️ Resuming run ${runId} after ${gateToCheck} approval...`);
 
   const result = await runWorkflowWithGates(workflowInput);
 

@@ -23,6 +23,10 @@ async function promptConfirm(message: string): Promise<boolean> {
   return answer.toLowerCase() === "y" || answer.toLowerCase() === "yes";
 }
 
+function createGateApprovalId(runId: string): string {
+  return `${runId}_approval_rollback`;
+}
+
 function getGitChangedFiles(workingDir: string): string[] {
   try {
     const diffOutput = execSync("git diff --name-only", { cwd: workingDir, encoding: "utf-8" });
@@ -146,29 +150,52 @@ export async function rollbackCommand(runId: string, options: RollbackOptions): 
   console.log(diffContent || "  (no diff content)");
   console.log("");
 
-  db.close();
-
   if (options.dryRun) {
     console.log("  Dry run complete. Use without --dry-run to roll back.\n");
+    db.close();
     return;
   }
 
-  if (!options.yes) {
-    const rollbackGate: ApprovalGate = "ROLLBACK";
-    const existingApproval = approvalRepo.findByRunIdAndGate(runId, rollbackGate);
-    if (existingApproval?.status === "APPROVED") {
-      console.log("  ✅ ROLLBACK gate already approved.\n");
+  const rollbackGate: ApprovalGate = "ROLLBACK";
+  const existingApproval = approvalRepo.findByRunIdAndGate(runId, rollbackGate);
+
+  if (existingApproval?.status !== "APPROVED") {
+    const approvalId = createGateApprovalId(runId);
+
+    if (!existingApproval) {
+      approvalRepo.create({
+        id: approvalId,
+        runId,
+        gate: rollbackGate,
+        status: "PENDING",
+      });
+    }
+
+    if (options.yes) {
+      approvalRepo.updateStatus(approvalId, "APPROVED");
+      console.log("  ✅ ROLLBACK gate auto-approved (--yes).\n");
     } else {
+      console.log(`  ⏸️  ROLLBACK approval gate created for run ${runId}.`);
+      console.log(`  To approve: aiteam approve ${runId} --gate ROLLBACK`);
+      console.log(`  To reject:  aiteam reject ${runId} --gate ROLLBACK`);
+      console.log("");
+
       const confirmed = await promptConfirm(
         `⚠️  Roll back ${String(changedFiles.length)} file(s) for run ${runId}?`,
       );
       if (!confirmed) {
+        approvalRepo.updateStatus(approvalId, "REJECTED");
         console.log("  Rollback cancelled.\n");
+        db.close();
         process.exit(0);
       }
+      approvalRepo.updateStatus(approvalId, "APPROVED");
     }
+  } else {
+    console.log("  ✅ ROLLBACK gate already approved.\n");
   }
 
+  db.close();
   performRollback(workingDir, changedFiles);
   console.log(`\n✅ Rolled back ${String(changedFiles.length)} file(s) for run ${runId}.\n`);
 }

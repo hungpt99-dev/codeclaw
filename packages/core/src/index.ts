@@ -27,7 +27,11 @@ export type {
   AssistedWorkflowInput,
   AssistedWorkflowOutput,
 } from "./workflows/assistedWorkflow.js";
-export { runSemiAutoWorkflow, continueSemiAutoWorkflow } from "./workflows/semiAutoWorkflow.js";
+export {
+  runSemiAutoWorkflow,
+  continueSemiAutoWorkflow,
+  continueAfterRiskyFileApproval,
+} from "./workflows/semiAutoWorkflow.js";
 export type {
   SemiAutoWorkflowInput,
   SemiAutoWorkflowOutput,
@@ -63,7 +67,8 @@ export {
   checkCommandSafety,
   defaultSafetyPolicy,
 } from "./policies/safetyPolicy.js";
-export type { SafetyPolicy, FileSafetyResult } from "./policies/safetyPolicy.js";
+export type { SafetyPolicy, FileSafetyResult, FileRiskResult } from "./policies/safetyPolicy.js";
+export { checkFileRisk } from "./policies/safetyPolicy.js";
 export { runReview, loadAndReview, persistReview } from "./review/reviewService.js";
 export type { ReviewInput, ReviewOutput, ReviewOptions } from "./review/reviewService.js";
 export { generateDeterministicReview } from "./review/deterministicReview.js";

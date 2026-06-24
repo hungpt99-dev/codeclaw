@@ -7,6 +7,7 @@ import type {
   TestCommandResult,
 } from "@aiteam/shared";
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
+import type { ArtifactPaths } from "../artifacts/artifactWriter.js";
 import { runBaAgent } from "../agents/baAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
 import { runPmAgent } from "../agents/pmAgent.js";
@@ -393,6 +394,106 @@ export async function runSemiAutoWorkflow(
   artifacts.push(paths.diffPatchPath);
   artifacts.push(paths.changedFilesPath);
 
+  if (
+    codeResult.fileSafety &&
+    (codeResult.fileSafety.blocked.length > 0 || codeResult.fileSafety.warnings.length > 0)
+  ) {
+    const blockedCount = codeResult.fileSafety.blocked.length;
+    const warnCount = codeResult.fileSafety.warnings.length;
+    const parts: string[] = [];
+    if (blockedCount > 0) parts.push(`${String(blockedCount)} blocked`);
+    if (warnCount > 0) parts.push(`${String(warnCount)} warning`);
+    return {
+      runId,
+      status: "WAITING_FOR_RISKY_FILE_APPROVAL",
+      artifacts,
+      createdAt,
+      completedAt: nowIso(),
+      codeGenerationResult: codeResult,
+      pendingGate: {
+        gate: "RISKY_FILE",
+        status: "PENDING",
+        summary: `Code modified ${parts.join(" and ")} file(s). Review before continuing.`,
+        artifacts: [paths.changedFilesPath, paths.diffPatchPath],
+      },
+      memoryUsed: input.memoryContext
+        ? {
+            projectMemoryFiles: input.memoryContext.projectMemoryCount,
+            decisionMemoryFiles: input.memoryContext.decisionMemoryCount,
+            agentMemoryFiles: input.memoryContext.agentMemoryCount,
+          }
+        : undefined,
+      testRunResult: undefined,
+      fixLoopResult: undefined,
+    };
+  }
+
+  const devTool = developerTool;
+  return runPostCodePipeline({
+    runId,
+    paths,
+    codeResult,
+    input,
+    clarifiedRequirement: baOutput.clarifiedRequirement,
+    businessRules: baOutput.businessRules,
+    acceptanceCriteria: baOutput.acceptanceCriteria,
+    technicalDesign: architectOutput.technicalDesign,
+    apiDesign: architectOutput.apiDesign,
+    dbDesign: architectOutput.dbDesign,
+    taskBreakdownMd: pmOutput.taskBreakdownMd,
+    testMatrixMd: qaOutput.testMatrixMd,
+    implementationPrompt: developerOutput.implementationPrompt,
+    devTool: devTool
+      ? { tool: devTool.tool, command: devTool.command, timeoutSeconds: devTool.timeoutSeconds }
+      : undefined,
+    reporterTool,
+    templateDir,
+  });
+}
+
+interface PostCodeContext {
+  runId: string;
+  paths: ArtifactPaths;
+  codeResult: CodeGenResult;
+  input: SemiAutoWorkflowInput;
+  clarifiedRequirement: string;
+  businessRules: string;
+  acceptanceCriteria: string;
+  technicalDesign: string;
+  apiDesign: string;
+  dbDesign: string;
+  taskBreakdownMd: string;
+  testMatrixMd: string;
+  implementationPrompt: string;
+  devTool: AiToolConfig | undefined;
+  reporterTool: AiToolConfig | undefined;
+  templateDir: string | undefined;
+}
+
+async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkflowOutput> {
+  const {
+    runId,
+    paths,
+    codeResult,
+    input,
+    clarifiedRequirement,
+    businessRules,
+    acceptanceCriteria,
+    technicalDesign,
+    apiDesign,
+    dbDesign,
+    taskBreakdownMd,
+    testMatrixMd,
+    implementationPrompt,
+    devTool,
+    reporterTool,
+    templateDir,
+  } = ctx;
+  const artifacts: string[] = [];
+  artifacts.push(paths.agentLogPath);
+  artifacts.push(paths.diffPatchPath);
+  artifacts.push(paths.changedFilesPath);
+
   let testRunResult: SemiAutoWorkflowOutput["testRunResult"];
   let finalStatus = codeResult.success ? "CODE_GENERATED" : "CODE_FAILED";
 
@@ -424,7 +525,6 @@ export async function runSemiAutoWorkflow(
         testRun,
         join(paths.runDir, "tests"),
       );
-
       artifacts.push(testResultPath);
       artifacts.push(failedTestsPath);
 
@@ -440,7 +540,6 @@ export async function runSemiAutoWorkflow(
           stderrPath: r.stderrPath,
         })),
       };
-
       finalStatus = testRun.overallStatus === "PASSED" ? "TEST_PASSED" : "TEST_FAILED";
     }
   }
@@ -489,15 +588,11 @@ export async function runSemiAutoWorkflow(
             timeoutSeconds: timeout,
           });
 
-        const aiTool = developerTool
-          ? {
-              tool: developerTool.tool,
-              command: developerTool.command,
-              timeoutSeconds: developerTool.timeoutSeconds,
-            }
+        const aiTool = devTool
+          ? { tool: devTool.tool, command: devTool.command, timeoutSeconds: devTool.timeoutSeconds }
           : { tool: "claude", command: "claude", timeoutSeconds: 900 };
 
-        fixLoopResult = await runFixLoop(runId, developerOutput.implementationPrompt, {
+        fixLoopResult = await runFixLoop(runId, implementationPrompt, {
           maxIterations: input.maxIterations ?? 3,
           testCommands: cmds,
           aiTool,
@@ -533,7 +628,6 @@ export async function runSemiAutoWorkflow(
   const traceability = await generateTraceability(runId, paths);
   await writeArtifact(paths.traceabilityMd, traceabilityToMarkdown(traceability));
   artifacts.push(paths.traceabilityMd);
-
   await writeArtifact(paths.traceabilityJson, JSON.stringify(traceability, null, 2));
   artifacts.push(paths.traceabilityJson);
 
@@ -542,14 +636,14 @@ export async function runSemiAutoWorkflow(
   const reporterOutput = await runReporterAgent(
     {
       requirement: input.requirement,
-      clarifiedRequirement: baOutput.clarifiedRequirement,
-      businessRules: baOutput.businessRules,
-      acceptanceCriteria: baOutput.acceptanceCriteria,
-      technicalDesign: architectOutput.technicalDesign,
-      apiDesign: architectOutput.apiDesign,
-      dbDesign: architectOutput.dbDesign,
-      taskBreakdownMd: pmOutput.taskBreakdownMd,
-      testMatrixMd: qaOutput.testMatrixMd,
+      clarifiedRequirement,
+      businessRules,
+      acceptanceCriteria,
+      technicalDesign,
+      apiDesign,
+      dbDesign,
+      taskBreakdownMd,
+      testMatrixMd,
       traceabilitySection,
     },
     { templateDir, aiTool: reporterTool },
@@ -589,13 +683,85 @@ export async function runSemiAutoWorkflow(
     runId,
     status: finalStatus,
     artifacts,
-    createdAt,
+    createdAt: nowIso(),
     completedAt: nowIso(),
     codeGenerationResult: codeResult,
     memoryUsed,
     testRunResult,
     fixLoopResult,
   };
+}
+
+export async function continueAfterRiskyFileApproval(
+  input: SemiAutoWorkflowInput & { runId: string },
+): Promise<SemiAutoWorkflowOutput> {
+  const paths = await createArtifactDirs(input.runId);
+  const { readFile: rf } = await import("node:fs/promises");
+
+  const implementationPrompt = await rf(paths.implementationPromptPath, "utf-8").catch(() => "");
+
+  let changedFiles: string[] = [];
+  try {
+    const raw = await rf(paths.changedFilesPath, "utf-8");
+    const parsed = JSON.parse(raw) as { files?: string[] };
+    changedFiles = parsed.files ?? [];
+  } catch {
+    changedFiles = [];
+  }
+
+  const codeResult: CodeGenResult = {
+    success: changedFiles.length > 0,
+    changedFiles,
+    diffPatchPath: paths.diffPatchPath,
+    agentLogPath: paths.agentLogPath,
+    fileSafety: undefined,
+  };
+
+  const clarifiedRequirement = await rf(
+    join(paths.requirementDir, "clarified-requirement.md"),
+    "utf-8",
+  ).catch(() => "");
+  const businessRules = await rf(join(paths.requirementDir, "business-rules.md"), "utf-8").catch(
+    () => "",
+  );
+  const acceptanceCriteria = await rf(
+    join(paths.requirementDir, "acceptance-criteria.md"),
+    "utf-8",
+  ).catch(() => "");
+  const technicalDesign = await rf(join(paths.designDir, "technical-design.md"), "utf-8").catch(
+    () => "",
+  );
+  const apiDesign = await rf(join(paths.designDir, "api-design.md"), "utf-8").catch(() => "");
+  const dbDesign = await rf(join(paths.designDir, "db-design.md"), "utf-8").catch(() => "");
+  const taskBreakdownMd = await rf(join(paths.tasksDir, "task-breakdown.md"), "utf-8").catch(
+    () => "",
+  );
+  const testMatrixMd = await rf(join(paths.testsDir, "test-matrix.md"), "utf-8").catch(() => "");
+
+  return runPostCodePipeline({
+    runId: input.runId,
+    paths,
+    codeResult,
+    input,
+    clarifiedRequirement,
+    businessRules,
+    acceptanceCriteria,
+    technicalDesign,
+    apiDesign,
+    dbDesign,
+    taskBreakdownMd,
+    testMatrixMd,
+    implementationPrompt,
+    devTool:
+      input.agentMapping && input.cliConfigs
+        ? getAiToolConfig("DEVELOPER", input.agentMapping, input.cliConfigs)
+        : undefined,
+    reporterTool:
+      input.agentMapping && input.cliConfigs
+        ? getAiToolConfig("REPORTER", input.agentMapping, input.cliConfigs)
+        : undefined,
+    templateDir: input.templateDir,
+  });
 }
 
 export async function continueSemiAutoWorkflow(
@@ -630,6 +796,34 @@ export async function continueSemiAutoWorkflow(
         agentMemoryFiles: input.memoryContext.agentMemoryCount,
       }
     : undefined;
+
+  if (
+    codeResult.fileSafety &&
+    (codeResult.fileSafety.blocked.length > 0 || codeResult.fileSafety.warnings.length > 0)
+  ) {
+    const blockedCount = codeResult.fileSafety.blocked.length;
+    const warnCount = codeResult.fileSafety.warnings.length;
+    const parts: string[] = [];
+    if (blockedCount > 0) parts.push(`${String(blockedCount)} blocked`);
+    if (warnCount > 0) parts.push(`${String(warnCount)} warning`);
+    return {
+      runId: input.runId,
+      status: "WAITING_FOR_RISKY_FILE_APPROVAL",
+      artifacts,
+      createdAt: nowIso(),
+      completedAt: nowIso(),
+      codeGenerationResult: codeResult,
+      pendingGate: {
+        gate: "RISKY_FILE",
+        status: "PENDING",
+        summary: `Code modified ${parts.join(" and ")} file(s). Review before continuing.`,
+        artifacts: [paths.changedFilesPath, paths.diffPatchPath],
+      },
+      memoryUsed,
+      testRunResult: undefined,
+      fixLoopResult: undefined,
+    };
+  }
 
   return {
     runId: input.runId,

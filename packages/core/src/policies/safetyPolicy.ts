@@ -22,6 +22,10 @@ export interface FileSafetyResult {
   safe: string[];
 }
 
+export interface FileRiskResult extends FileSafetyResult {
+  requiresApproval: boolean;
+}
+
 export function checkFileSafety(changedFiles: string[], policy: SafetyPolicy): FileSafetyResult {
   const blocked: string[] = [];
   const warnings: string[] = [];
@@ -44,6 +48,14 @@ export function checkFileSafety(changedFiles: string[], policy: SafetyPolicy): F
   }
 
   return { blocked, warnings, safe };
+}
+
+export function checkFileRisk(changedFiles: string[], policy: SafetyPolicy): FileRiskResult {
+  const result = checkFileSafety(changedFiles, policy);
+  return {
+    ...result,
+    requiresApproval: result.blocked.length > 0 || result.warnings.length > 0,
+  };
 }
 
 export function checkCommandSafety(command: string, denyCommands: string[]): boolean {

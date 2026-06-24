@@ -10,6 +10,7 @@ import {
 } from "@aiteam/adapters";
 import type { JiraConfig } from "@aiteam/adapters";
 import { getArtifactPaths } from "@aiteam/core";
+import { openDatabase, initializeSchema, createApprovalRepository } from "@aiteam/storage";
 
 function loadJiraConfig(): JiraConfig | null {
   try {
@@ -124,12 +125,41 @@ export async function jiraCreateCommand(options: {
     return;
   }
 
-  if (!options.approve) {
-    console.log("\n⚠️  Approval required: Creating Jira issues will modify your Jira project.");
-    console.log(`   Project: ${config.projectKey}`);
-    console.log(`   Site: ${config.siteUrl ?? "?"}`);
-    console.log("   Run: --approve to skip this warning.\n");
-    return;
+  const safetyConfig = loadSafetyConfig();
+  const requireApproval = safetyConfig?.requireApprovalBeforeExternalUpdate ?? true;
+  const autoApprove = options.approve ?? !requireApproval;
+
+  if (!autoApprove) {
+    const aiTeamDir = join(process.cwd(), ".ai-team");
+    const db = openDatabase(join(aiTeamDir, "database.sqlite"));
+    initializeSchema(db);
+    const approvalRepo = createApprovalRepository(db);
+
+    const approvalId = `${runId}_approval_external_update`;
+    const existing = approvalRepo.findByRunIdAndGate(runId, "EXTERNAL_UPDATE");
+
+    if (!existing) {
+      approvalRepo.create({
+        id: approvalId,
+        runId,
+        gate: "EXTERNAL_UPDATE",
+        status: "PENDING",
+      });
+    }
+
+    if (existing?.status === "APPROVED") {
+      console.log("  ✅ EXTERNAL_UPDATE gate already approved.\n");
+    } else {
+      console.log("\n⚠️  Approval required: Creating Jira issues will modify your Jira project.");
+      console.log(`   Project: ${config.projectKey}`);
+      console.log(`   Site: ${config.siteUrl ?? "?"}`);
+      console.log(`   To approve: aiteam approve ${runId} --gate EXTERNAL_UPDATE`);
+      console.log(`   To reject:  aiteam reject ${runId} --gate EXTERNAL_UPDATE\n`);
+      db.close();
+      return;
+    }
+
+    db.close();
   }
 
   const paths = getArtifactPaths(runId);
@@ -165,6 +195,18 @@ export async function jiraCreateCommand(options: {
   console.log(`\nDone: ${String(successCount)} created, ${String(failCount)} failed`);
 }
 
+function loadSafetyConfig(): { requireApprovalBeforeExternalUpdate?: boolean } | null {
+  try {
+    const configPath = join(process.cwd(), ".ai-team", "config.json");
+    const rawContent = readFileSync(configPath, "utf-8");
+    const raw: unknown = JSON.parse(rawContent);
+    const parsed = configSchema.parse(raw);
+    return parsed.safety;
+  } catch {
+    return null;
+  }
+}
+
 export async function jiraCommentCommand(options: {
   run?: string;
   issue?: string;
@@ -184,11 +226,38 @@ export async function jiraCommentCommand(options: {
     return;
   }
 
-  if (!options.approve) {
-    console.log("\n⚠️  Approval required: Adding Jira comment will modify your Jira project.");
-    console.log(`   Issue: ${issueKey}`);
-    console.log("   Run: --approve to skip this warning.\n");
-    return;
+  const safetyConfig = loadSafetyConfig();
+  const requireApproval = safetyConfig?.requireApprovalBeforeExternalUpdate ?? true;
+  const autoApprove = options.approve ?? !requireApproval;
+
+  if (!autoApprove) {
+    const aiTeamDir = join(process.cwd(), ".ai-team");
+    const db = openDatabase(join(aiTeamDir, "database.sqlite"));
+    initializeSchema(db);
+    const approvalRepo = createApprovalRepository(db);
+
+    const approvalId = `${runId}_approval_external_update`;
+    const existing = approvalRepo.findByRunIdAndGate(runId, "EXTERNAL_UPDATE");
+
+    if (!existing) {
+      approvalRepo.create({
+        id: approvalId,
+        runId,
+        gate: "EXTERNAL_UPDATE",
+        status: "PENDING",
+      });
+    }
+
+    if (existing?.status !== "APPROVED") {
+      console.log("\n⚠️  Approval required: Adding Jira comment will modify your Jira project.");
+      console.log(`   Issue: ${issueKey}`);
+      console.log(`   To approve: aiteam approve ${runId} --gate EXTERNAL_UPDATE`);
+      console.log(`   To reject:  aiteam reject ${runId} --gate EXTERNAL_UPDATE\n`);
+      db.close();
+      return;
+    }
+
+    db.close();
   }
 
   const paths = getArtifactPaths(runId);

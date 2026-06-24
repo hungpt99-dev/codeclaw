@@ -16,6 +16,7 @@ export const RunStatus = {
   PLAN_GENERATED: "PLAN_GENERATED",
   WAITING_FOR_PLAN_APPROVAL: "WAITING_FOR_PLAN_APPROVAL",
   WAITING_FOR_CODE_APPROVAL: "WAITING_FOR_CODE_APPROVAL",
+  WAITING_FOR_RISKY_FILE_APPROVAL: "WAITING_FOR_RISKY_FILE_APPROVAL",
   CODING: "CODING",
   CODE_GENERATED: "CODE_GENERATED",
   CODE_FAILED: "CODE_FAILED",
@@ -268,6 +269,7 @@ export interface AiTeamConfig {
   safety: {
     requireApprovalBeforeCode: boolean;
     requireApprovalBeforeCommit: boolean;
+    requireApprovalBeforeExternalUpdate: boolean;
     maxIterations: number;
     commandTimeoutSeconds: number;
     denyFiles: string[];

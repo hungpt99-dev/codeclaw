@@ -6,6 +6,7 @@ import { checkStatus, testConnection, createPR, readCIRun, readPRStatus } from "
 import { generatePRSummary } from "@aiteam/core";
 import { getArtifactPaths } from "@aiteam/core";
 import { configSchema } from "@aiteam/shared";
+import { openDatabase, initializeSchema, createApprovalRepository } from "@aiteam/storage";
 
 interface GitHubOptions {
   run?: string;
@@ -20,6 +21,10 @@ async function loadConfig(): Promise<unknown> {
   const configPath = join(process.cwd(), ".ai-team", "config.json");
   const raw = await readFile(configPath, "utf-8");
   return JSON.parse(raw);
+}
+
+function createGateApprovalId(runId: string): string {
+  return `${runId}_approval_external_update`;
 }
 
 export async function githubStatusCommand(): Promise<void> {
@@ -139,18 +144,47 @@ async function githubPRCreateCommand(options: GitHubOptions): Promise<void> {
     }
     console.log("──────────────────────────────────────────────────\n");
 
-    if (!config.safety.requireApprovalBeforeCommit && !options.approve) {
-      console.log("Auto-approval is disabled via config. Skipping approval prompt.\n");
-    }
-
-    const autoApprove = options.approve ?? !config.safety.requireApprovalBeforeCommit;
+    const requireApproval = config.safety.requireApprovalBeforeExternalUpdate;
+    const autoApprove = options.approve ?? !requireApproval;
 
     if (!autoApprove) {
-      const approved = await promptForApproval();
-      if (!approved) {
-        console.log("PR creation cancelled.\n");
-        return;
+      const aiTeamDir = join(process.cwd(), ".ai-team");
+      const db = openDatabase(join(aiTeamDir, "database.sqlite"));
+      initializeSchema(db);
+      const approvalRepo = createApprovalRepository(db);
+
+      const approvalId = createGateApprovalId(runId);
+      const existing = approvalRepo.findByRunIdAndGate(runId, "EXTERNAL_UPDATE");
+
+      if (!existing) {
+        approvalRepo.create({
+          id: approvalId,
+          runId,
+          gate: "EXTERNAL_UPDATE",
+          status: "PENDING",
+        });
       }
+
+      if (existing?.status === "APPROVED") {
+        console.log("  ✅ EXTERNAL_UPDATE gate already approved.\n");
+      } else {
+        console.log("  ⚠️  Creating a GitHub PR requires approval.");
+        console.log(`  Gate: EXTERNAL_UPDATE`);
+        console.log(`  To approve: aiteam approve ${runId} --gate EXTERNAL_UPDATE`);
+        console.log(`  To reject:  aiteam reject ${runId} --gate EXTERNAL_UPDATE\n`);
+
+        const approved = await promptForApproval();
+        if (!approved) {
+          const pendingId = existing?.id ?? approvalId;
+          approvalRepo.updateStatus(pendingId, "REJECTED");
+          console.log("PR creation cancelled.\n");
+          db.close();
+          return;
+        }
+        approvalRepo.updateStatus(existing?.id ?? approvalId, "APPROVED");
+      }
+
+      db.close();
     }
 
     const result = await createPR({

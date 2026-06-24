@@ -60,6 +60,7 @@ export const configSchema = z.object({
   safety: z.object({
     requireApprovalBeforeCode: z.boolean(),
     requireApprovalBeforeCommit: z.boolean(),
+    requireApprovalBeforeExternalUpdate: z.boolean(),
     maxIterations: z.number().int().positive(),
     commandTimeoutSeconds: z.number().int().positive(),
     denyFiles: z.array(z.string()),
@@ -133,6 +134,7 @@ export const defaultConfig: Config = {
   safety: {
     requireApprovalBeforeCode: true,
     requireApprovalBeforeCommit: true,
+    requireApprovalBeforeExternalUpdate: true,
     maxIterations: 3,
     commandTimeoutSeconds: 900,
     denyFiles: [".env", ".env.*", "*.pem", "*.key", "credentials.json"],

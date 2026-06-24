@@ -5,6 +5,7 @@ import { getSlackStatus, testSlackConnection, notifySlack } from "@aiteam/adapte
 import type { SlackConfig } from "@aiteam/adapters";
 import { getArtifactPaths, buildReportReadyMessage } from "@aiteam/core";
 import type { SlackMessageInput } from "@aiteam/core";
+import { openDatabase, initializeSchema, createApprovalRepository } from "@aiteam/storage";
 
 function loadSlackConfig(): SlackConfig | null {
   try {
@@ -56,6 +57,18 @@ export async function slackTestCommand(): Promise<void> {
   }
 }
 
+function loadSafetyConfig(): { requireApprovalBeforeExternalUpdate?: boolean } | null {
+  try {
+    const configPath = join(process.cwd(), ".ai-team", "config.json");
+    const rawContent = readFileSync(configPath, "utf-8");
+    const raw: unknown = JSON.parse(rawContent);
+    const parsed = configSchema.parse(raw);
+    return parsed.safety;
+  } catch {
+    return null;
+  }
+}
+
 export async function slackPostCommand(options: {
   run?: string;
   event?: string;
@@ -104,13 +117,40 @@ export async function slackPostCommand(options: {
   if (event === "report_ready") {
     const text = buildReportReadyMessage(input);
 
-    if (!options.approve) {
-      console.log("\n⚠️  Approval required: Posting to Slack will send a message to your Slack.");
-      console.log(`   Channel: #${config.channelId}`);
-      console.log(`   Message preview:\n`);
-      console.log(text);
-      console.log("\n   Use --approve to skip this warning.\n");
-      return;
+    const safetyConfig = loadSafetyConfig();
+    const requireApproval = safetyConfig?.requireApprovalBeforeExternalUpdate ?? true;
+    const autoApprove = options.approve ?? !requireApproval;
+
+    if (!autoApprove) {
+      const aiTeamDir = join(process.cwd(), ".ai-team");
+      const db = openDatabase(join(aiTeamDir, "database.sqlite"));
+      initializeSchema(db);
+      const approvalRepo = createApprovalRepository(db);
+
+      const approvalId = `${runId}_approval_external_update`;
+      const existing = approvalRepo.findByRunIdAndGate(runId, "EXTERNAL_UPDATE");
+
+      if (!existing) {
+        approvalRepo.create({
+          id: approvalId,
+          runId,
+          gate: "EXTERNAL_UPDATE",
+          status: "PENDING",
+        });
+      }
+
+      if (existing?.status !== "APPROVED") {
+        console.log("\n⚠️  Approval required: Posting to Slack will send a message to your Slack.");
+        console.log(`   Channel: #${config.channelId}`);
+        console.log(`   Message preview:\n`);
+        console.log(text);
+        console.log(`\n   To approve: aiteam approve ${runId} --gate EXTERNAL_UPDATE`);
+        console.log(`   To reject:  aiteam reject ${runId} --gate EXTERNAL_UPDATE\n`);
+        db.close();
+        return;
+      }
+
+      db.close();
     }
 
     const result = await notifySlack(config, event, text, true);

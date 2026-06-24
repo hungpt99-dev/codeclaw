@@ -200,6 +200,7 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
       | undefined;
 
     const validGates: ApprovalGate[] = [
+      "SCOPE",
       "REQUIREMENT",
       "PLAN",
       "CODE_GENERATION",
