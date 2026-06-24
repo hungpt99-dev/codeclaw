@@ -214,11 +214,15 @@ function generatePRBody(runId: string, artifacts: Record<string, string>): strin
 
 export async function createPR(summary: PRSummaryInput): Promise<PRSummaryResult> {
   try {
-    const options: { base?: string; draft?: boolean } = {};
-    if (summary.baseBranch !== undefined && summary.baseBranch !== "") {
-      options.base = summary.baseBranch;
+    const result = await createGhPR(
+      summary.title,
+      summary.body,
+      summary.baseBranch ?? "main",
+      "HEAD",
+    );
+    if (!result) {
+      return { success: false, error: "Failed to create PR: no result returned" };
     }
-    const result = await createGhPR(summary.title, summary.body, options);
     return {
       success: true,
       prUrl: result.url,
@@ -232,7 +236,7 @@ export async function createPR(summary: PRSummaryInput): Promise<PRSummaryResult
 }
 
 export async function readCIRun(): Promise<CIRunInfo[]> {
-  const runs = await getCIRuns();
+  const runs = await getCIRuns("", "");
   return runs.map((r) => ({
     workflow: r.name,
     status: r.status,
@@ -241,7 +245,7 @@ export async function readCIRun(): Promise<CIRunInfo[]> {
 }
 
 export async function readPRStatus(): Promise<PRInfo[]> {
-  const prs = await getGhPRStatus();
+  const prs = await getGhPRStatus("", "");
   return prs.map((p) => ({
     state: p.state,
     title: p.title,
