@@ -1,8 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { StatusBadge } from "../components/StatusBadge.js";
 import { MarkdownViewer } from "../components/MarkdownViewer.js";
 import { DiffViewer } from "../components/DiffViewer.js";
+import { WorkflowTimeline } from "../components/WorkflowTimeline.js";
+import { AgentActivityIndicator } from "../components/AgentActivityIndicator.js";
 import { api } from "../lib/api.js";
 import type {
   Run,
@@ -20,8 +22,10 @@ import type {
   ReviewOutput,
   ReviewArtifacts,
   FixLoopResult,
+  WorkflowProgressEvent,
 } from "../lib/types.js";
 import type { ReactElement } from "react";
+import type { TimelineStage } from "../components/WorkflowTimeline.js";
 
 const AGENT_FORMATS = [
   { value: "generic", label: "Generic" },
@@ -107,6 +111,10 @@ export function RunDetail(): ReactElement {
   const [exportLoading, setExportLoading] = useState(false);
   const [exportResult, setExportResult] = useState<string | null>(null);
 
+  const [progressEvents, setProgressEvents] = useState<WorkflowProgressEvent[]>([]);
+  const [progressConnected, setProgressConnected] = useState(false);
+  const progressCleanupRef = useRef<(() => void) | null>(null);
+
   const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
@@ -143,6 +151,55 @@ export function RunDetail(): ReactElement {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!id || !run) return;
+
+    const terminalStates = new Set([
+      "REPORT_GENERATED",
+      "FAILED",
+      "CANCELLED",
+      "CODE_GENERATED",
+      "CODE_FAILED",
+      "TEST_PASSED",
+      "TEST_FAILED",
+      "TEST_SKIPPED",
+      "REVIEW_PASSED",
+      "REVIEW_FAILED",
+    ]);
+
+    if (terminalStates.has(run.status)) {
+      progressCleanupRef.current?.();
+      progressCleanupRef.current = null;
+      setProgressConnected(false);
+      return;
+    }
+
+    const cleanup = api.subscribeToProgress(
+      id,
+      (event) => {
+        setProgressEvents((prev) => [...prev, event]);
+        if (event.type === "WORKFLOW_COMPLETED" || event.type === "ERROR") {
+          setTimeout(() => void load(), 500);
+        }
+        if (event.type === "ARTIFACT_GENERATED") {
+          setTimeout(() => void load(), 300);
+        }
+      },
+      () => {
+        setProgressConnected(false);
+        setTimeout(() => void load(), 2000);
+      },
+    );
+
+    progressCleanupRef.current = cleanup;
+    setProgressConnected(true);
+
+    return () => {
+      cleanup();
+      progressCleanupRef.current = null;
+    };
+  }, [id, run?.status, load]);
 
   const handleApprove = async (gate: string): Promise<void> => {
     if (!id) return;
@@ -439,6 +496,67 @@ export function RunDetail(): ReactElement {
           Created: {new Date(run.createdAt).toLocaleString()}
         </span>
       </div>
+
+      {progressConnected && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            {(() => {
+              const startedEvent = progressEvents.find((e) => e.type === "WORKFLOW_STARTED");
+              const stageNames = startedEvent?.stages ?? [];
+              const completedStages = new Set(
+                progressEvents
+                  .filter((e) => e.type === "STAGE_COMPLETED" && e.stage)
+                  .map((e) => e.stage),
+              );
+              let activeStage: string | null = null;
+              for (const event of progressEvents) {
+                if (event.type === "STAGE_STARTED" && event.stage) {
+                  activeStage = event.stage;
+                }
+              }
+              const timelineStages: TimelineStage[] = stageNames.map((name) => ({
+                id: name.replace(/\s+/g, "-").toLowerCase(),
+                label: name,
+                status: completedStages.has(name)
+                  ? "completed"
+                  : activeStage === name
+                    ? "active"
+                    : "pending",
+              }));
+              return <WorkflowTimeline stages={timelineStages} />;
+            })()}
+          </div>
+          <div>
+            {(() => {
+              const agentStarted = progressEvents
+                .filter((e) => e.type === "AGENT_STARTED" && e.agentRole)
+                .map((e) => e.agentRole);
+              const agentCompleted = new Set(
+                progressEvents
+                  .filter((e) => e.type === "AGENT_COMPLETED" && e.agentRole)
+                  .map((e) => e.agentRole),
+              );
+              const activeAgent =
+                agentStarted.length > 0
+                  ? (agentStarted.reverse().find((a) => a && !agentCompleted.has(a)) ?? null)
+                  : null;
+              const stages = progressEvents.filter((e) => e.type === "STAGE_COMPLETED").length;
+              const total =
+                progressEvents.find((e) => e.type === "WORKFLOW_STARTED")?.stages?.length ?? 0;
+              return activeAgent ? (
+                <AgentActivityIndicator
+                  agentRole={activeAgent}
+                  stage="Working..."
+                  completedStages={stages}
+                  totalStages={total}
+                />
+              ) : (
+                <div />
+              );
+            })()}
+          </div>
+        </div>
+      )}
 
       {showExportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">

@@ -26,6 +26,7 @@ import type {
   AiCliTestResult,
   StorageInfo,
   StorageCleanResult,
+  WorkflowProgressEvent,
 } from "./types.js";
 
 const BASE = "/api";
@@ -324,5 +325,26 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ runId, approve }),
     });
+  },
+
+  subscribeToProgress(
+    runId: string,
+    onEvent: (event: WorkflowProgressEvent) => void,
+    onError?: () => void,
+  ): () => void {
+    const eventSource = new EventSource(`${BASE}/runs/${runId}/progress`);
+
+    eventSource.onmessage = (e: MessageEvent) => {
+      const event = JSON.parse(e.data as string) as WorkflowProgressEvent;
+      onEvent(event);
+    };
+
+    eventSource.onerror = () => {
+      onError?.();
+    };
+
+    return () => {
+      eventSource.close();
+    };
   },
 };

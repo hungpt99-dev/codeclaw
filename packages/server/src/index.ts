@@ -8,6 +8,7 @@ import { registerRunsRoutes } from "./routes/runs.routes.js";
 import { registerArtifactRoutes } from "./routes/artifacts.routes.js";
 import { registerPromptRoutes } from "./routes/prompts.routes.js";
 import { registerIntegrationRoutes } from "./routes/integrations.routes.js";
+import { registerProgressRoutes } from "./routes/progress.routes.js";
 
 interface AppOptions {
   dbPath: string;
@@ -25,6 +26,7 @@ export function createApp(options: AppOptions): FastifyInstance {
   registerArtifactRoutes(app, db);
   registerPromptRoutes(app, options.promptsDir);
   registerIntegrationRoutes(app, db);
+  registerProgressRoutes(app);
 
   return app;
 }

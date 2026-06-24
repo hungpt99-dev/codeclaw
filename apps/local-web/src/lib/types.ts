@@ -238,6 +238,19 @@ export interface StorageCleanResult {
   freedBytes: number;
 }
 
+export interface WorkflowProgressEvent {
+  runId: string;
+  type: string;
+  stage?: string;
+  agentRole?: string;
+  artifactType?: string;
+  artifactPath?: string;
+  message: string;
+  timestamp: string;
+  status?: string;
+  stages?: string[];
+}
+
 export type DocArtifactType =
   | "clarified_requirement"
   | "business_rules"

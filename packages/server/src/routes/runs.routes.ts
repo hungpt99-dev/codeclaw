@@ -28,6 +28,7 @@ import {
   runTestsForRun,
   loadAndReview,
   persistReview,
+  emitWorkflowProgress,
 } from "@aiteam/core";
 
 interface ArtifactDef {
@@ -89,84 +90,150 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
 
     const isAssisted = mode === "assisted";
 
-    const workflowResult = isAssisted
-      ? await runAssistedWorkflow({
-          requirement: rawRequirement,
-          projectRoot: undefined,
-          memoryContext: undefined,
-        })
-      : await runDocsOnlyWorkflow({
-          requirement: rawRequirement,
-          projectRoot: undefined,
-          memoryContext: undefined,
-        });
-
-    const artifactRepo = createArtifactRepository(db);
-
-    const docsArtifactDefs: ArtifactDef[] = [
-      { type: ArtifactTypeValues.RAW_REQUIREMENT, name: "input.md", format: "markdown" },
-      {
-        type: ArtifactTypeValues.CLARIFIED_REQUIREMENT,
-        name: "clarified-requirement.md",
-        format: "markdown",
-      },
-      { type: ArtifactTypeValues.BUSINESS_RULES, name: "business-rules.md", format: "markdown" },
-      {
-        type: ArtifactTypeValues.ACCEPTANCE_CRITERIA,
-        name: "acceptance-criteria.md",
-        format: "markdown",
-      },
-      { type: ArtifactTypeValues.OPEN_QUESTIONS, name: "open-questions.md", format: "markdown" },
-      { type: ArtifactTypeValues.ASSUMPTIONS, name: "assumptions.md", format: "markdown" },
-      {
-        type: ArtifactTypeValues.TECHNICAL_DESIGN,
-        name: "technical-design.md",
-        format: "markdown",
-      },
-      { type: ArtifactTypeValues.API_DESIGN, name: "api-design.md", format: "markdown" },
-      { type: ArtifactTypeValues.DB_DESIGN, name: "db-design.md", format: "markdown" },
-      { type: ArtifactTypeValues.TASK_BREAKDOWN, name: "task-breakdown.md", format: "markdown" },
-      { type: ArtifactTypeValues.TASK_BREAKDOWN, name: "task-breakdown.json", format: "json" },
-      {
-        type: ArtifactTypeValues.JIRA_READY_TASKS,
-        name: "jira-ready-tasks.md",
-        format: "markdown",
-      },
-      { type: ArtifactTypeValues.TEST_MATRIX, name: "test-matrix.md", format: "markdown" },
-      { type: ArtifactTypeValues.TEST_MATRIX, name: "test-matrix.json", format: "json" },
-      { type: ArtifactTypeValues.FINAL_REPORT, name: "final-report.md", format: "markdown" },
-    ];
-
-    const assistedArtifactDefs: ArtifactDef[] = [
-      {
-        type: ArtifactTypeValues.IMPLEMENTATION_PROMPT,
-        name: "implementation-prompt.md",
-        format: "markdown",
-      },
-    ];
-
-    const artifactDefs = isAssisted
-      ? [...docsArtifactDefs, ...assistedArtifactDefs]
-      : docsArtifactDefs;
-
-    for (let i = 0; i < artifactDefs.length; i++) {
-      const def = artifactDefs[i];
-      if (!def) continue;
-      const artifactPath = workflowResult.artifacts[i];
-      if (!artifactPath) continue;
-      artifactRepo.create({
-        id: `${runId}_artifact_${String(i)}`,
-        runId,
-        type: def.type,
-        name: def.name,
-        path: artifactPath,
-        format: def.format,
-      });
-    }
-
-    runRepo.updateStatus(runId, "REPORT_GENERATED");
+    emitWorkflowProgress(runId, "WORKFLOW_STARTED", {
+      stage: "Workflow Started",
+      message: "Workflow started",
+      stages: isAssisted
+        ? [
+            "BA Analysis",
+            "Architecture Design",
+            "Integration Planning",
+            "Frontend Planning",
+            "Backend Planning",
+            "Task Breakdown",
+            "Test Planning",
+            "UX Research",
+            "UI Design",
+            "UX Writing",
+            "Coding Plan",
+            "Developer Implementation",
+            "DevOps Release",
+            "Traceability",
+            "Final Report",
+          ]
+        : [
+            "Repository Analysis",
+            "BA Analysis",
+            "PO Scope Definition",
+            "UX Research",
+            "UI Design",
+            "UX Writing",
+            "Architecture Design",
+            "Integration Planning",
+            "Frontend Planning",
+            "Backend Planning",
+            "Task Breakdown",
+            "Test Planning",
+            "DevOps Release",
+            "Traceability",
+            "Technical Documentation",
+            "Final Report",
+          ],
+    });
 
     const run = runRepo.findById(runId);
+
+    setTimeout(() => {
+      void (async () => {
+        try {
+          const workflowResult = isAssisted
+            ? await runAssistedWorkflow({
+                requirement: rawRequirement,
+                projectRoot: undefined,
+                memoryContext: undefined,
+              })
+            : await runDocsOnlyWorkflow({
+                requirement: rawRequirement,
+                projectRoot: undefined,
+                memoryContext: undefined,
+              });
+
+          const artifactRepo = createArtifactRepository(db);
+
+          const docsArtifactDefs: ArtifactDef[] = [
+            { type: ArtifactTypeValues.RAW_REQUIREMENT, name: "input.md", format: "markdown" },
+            {
+              type: ArtifactTypeValues.CLARIFIED_REQUIREMENT,
+              name: "clarified-requirement.md",
+              format: "markdown",
+            },
+            {
+              type: ArtifactTypeValues.BUSINESS_RULES,
+              name: "business-rules.md",
+              format: "markdown",
+            },
+            {
+              type: ArtifactTypeValues.ACCEPTANCE_CRITERIA,
+              name: "acceptance-criteria.md",
+              format: "markdown",
+            },
+            {
+              type: ArtifactTypeValues.OPEN_QUESTIONS,
+              name: "open-questions.md",
+              format: "markdown",
+            },
+            { type: ArtifactTypeValues.ASSUMPTIONS, name: "assumptions.md", format: "markdown" },
+            {
+              type: ArtifactTypeValues.TECHNICAL_DESIGN,
+              name: "technical-design.md",
+              format: "markdown",
+            },
+            { type: ArtifactTypeValues.API_DESIGN, name: "api-design.md", format: "markdown" },
+            { type: ArtifactTypeValues.DB_DESIGN, name: "db-design.md", format: "markdown" },
+            {
+              type: ArtifactTypeValues.TASK_BREAKDOWN,
+              name: "task-breakdown.md",
+              format: "markdown",
+            },
+            {
+              type: ArtifactTypeValues.TASK_BREAKDOWN,
+              name: "task-breakdown.json",
+              format: "json",
+            },
+            {
+              type: ArtifactTypeValues.JIRA_READY_TASKS,
+              name: "jira-ready-tasks.md",
+              format: "markdown",
+            },
+            { type: ArtifactTypeValues.TEST_MATRIX, name: "test-matrix.md", format: "markdown" },
+            { type: ArtifactTypeValues.TEST_MATRIX, name: "test-matrix.json", format: "json" },
+            { type: ArtifactTypeValues.FINAL_REPORT, name: "final-report.md", format: "markdown" },
+          ];
+
+          const assistedArtifactDefs: ArtifactDef[] = [
+            {
+              type: ArtifactTypeValues.IMPLEMENTATION_PROMPT,
+              name: "implementation-prompt.md",
+              format: "markdown",
+            },
+          ];
+
+          const artifactDefs = isAssisted
+            ? [...docsArtifactDefs, ...assistedArtifactDefs]
+            : docsArtifactDefs;
+
+          for (let i = 0; i < artifactDefs.length; i++) {
+            const def = artifactDefs[i];
+            if (!def) continue;
+            const artifactPath = workflowResult.artifacts[i];
+            if (!artifactPath) continue;
+            artifactRepo.create({
+              id: `${runId}_artifact_${String(i)}`,
+              runId,
+              type: def.type,
+              name: def.name,
+              path: artifactPath,
+              format: def.format,
+            });
+          }
+
+          runRepo.updateStatus(runId, "REPORT_GENERATED");
+        } catch {
+          runRepo.updateStatus(runId, "FAILED");
+        }
+      })();
+    }, 0);
+
     return { run };
   });
 

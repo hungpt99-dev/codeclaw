@@ -33,6 +33,18 @@ function getJson<T>(res: { json: () => T }): T {
   return res.json();
 }
 
+async function waitForRunToComplete(runId: string): Promise<void> {
+  const maxAttempts = 60;
+  for (let i = 0; i < maxAttempts; i++) {
+    const res = await app.inject({ method: "GET", url: `/api/runs/${runId}` });
+    const body = getJson<{ run: RunItem }>(res);
+    if (body.run.status !== "SPEC_GENERATED") {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+}
+
 interface RunItem {
   id: string;
   title: string;
@@ -106,7 +118,7 @@ describe("Local Server API", () => {
       expect(body.run).toBeDefined();
       expect(body.run.title).toBe("Test requirement for API");
       expect(body.run.mode).toBe("docs-only");
-      expect(body.run.status).toBe("REPORT_GENERATED");
+      expect(body.run.status).toBe("SPEC_GENERATED");
     });
 
     it("rejects empty requirement", async () => {
@@ -165,6 +177,8 @@ describe("Local Server API", () => {
       expect(firstRun).toBeDefined();
       if (!firstRun) return;
 
+      await waitForRunToComplete(firstRun.id);
+
       const res = await app.inject({
         method: "GET",
         url: `/api/runs/${firstRun.id}/artifacts`,
@@ -183,6 +197,8 @@ describe("Local Server API", () => {
       const firstRun = runs[0];
       expect(firstRun).toBeDefined();
       if (!firstRun) return;
+
+      await waitForRunToComplete(firstRun.id);
 
       const artRes = await app.inject({
         method: "GET",

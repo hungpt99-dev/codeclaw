@@ -103,6 +103,12 @@ export type {
   TraceabilityAgentInput,
   TraceabilityAgentOutput,
 } from "./agents/traceabilityAgent.js";
+export {
+  getWorkflowEmitter,
+  getEventHistory,
+  emitWorkflowProgress,
+  clearEventHistory,
+} from "./workflows/workflowEmitter.js";
 export { parseTraceabilityOutput } from "./agents/parsers/traceabilityOutputParser.js";
 export type { TraceabilityMatrix, TraceabilityItem, CoverageStatus } from "@aiteam/shared";
 export {
