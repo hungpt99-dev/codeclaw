@@ -8,6 +8,8 @@ export type { ShellRunInput, ShellRunResult } from "./shell/shellRunner.js";
 
 export { createClaudeCodeAdapter } from "./ai/adapters/claudeCodeAdapter.js";
 export { createCodexAdapter } from "./ai/adapters/codexAdapter.js";
+export { createGeminiAdapter } from "./ai/adapters/geminiAdapter.js";
+export { createAiderAdapter } from "./ai/adapters/aiderAdapter.js";
 export { createAdapter } from "./ai/adapterFactory.js";
 export type { AiCliAdapter } from "./ai/aiCliAdapter.js";
 

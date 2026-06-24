@@ -31,10 +31,30 @@ describe("adapterFactory", () => {
     expect(adapter?.name).toBe("codex");
   });
 
-  it("returns null for unknown adapter", () => {
+  it("returns gemini adapter when enabled", () => {
+    const adapter = createAdapter("gemini", {
+      enabled: true,
+      command: "gemini",
+      timeoutSeconds: 300,
+    });
+    expect(adapter).not.toBeNull();
+    expect(adapter?.name).toBe("gemini");
+  });
+
+  it("returns aider adapter when enabled", () => {
     const adapter = createAdapter("aider", {
       enabled: true,
       command: "aider",
+      timeoutSeconds: 300,
+    });
+    expect(adapter).not.toBeNull();
+    expect(adapter?.name).toBe("aider");
+  });
+
+  it("returns null for unknown adapter name at runtime", () => {
+    const adapter = createAdapter("unknown" as "claude", {
+      enabled: true,
+      command: "unknown",
       timeoutSeconds: 300,
     });
     expect(adapter).toBeNull();

@@ -8,6 +8,8 @@ import { analyzeRepository } from "@aiteam/core";
 import {
   createClaudeCodeAdapter,
   createCodexAdapter,
+  createGeminiAdapter,
+  createAiderAdapter,
   isGhCliAvailable,
   isGhAuthenticated,
   getJiraStatus,
@@ -174,23 +176,21 @@ export async function doctorCommand(): Promise<void> {
     message: codexAvailable ? "Available" : "Not found in PATH",
   });
 
-  const aiTools = ["gemini", "aider"];
-  for (const tool of aiTools) {
-    try {
-      execSync(`which ${tool}`, { stdio: "pipe" });
-      results.push({
-        name: `${tool} CLI`,
-        status: "pass",
-        message: "Available",
-      });
-    } catch {
-      results.push({
-        name: `${tool} CLI`,
-        status: "warn",
-        message: "Not found in PATH",
-      });
-    }
-  }
+  const geminiAdapter = createGeminiAdapter();
+  const geminiAvailable = await geminiAdapter.isAvailable();
+  results.push({
+    name: "Gemini CLI",
+    status: geminiAvailable ? "pass" : "warn",
+    message: geminiAvailable ? "Available" : "Not found in PATH",
+  });
+
+  const aiderAdapter = createAiderAdapter();
+  const aiderAvailable = await aiderAdapter.isAvailable();
+  results.push({
+    name: "Aider CLI",
+    status: aiderAvailable ? "pass" : "warn",
+    message: aiderAvailable ? "Available" : "Not found in PATH",
+  });
 
   const ghAvailable = await isGhCliAvailable();
   const ghAuthenticated = await isGhAuthenticated();
