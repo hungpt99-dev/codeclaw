@@ -1,7 +1,7 @@
 import { writeFile, unlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { execa } from "execa";
+import { NativeRunnerClient } from "@codeclaw/native-runner";
 
 export interface AgentPromptRunnerConfig {
   command: string;
@@ -43,49 +43,49 @@ export async function runAgentPrompt(
       allArgs[1] = prompt;
     }
 
-    const subprocess = execa(cmd, [...allArgs, tmpFile], {
-      timeout: config.timeoutSeconds * 1000,
-      reject: false,
+    const runner = new NativeRunnerClient();
+    const response = await runner.runCommand({
+      command: cmd,
+      args: [...allArgs, tmpFile],
+      cwd: process.cwd(),
+      timeoutMs: config.timeoutSeconds * 1000,
+      env: undefined,
+      policy: undefined,
+      captureStdout: true,
+      captureStderr: true,
+      redactSecrets: false,
     });
 
-    const { stdout, stderr, exitCode } = await subprocess;
-
-    if (exitCode !== 0) {
-      return {
-        success: false,
-        output: stdout || "",
-        error: stderr || `Command exited with code ${String(exitCode)}`,
-      };
-    }
-
-    return {
-      success: true,
-      output: stdout || "",
-    };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (
-      message.includes("ENOENT") ||
-      message.includes("command not found") ||
-      message.includes("not found")
-    ) {
+    if (!response.success && response.error?.code === "RUNNER_NOT_FOUND") {
       return {
         success: false,
         output: "",
-        error: `CLI not found: ${config.command}. Ensure it is installed and in PATH.`,
+        error: `CodeClaw native runner is required for command execution. Please install or build codeclaw-runner.`,
       };
     }
-    if (
-      message.includes("timed out") ||
-      message.includes("ETIMEDOUT") ||
-      message.includes("timeout")
-    ) {
+
+    if (response.exitCode !== 0 && response.exitCode !== null) {
+      return {
+        success: false,
+        output: response.stdout ?? "",
+        error: response.stderr ?? `Command exited with code ${String(response.exitCode)}`,
+      };
+    }
+
+    if (response.timedOut) {
       return {
         success: false,
         output: "",
         error: `Command timed out after ${String(config.timeoutSeconds)} seconds: ${config.command}`,
       };
     }
+
+    return {
+      success: true,
+      output: response.stdout ?? "",
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     return {
       success: false,
       output: "",

@@ -232,7 +232,12 @@ export async function createPR(summary: PRSummaryInput): Promise<PRSummaryResult
 }
 
 export async function readCIRun(): Promise<CIRunInfo[]> {
-  return getCIRuns();
+  const runs = await getCIRuns();
+  return runs.map((r) => ({
+    workflow: r.name,
+    status: r.status,
+    conclusion: r.conclusion ?? "unknown",
+  }));
 }
 
 export async function readPRStatus(): Promise<PRInfo[]> {

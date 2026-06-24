@@ -11,6 +11,8 @@
   "scripts": {
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
+    "build:runner": "cargo build --manifest-path crates/codeclaw-runner/Cargo.toml",
+    "build:all": "pnpm build && pnpm build:runner",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "lint:fix": "pnpm -r lint:fix",

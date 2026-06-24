@@ -1,5 +1,5 @@
-import { execa } from "execa";
 import { createOpenCodeAdapter } from "../ai/adapters/opencodeAdapter.js";
+import { NativeRunnerClient } from "@codeclaw/native-runner";
 import type {
   CodingAgentAdapter,
   CodingAgentAvailability,
@@ -16,27 +16,41 @@ export function createOpenCodeCodingAgent(config: {
 
   async function checkAvailability(): Promise<CodingAgentAvailability> {
     try {
-      const result = await execa("which", [command], {
-        timeout: 5000,
-        reject: false,
+      const runner = new NativeRunnerClient();
+      const result = await runner.runCommand({
+        command: "which",
+        args: [command],
+        cwd: process.cwd(),
+        timeoutMs: 5000,
+        env: undefined,
+        policy: undefined,
+        captureStdout: true,
+        captureStderr: true,
+        redactSecrets: false,
       });
 
-      if (result.exitCode !== 0) {
+      if (!result.success || result.exitCode !== 0) {
         return {
           available: false,
           reason: `${command} not found in PATH. Install OpenCode CLI first.`,
         };
       }
 
-      const versionResult = await execa(command, ["--version"], {
-        timeout: 5000,
-        reject: false,
+      const versionResult = await runner.runCommand({
+        command,
+        args: ["--version"],
+        cwd: process.cwd(),
+        timeoutMs: 5000,
+        env: undefined,
+        policy: undefined,
+        captureStdout: true,
+        captureStderr: true,
+        redactSecrets: false,
       });
 
       return {
         available: true,
-        version:
-          versionResult.exitCode === 0 ? versionResult.stdout.trim() || "unknown" : "unknown",
+        version: versionResult.success ? (versionResult.stdout ?? "unknown").trim() : "unknown",
       };
     } catch {
       return {

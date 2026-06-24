@@ -138,8 +138,7 @@ async function executeCodeGeneration(
   const agentLogPath = paths.agentLogPath;
   const diffPatchPath = paths.diffPatchPath;
 
-  const execArgs: string[] = ["-p", implementationPrompt];
-  const execCmd = `${command} ${execArgs.join(" ")}`;
+  const execCmd = `${command} -p [implementation-prompt]`;
 
   if (!checkCommandSafety(execCmd, safetyPolicy?.denyCommands ?? [])) {
     return { success: false, changedFiles: [], diffPatchPath, agentLogPath, fileSafety: undefined };
@@ -147,7 +146,10 @@ async function executeCodeGeneration(
 
   try {
     const { writeFile, mkdir } = await import("node:fs/promises");
-    const { spawn } = await import("node:child_process");
+    const { NativeRunnerClient } = await import("@codeclaw/native-runner");
+
+    await mkdir(join(paths.implementationDir), { recursive: true });
+
     const logStream: string[] = [];
     logStream.push(`# Agent Execution Log\n`);
     logStream.push(`Agent: ${selectedAgent}\n`);
@@ -155,37 +157,38 @@ async function executeCodeGeneration(
     logStream.push(`Timeout: ${String(timeout)}s\n`);
     logStream.push(`Started: ${new Date().toISOString()}\n\n`);
 
-    await mkdir(join(paths.implementationDir), { recursive: true });
-
-    const exitCode = await new Promise<number | null>((resolve) => {
-      const child = spawn(command, [`-p`, implementationPrompt], {
-        cwd: workingDir,
-        shell: true,
-        timeout: timeout * 1000,
-        stdio: ["ignore", "pipe", "pipe"],
-      });
-
-      child.stdout.on("data", (chunk: Buffer) => {
-        const text = chunk.toString("utf-8");
-        logStream.push(text);
-      });
-
-      child.stderr.on("data", (chunk: Buffer) => {
-        const text = chunk.toString("utf-8");
-        logStream.push(text);
-      });
-
-      child.on("close", (code: number | null) => {
-        resolve(code);
-      });
-
-      child.on("error", () => {
-        resolve(null);
-      });
+    const runner = new NativeRunnerClient();
+    const response = await runner.runCommand({
+      command,
+      args: ["-p", implementationPrompt],
+      cwd: workingDir,
+      timeoutMs: timeout * 1000,
+      env: undefined,
+      policy: undefined,
+      captureStdout: true,
+      captureStderr: true,
+      redactSecrets: false,
     });
 
+    if (!response.success && response.error?.code === "RUNNER_NOT_FOUND") {
+      logStream.push(`\nError: CodeClaw native runner is required for command execution.\n`);
+      logStream.push(`Install or build codeclaw-runner before running coding commands.\n`);
+      await writeFile(agentLogPath, logStream.join(""), "utf-8");
+      return {
+        success: false,
+        changedFiles: [],
+        diffPatchPath,
+        agentLogPath,
+        fileSafety: undefined,
+      };
+    }
+
+    if (response.stdout) logStream.push(response.stdout);
+    if (response.stderr) logStream.push(response.stderr);
+
     logStream.push(`\nFinished: ${new Date().toISOString()}\n`);
-    logStream.push(`Exit code: ${String(exitCode ?? -1)}\n`);
+    logStream.push(`Exit code: ${String(response.exitCode ?? -1)}\n`);
+    logStream.push(`Timed out: ${String(response.timedOut ?? false)}\n`);
 
     await writeFile(agentLogPath, logStream.join(""), "utf-8");
 
@@ -205,7 +208,7 @@ async function executeCodeGeneration(
     }
 
     return {
-      success: exitCode === 0,
+      success: response.exitCode === 0 && !response.timedOut,
       changedFiles,
       diffPatchPath,
       agentLogPath,

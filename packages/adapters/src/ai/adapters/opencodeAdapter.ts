@@ -5,38 +5,7 @@ import type { AiTaskInput, AiTaskResult } from "@codeclaw/shared";
 import { runShellCommand } from "../../shell/shellRunner.js";
 import { getChangedFiles, saveGitSnapshot, generateDiff } from "../../git/gitService.js";
 import type { AiCliAdapter } from "../aiCliAdapter.js";
-import { execa } from "execa";
-
-async function getOpenCodeHelp(): Promise<string | undefined> {
-  try {
-    const result = await execa("opencode", ["--help"], {
-      timeout: 10000,
-      reject: false,
-    });
-    if (result.exitCode === 0) {
-      return (result.stdout || result.stderr || "").trim() || undefined;
-    }
-    return undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-async function checkOpenCodeOnPath(): Promise<boolean> {
-  try {
-    const result = await runShellCommand({
-      command: "which",
-      args: ["opencode"],
-      cwd: process.cwd(),
-      timeoutSeconds: 5,
-      stdoutPath: join(tmpdir(), `codeclaw-opencode-check-${String(Date.now())}.out`),
-      stderrPath: join(tmpdir(), `codeclaw-opencode-check-${String(Date.now())}.err`),
-    });
-    return result.exitCode === 0;
-  } catch {
-    return false;
-  }
-}
+import { NativeRunnerClient } from "@codeclaw/native-runner";
 
 export interface OpenCodeAdapterConfig {
   command?: string;
@@ -48,7 +17,23 @@ export function createOpenCodeAdapter(config?: OpenCodeAdapterConfig): AiCliAdap
   const timeoutSeconds = config?.timeoutSeconds ?? 900;
 
   async function isAvailable(): Promise<boolean> {
-    return checkOpenCodeOnPath();
+    try {
+      const runner = new NativeRunnerClient();
+      const response = await runner.runCommand({
+        command: "which",
+        args: [command],
+        cwd: process.cwd(),
+        timeoutMs: 5000,
+        env: undefined,
+        policy: undefined,
+        captureStdout: true,
+        captureStderr: true,
+        redactSecrets: false,
+      });
+      return response.success && response.exitCode === 0;
+    } catch {
+      return false;
+    }
   }
 
   async function runTask(input: AiTaskInput): Promise<AiTaskResult> {
@@ -65,8 +50,7 @@ export function createOpenCodeAdapter(config?: OpenCodeAdapterConfig): AiCliAdap
     try {
       await writeFile(promptFile, input.prompt, "utf-8");
 
-      const helpText = await getOpenCodeHelp();
-      const args = buildOpenCodeArgs(helpText, promptFile);
+      const args = buildOpenCodeArgs(promptFile);
 
       const result = await runShellCommand({
         command,
@@ -100,21 +84,6 @@ export function createOpenCodeAdapter(config?: OpenCodeAdapterConfig): AiCliAdap
   };
 }
 
-function buildOpenCodeArgs(helpText: string | undefined, promptFile: string): string[] {
-  if (helpText) {
-    if (
-      helpText.includes("--prompt") ||
-      helpText.includes("-p ") ||
-      helpText.includes("--prompt-file")
-    ) {
-      if (helpText.includes("--prompt-file")) {
-        return ["--prompt-file", promptFile];
-      }
-      return ["--prompt", promptFile];
-    }
-    if (helpText.includes("[prompt]")) {
-      return [promptFile];
-    }
-  }
+function buildOpenCodeArgs(promptFile: string): string[] {
   return ["--prompt", promptFile];
 }

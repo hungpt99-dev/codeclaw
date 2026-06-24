@@ -1,15 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createOpenCodeCodingAgent } from "./opencodeCodingAgent.js";
 
-const { mockExeca } = vi.hoisted(() => {
-  const mockExeca = vi.fn();
-  return { mockExeca };
+const { mockRunCommand } = vi.hoisted(() => {
+  const mockRunCommand = vi.fn();
+  return { mockRunCommand };
 });
 
-vi.mock("execa", () => ({
-  execa: mockExeca,
-}));
-
-import { createOpenCodeCodingAgent } from "./opencodeCodingAgent.js";
+vi.mock("@codeclaw/native-runner", () => {
+  const mockCheckAvailability = vi
+    .fn()
+    .mockResolvedValue({ available: true, path: "codeclaw-runner" });
+  const NativeRunnerClient = vi.fn(() => ({
+    runCommand: mockRunCommand,
+    checkAvailability: mockCheckAvailability,
+    gitStatus: vi.fn(),
+    gitDiff: vi.fn(),
+  }));
+  return { NativeRunnerClient };
+});
 
 describe("opencodeCodingAgent", () => {
   beforeEach(() => {
@@ -23,7 +31,20 @@ describe("opencodeCodingAgent", () => {
   });
 
   it("checkAvailability returns not available when which fails", async () => {
-    mockExeca.mockRejectedValue(new Error("command not found"));
+    mockRunCommand.mockResolvedValue({
+      success: false,
+      action: "run-command",
+      exitCode: 1,
+      stdout: "",
+      stderr: "not found",
+      startedAt: new Date().toISOString(),
+      endedAt: new Date().toISOString(),
+      durationMs: 10,
+      timedOut: false,
+      cancelled: false,
+      redacted: false,
+      error: null,
+    });
 
     const agent = createOpenCodeCodingAgent({ command: undefined, timeoutMs: undefined });
     const result = await agent.checkAvailability();
@@ -33,9 +54,35 @@ describe("opencodeCodingAgent", () => {
   });
 
   it("checkAvailability returns available when which succeeds", async () => {
-    mockExeca
-      .mockResolvedValueOnce({ exitCode: 0 })
-      .mockResolvedValueOnce({ exitCode: 0, stdout: "1.0.0" });
+    mockRunCommand
+      .mockResolvedValueOnce({
+        success: true,
+        action: "run-command",
+        exitCode: 0,
+        stdout: "/usr/local/bin/opencode",
+        stderr: "",
+        startedAt: "",
+        endedAt: "",
+        durationMs: 10,
+        timedOut: false,
+        cancelled: false,
+        redacted: false,
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        action: "run-command",
+        exitCode: 0,
+        stdout: "1.0.0",
+        stderr: "",
+        startedAt: "",
+        endedAt: "",
+        durationMs: 10,
+        timedOut: false,
+        cancelled: false,
+        redacted: false,
+        error: null,
+      });
 
     const agent = createOpenCodeCodingAgent({ command: undefined, timeoutMs: undefined });
     const result = await agent.checkAvailability();

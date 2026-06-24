@@ -1,15 +1,55 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockExeca } = vi.hoisted(() => {
-  const mockExeca = vi.fn();
-  return { mockExeca };
+const { mockRunCommand } = vi.hoisted(() => {
+  const mockRunCommand = vi.fn();
+  return { mockRunCommand };
 });
 
-vi.mock("execa", () => ({
-  execa: mockExeca,
-}));
+vi.mock("@codeclaw/native-runner", () => {
+  const NativeRunnerClient = vi.fn(() => ({
+    runCommand: mockRunCommand,
+    checkAvailability: vi.fn(),
+    gitStatus: vi.fn(),
+    gitDiff: vi.fn(),
+  }));
+  return { NativeRunnerClient };
+});
 
 import { checkStatus, testConnection, createPR, readCIRun, readPRStatus } from "./gitHubAdapter.js";
+
+function okResponse(stdout: string) {
+  return {
+    success: true,
+    action: "run-command" as const,
+    exitCode: 0,
+    stdout,
+    stderr: "",
+    startedAt: "",
+    endedAt: "",
+    durationMs: 10,
+    timedOut: false,
+    cancelled: false,
+    redacted: false,
+    error: null,
+  };
+}
+
+function failResponse(exitCode: number, stderr: string) {
+  return {
+    success: false,
+    action: "run-command" as const,
+    exitCode,
+    stdout: "",
+    stderr,
+    startedAt: "",
+    endedAt: "",
+    durationMs: 10,
+    timedOut: false,
+    cancelled: false,
+    redacted: false,
+    error: null,
+  };
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -24,21 +64,20 @@ describe("gitHubAdapter", () => {
     });
 
     it("returns not_available when gh not installed", async () => {
-      mockExeca.mockRejectedValue(new Error("not found"));
+      mockRunCommand.mockRejectedValue(new Error("not found"));
       const result = await checkStatus({ enabled: true });
       expect(result.overall).toBe("not_available");
       expect(result.ghCliAvailable).toBe(false);
     });
 
     it("returns ok when gh is available and authenticated", async () => {
-      mockExeca
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "gh version 2.0.0" })
-        .mockResolvedValueOnce({
-          exitCode: 0,
-          stdout: JSON.stringify({ name: "test-repo", owner: { login: "test-owner" } }),
-        });
+      mockRunCommand
+        .mockResolvedValueOnce(okResponse(""))
+        .mockResolvedValueOnce(okResponse(""))
+        .mockResolvedValueOnce(okResponse("gh version 2.0.0"))
+        .mockResolvedValueOnce(
+          okResponse(JSON.stringify({ name: "test-repo", owner: { login: "test-owner" } })),
+        );
       const result = await checkStatus({ enabled: true });
       expect(result.overall).toBe("ok");
       expect(result.ghCliAvailable).toBe(true);
@@ -47,9 +86,9 @@ describe("gitHubAdapter", () => {
     });
 
     it("returns not_authenticated when gh not authenticated", async () => {
-      mockExeca
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "" })
-        .mockResolvedValueOnce({ exitCode: 1, stdout: "", stderr: "not authenticated" });
+      mockRunCommand
+        .mockResolvedValueOnce(okResponse(""))
+        .mockResolvedValueOnce(failResponse(1, "not authenticated"));
       const result = await checkStatus({ enabled: true });
       expect(result.overall).toBe("not_authenticated");
       expect(result.ghCliAvailable).toBe(true);
@@ -65,20 +104,19 @@ describe("gitHubAdapter", () => {
     });
 
     it("fails when gh not installed", async () => {
-      mockExeca.mockRejectedValue(new Error("not found"));
+      mockRunCommand.mockRejectedValue(new Error("not found"));
       const result = await testConnection({ enabled: true });
       expect(result.success).toBe(false);
       expect(result.message).toContain("not installed");
     });
 
     it("succeeds when authenticated with repo", async () => {
-      mockExeca
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "" })
-        .mockResolvedValueOnce({
-          exitCode: 0,
-          stdout: JSON.stringify({ name: "repo", owner: { login: "owner" } }),
-        });
+      mockRunCommand
+        .mockResolvedValueOnce(okResponse(""))
+        .mockResolvedValueOnce(okResponse(""))
+        .mockResolvedValueOnce(
+          okResponse(JSON.stringify({ name: "repo", owner: { login: "owner" } })),
+        );
       const result = await testConnection({ enabled: true });
       expect(result.success).toBe(true);
       expect(result.message).toContain("owner/repo");
@@ -87,10 +125,9 @@ describe("gitHubAdapter", () => {
 
   describe("createPR", () => {
     it("creates a PR and returns url", async () => {
-      mockExeca.mockResolvedValueOnce({
-        exitCode: 0,
-        stdout: "https://github.com/owner/repo/pull/42",
-      });
+      mockRunCommand.mockResolvedValueOnce(
+        okResponse(JSON.stringify({ url: "https://github.com/owner/repo/pull/42", number: 42 })),
+      );
       const result = await createPR({
         runId: "run_123",
         title: "Test PR",
@@ -101,7 +138,7 @@ describe("gitHubAdapter", () => {
     });
 
     it("handles failure", async () => {
-      mockExeca.mockRejectedValueOnce(new Error("git error"));
+      mockRunCommand.mockRejectedValueOnce(new Error("git error"));
       const result = await createPR({
         runId: "run_123",
         title: "Test PR",
@@ -114,18 +151,19 @@ describe("gitHubAdapter", () => {
 
   describe("readCIRun", () => {
     it("returns empty array when gh fails", async () => {
-      mockExeca.mockRejectedValue(new Error("not available"));
+      mockRunCommand.mockRejectedValue(new Error("not available"));
       const result = await readCIRun();
       expect(result).toEqual([]);
     });
 
     it("parses CI runs", async () => {
-      mockExeca.mockResolvedValueOnce({
-        exitCode: 0,
-        stdout: JSON.stringify([
-          { workflowName: "CI", status: "completed", conclusion: "success" },
-        ]),
-      });
+      mockRunCommand.mockResolvedValueOnce(
+        okResponse(
+          JSON.stringify([
+            { name: "CI", status: "completed", conclusion: "success", url: "https://example.com" },
+          ]),
+        ),
+      );
       const result = await readCIRun();
       expect(result).toHaveLength(1);
       expect(result[0]?.workflow).toBe("CI");
@@ -135,23 +173,24 @@ describe("gitHubAdapter", () => {
 
   describe("readPRStatus", () => {
     it("returns empty when gh fails", async () => {
-      mockExeca.mockRejectedValue(new Error("not available"));
+      mockRunCommand.mockRejectedValue(new Error("not available"));
       const result = await readPRStatus();
       expect(result).toEqual([]);
     });
 
     it("parses PR list", async () => {
-      mockExeca.mockResolvedValueOnce({
-        exitCode: 0,
-        stdout: JSON.stringify([
-          {
-            state: "OPEN",
-            title: "Test PR",
-            url: "https://github.com/owner/repo/pull/1",
-            number: 1,
-          },
-        ]),
-      });
+      mockRunCommand.mockResolvedValueOnce(
+        okResponse(
+          JSON.stringify([
+            {
+              state: "OPEN",
+              title: "Test PR",
+              url: "https://github.com/owner/repo/pull/1",
+              number: 1,
+            },
+          ]),
+        ),
+      );
       const result = await readPRStatus();
       expect(result).toHaveLength(1);
       expect(result[0]?.title).toBe("Test PR");

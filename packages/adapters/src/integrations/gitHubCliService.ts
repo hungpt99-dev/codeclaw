@@ -1,9 +1,39 @@
-import { execa } from "execa";
+import { NativeRunnerClient } from "@codeclaw/native-runner";
+
+function createRunner(): NativeRunnerClient {
+  return new NativeRunnerClient();
+}
+
+async function runGitHubCli(
+  args: string[],
+  cwd?: string,
+): Promise<{ stdout: string; exitCode: number }> {
+  const runner = createRunner();
+  const response = await runner.runCommand({
+    command: "gh",
+    args,
+    cwd: cwd ?? process.cwd(),
+    timeoutMs: 15000,
+    env: undefined,
+    policy: undefined,
+    captureStdout: true,
+    captureStderr: true,
+    redactSecrets: false,
+  });
+
+  if (!response.success && response.error?.code === "RUNNER_NOT_FOUND") {
+    throw new Error(
+      "CodeClaw native runner is required for command execution. Install or build codeclaw-runner.",
+    );
+  }
+
+  return { stdout: response.stdout ?? "", exitCode: response.exitCode ?? 1 };
+}
 
 export async function isGhCliAvailable(): Promise<boolean> {
   try {
-    await execa("which", ["gh"]);
-    return true;
+    const { exitCode } = await runGitHubCli(["--version"]);
+    return exitCode === 0;
   } catch {
     return false;
   }
@@ -11,8 +41,8 @@ export async function isGhCliAvailable(): Promise<boolean> {
 
 export async function isGhAuthenticated(): Promise<boolean> {
   try {
-    const result = await execa("gh", ["auth", "status"], { stdio: "pipe" });
-    return result.exitCode === 0;
+    const { exitCode } = await runGitHubCli(["auth", "status"]);
+    return exitCode === 0;
   } catch {
     return false;
   }
@@ -20,10 +50,8 @@ export async function isGhAuthenticated(): Promise<boolean> {
 
 export async function getCurrentRepo(): Promise<{ owner: string; repo: string } | null> {
   try {
-    const result = await execa("gh", ["repo", "view", "--json", "name,owner"], {
-      stdio: "pipe",
-    });
-    const parsed: { name: string; owner: { login: string } } = JSON.parse(result.stdout) as {
+    const { stdout } = await runGitHubCli(["repo", "view", "--json", "name,owner"]);
+    const parsed: { name: string; owner: { login: string } } = JSON.parse(stdout) as {
       name: string;
       owner: { login: string };
     };
@@ -36,31 +64,42 @@ export async function getCurrentRepo(): Promise<{ owner: string; repo: string } 
 export async function createGhPR(
   title: string,
   body: string,
-  options?: { base?: string; draft?: boolean },
-): Promise<{ url: string; number: number }> {
-  const args: string[] = ["pr", "create", "--title", title, "--body", body];
-  if (options?.base !== undefined && options.base !== "") {
-    args.push("--base", options.base);
+  baseBranch: string,
+  headBranch: string,
+): Promise<{ url: string; number: number } | null> {
+  try {
+    const { stdout } = await runGitHubCli([
+      "pr",
+      "create",
+      "--title",
+      title,
+      "--body",
+      body,
+      "--base",
+      baseBranch,
+      "--head",
+      headBranch,
+      "--json",
+      "url,number",
+    ]);
+    const parsed: { url: string; number: number } = JSON.parse(stdout) as {
+      url: string;
+      number: number;
+    };
+    return parsed;
+  } catch {
+    return null;
   }
-  if (options?.draft === true) {
-    args.push("--draft");
-  }
-  const result = await execa("gh", args, { stdio: "pipe" });
-  const url = result.stdout.trim();
-  const prMatch = /#(\d+)/.exec(url);
-  const number = prMatch ? Number(prMatch[1]) : 0;
-  return { url, number };
 }
 
-export async function getGhPRStatus(): Promise<
-  { state: string; title: string; url: string; number: number }[]
-> {
+export async function getGhPRStatus(
+  _owner: string,
+  _repo: string,
+): Promise<{ state: string; title: string; url: string; number: number }[]> {
   try {
-    const result = await execa("gh", ["pr", "list", "--json", "state,title,url,number"], {
-      stdio: "pipe",
-    });
+    const { stdout } = await runGitHubCli(["pr", "list", "--json", "state,title,url,number"]);
     const parsed: { state: string; title: string; url: string; number: number }[] = JSON.parse(
-      result.stdout,
+      stdout,
     ) as { state: string; title: string; url: string; number: number }[];
     return parsed;
   } catch {
@@ -70,38 +109,50 @@ export async function getGhPRStatus(): Promise<
 
 export async function getGhPRView(
   prNumber: number,
-): Promise<{ state: string; title: string; body: string; url: string } | null> {
+): Promise<{ title: string; body: string; state: string; url: string } | null> {
   try {
-    const result = await execa(
-      "gh",
-      ["pr", "view", String(prNumber), "--json", "state,title,body,url"],
-      { stdio: "pipe" },
-    );
-    return JSON.parse(result.stdout) as { state: string; title: string; body: string; url: string };
+    const { stdout } = await runGitHubCli([
+      "pr",
+      "view",
+      String(prNumber),
+      "--json",
+      "title,body,state,url",
+    ]);
+    const parsed: { title: string; body: string; state: string; url: string } = JSON.parse(
+      stdout,
+    ) as { title: string; body: string; state: string; url: string };
+    return parsed;
   } catch {
     return null;
   }
 }
 
-export async function getCIRuns(): Promise<
-  { workflow: string; status: string; conclusion: string }[]
+export async function getCIRuns(
+  _owner: string,
+  _repo: string,
+  branch?: string,
+): Promise<
+  {
+    name: string;
+    status: string;
+    conclusion: string | null;
+    url: string;
+  }[]
 > {
   try {
-    const result = await execa(
-      "gh",
-      ["run", "list", "--limit", "5", "--json", "workflowName,status,conclusion"],
-      {
-        stdio: "pipe",
-      },
-    );
-    const parsed: { workflowName: string; status: string; conclusion: string }[] = JSON.parse(
-      result.stdout,
-    ) as { workflowName: string; status: string; conclusion: string }[];
-    return parsed.map((r) => ({
-      workflow: r.workflowName,
-      status: r.status,
-      conclusion: r.conclusion,
-    }));
+    const args = ["run", "list", "--json", "name,status,conclusion,url"];
+    if (branch) {
+      args.push("--branch", branch);
+    }
+    const { stdout } = await runGitHubCli(args);
+    const parsed: { name: string; status: string; conclusion: string | null; url: string }[] =
+      JSON.parse(stdout) as {
+        name: string;
+        status: string;
+        conclusion: string | null;
+        url: string;
+      }[];
+    return parsed;
   } catch {
     return [];
   }
@@ -109,9 +160,8 @@ export async function getCIRuns(): Promise<
 
 export async function getGhCliVersion(): Promise<string | null> {
   try {
-    const result = await execa("gh", ["--version"], { stdio: "pipe" });
-    const firstLine = result.stdout.split("\n")[0];
-    return firstLine ?? null;
+    const { stdout } = await runGitHubCli(["--version"]);
+    return stdout.trim().split("\n")[0] ?? null;
   } catch {
     return null;
   }
