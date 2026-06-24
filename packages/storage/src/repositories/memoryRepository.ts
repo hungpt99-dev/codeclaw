@@ -1,5 +1,5 @@
-import { nowIso } from "@aiteam/shared";
-import type { MemoryScope, MemoryFormat } from "@aiteam/shared";
+import { nowIso } from "@codeclaw/shared";
+import type { MemoryScope, MemoryFormat } from "@codeclaw/shared";
 import type { DbConnection } from "../db.js";
 
 interface MemoryItemRow {

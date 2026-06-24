@@ -22,7 +22,11 @@ export class SlackApiError extends Error {
 }
 
 function getSlackToken(config: SlackConfig): string | undefined {
-  return process.env[config.tokenEnvRef];
+  const legacyMap: Record<string, string> = {
+    CODECLAW_SLACK_TOKEN: "AITEAM_SLACK_TOKEN",
+  };
+  const legacyKey = legacyMap[config.tokenEnvRef];
+  return process.env[config.tokenEnvRef] ?? (legacyKey ? process.env[legacyKey] : undefined);
 }
 
 export async function slackRequest<T>(

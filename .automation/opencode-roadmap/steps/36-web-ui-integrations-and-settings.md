@@ -79,8 +79,8 @@ In Settings page, add "Documentation" section:
 ### 6. Add Storage Settings section
 
 In Settings page, add "Storage" section:
-- Read-only fields: .ai-team path, database path, runs path, prompts path, logs path
-- Buttons: [Open .ai-team Folder], [Open Runs Folder], [Clean Old Runs]
+- Read-only fields: .codeclaw path, database path, runs path, prompts path, logs path
+- Buttons: [Open .codeclaw Folder], [Open Runs Folder], [Clean Old Runs]
 - Storage usage: Total runs count, total size (rough estimate)
 
 ### 7. Wire all settings to API

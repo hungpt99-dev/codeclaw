@@ -1,5 +1,5 @@
-import { nowIso } from "@aiteam/shared";
-import type { ArtifactType } from "@aiteam/shared";
+import { nowIso } from "@codeclaw/shared";
+import type { ArtifactType } from "@codeclaw/shared";
 import type { DbConnection } from "../db.js";
 
 interface ArtifactRow {

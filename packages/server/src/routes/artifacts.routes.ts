@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import type { FastifyInstance } from "fastify";
-import type { DbConnection } from "@aiteam/storage";
-import { createArtifactRepository } from "@aiteam/storage";
+import type { DbConnection } from "@codeclaw/storage";
+import { createArtifactRepository } from "@codeclaw/storage";
 
 export function registerArtifactRoutes(app: FastifyInstance, db: DbConnection): void {
   app.get("/api/runs/:id/artifacts", async (request, _reply) => {

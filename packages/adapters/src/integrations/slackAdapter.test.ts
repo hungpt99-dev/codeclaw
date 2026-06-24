@@ -10,17 +10,17 @@ import type { SlackConfig } from "./slackAdapter.js";
 const baseConfig: SlackConfig = {
   enabled: true,
   channelId: "C12345",
-  tokenEnvRef: "AITEAM_SLACK_TOKEN",
+  tokenEnvRef: "CODECLAW_SLACK_TOKEN",
   notifyOn: ["report_ready"],
 };
 
 beforeEach(() => {
   vi.clearAllMocks();
-  process.env.AITEAM_SLACK_TOKEN = "xoxb-test-token";
+  process.env.CODECLAW_SLACK_TOKEN = "xoxb-test-token";
 });
 
 afterEach(() => {
-  delete process.env.AITEAM_SLACK_TOKEN;
+  delete process.env.CODECLAW_SLACK_TOKEN;
 });
 
 function mockSlackResponse(data: Record<string, unknown>): Response {
@@ -42,7 +42,7 @@ describe("getSlackStatus", () => {
   it("returns missing_channel when no channelId", () => {
     const noChannelConfig: SlackConfig = {
       enabled: true,
-      tokenEnvRef: "AITEAM_SLACK_TOKEN",
+      tokenEnvRef: "CODECLAW_SLACK_TOKEN",
       notifyOn: ["report_ready"],
     };
     const result = getSlackStatus(noChannelConfig);
@@ -50,7 +50,7 @@ describe("getSlackStatus", () => {
   });
 
   it("returns missing_token when no token", () => {
-    delete process.env.AITEAM_SLACK_TOKEN;
+    delete process.env.CODECLAW_SLACK_TOKEN;
     const result = getSlackStatus(baseConfig);
     expect(result.overall).toBe("missing_token");
     expect(result.hasToken).toBe(false);
@@ -73,7 +73,7 @@ describe("testConnection", () => {
   });
 
   it("fails when token is missing", async () => {
-    delete process.env.AITEAM_SLACK_TOKEN;
+    delete process.env.CODECLAW_SLACK_TOKEN;
     const result = await testConnection(baseConfig);
     expect(result.success).toBe(false);
     expect(result.message).toContain("Slack token not found");
@@ -108,7 +108,7 @@ describe("postMessage", () => {
   it("fails when channel is not configured", async () => {
     const noChannelConfig: SlackConfig = {
       enabled: true,
-      tokenEnvRef: "AITEAM_SLACK_TOKEN",
+      tokenEnvRef: "CODECLAW_SLACK_TOKEN",
       notifyOn: ["report_ready"],
     };
     const result = await postMessage({ channel: "", text: "Hello", mrkdwn: true }, noChannelConfig);

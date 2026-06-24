@@ -36,17 +36,17 @@ pnpm quality
 
 Quality log:
 ```
-apps/cli test: 🎉 aiteam initialized successfully!
+apps/cli test: 🎉 codeclaw initialized successfully!
 apps/cli test:  ❯ src/index.test.ts (22 tests | 5 failed) 26466ms
-apps/cli test:    ✓ initCommand > creates .ai-team with all required files 33ms
+apps/cli test:    ✓ initCommand > creates .codeclaw with all required files 33ms
 apps/cli test:    ✓ initCommand > creates valid config.json 24ms
 apps/cli test:    ✓ initCommand > applies --type option to config 29ms
 apps/cli test:    ✓ initCommand > applies --output-language option to config 21ms
 apps/cli test:    ✓ initCommand > refuses to overwrite without --force 22ms
 apps/cli test:    ✓ initCommand > overwrites with --force 38ms
-apps/cli test:    ✓ doctorCommand > fails when .ai-team does not exist 1ms
-apps/cli test:    ✓ doctorCommand > passes when .ai-team is properly initialized  1027ms
-apps/cli test:    ✓ runCommand > fails when .ai-team does not exist 15ms
+apps/cli test:    ✓ doctorCommand > fails when .codeclaw does not exist 1ms
+apps/cli test:    ✓ doctorCommand > passes when .codeclaw is properly initialized  1027ms
+apps/cli test:    ✓ runCommand > fails when .codeclaw does not exist 15ms
 apps/cli test:    × runCommand > runs docs-only workflow and saves to database 5022ms
 apps/cli test:      → Test timed out in 5000ms.
 apps/cli test: If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
@@ -60,13 +60,13 @@ apps/cli test:    ✓ listCommand > shows no runs message when empty 18ms
 apps/cli test:    × listCommand > shows runs after executing a workflow 5014ms
 apps/cli test:      → Test timed out in 5000ms.
 apps/cli test: If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
-apps/cli test:    ✓ listCommand > fails when .ai-team does not exist 18ms
+apps/cli test:    ✓ listCommand > fails when .codeclaw does not exist 18ms
 apps/cli test:    ✓ showCommand > fails when run does not exist 10ms
 apps/cli test:    × showCommand > shows run details after executing a workflow 5014ms
 apps/cli test:      → Test timed out in 5000ms.
 apps/cli test: If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
-apps/cli test:    ✓ showCommand > fails when .ai-team does not exist 18ms
-apps/cli test:    ✓ uiCommand > fails when .ai-team does not exist 1ms
+apps/cli test:    ✓ showCommand > fails when .codeclaw does not exist 18ms
+apps/cli test:    ✓ uiCommand > fails when .codeclaw does not exist 1ms
 apps/cli test:    ✓ uiCommand > starts server and prints URL 61ms
 apps/cli test:    ✓ uiCommand > uses custom port option 14ms
 apps/cli test:    ✓ uiCommand > reports error when port is already in use 15ms
@@ -132,7 +132,7 @@ apps/cli test:    Start at  16:07:34
 apps/cli test:    Duration  27.64s (transform 386ms, setup 0ms, collect 720ms, tests 26.47s, environment 0ms, prepare 89ms)
 apps/cli test: Failed
 /Users/phamthanhhung/Desktop/MyProject/auto-code/apps/cli:
-[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @aiteam/cli@0.0.0 test: `vitest run`
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @codeclaw/cli@0.0.0 test: `vitest run`
 Exit status 1
 [ELIFECYCLE] Test failed. See above for more details.
 [ELIFECYCLE] Command failed with exit code 1.

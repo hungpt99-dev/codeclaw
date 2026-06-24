@@ -3,10 +3,10 @@ import { readdir, stat, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import type { FastifyInstance } from "fastify";
-import type { DbConnection } from "@aiteam/storage";
-import { createSettingRepository, createRunRepository } from "@aiteam/storage";
-import { configSchema } from "@aiteam/shared";
-import type { AiCliToolConfig } from "@aiteam/shared";
+import type { DbConnection } from "@codeclaw/storage";
+import { createSettingRepository, createRunRepository } from "@codeclaw/storage";
+import { configSchema } from "@codeclaw/shared";
+import type { AiCliToolConfig } from "@codeclaw/shared";
 
 const execFileAsync = promisify(execFile);
 
@@ -85,7 +85,7 @@ export function registerSettingsRoutes(app: FastifyInstance, db: DbConnection): 
   app.get("/api/settings/ai-cli/status", async (_request, _reply) => {
     let configTools: Record<string, { enabled: boolean; command: string }> = {};
     try {
-      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const configPath = join(process.cwd(), ".codeclaw", "config.json");
       const raw = await readFile(configPath, "utf-8");
       const parsed: unknown = JSON.parse(raw);
       const cfg = configSchema.parse(parsed);
@@ -135,7 +135,7 @@ export function registerSettingsRoutes(app: FastifyInstance, db: DbConnection): 
 
     let commandToTest = toolConfig.command;
     try {
-      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const configPath = join(process.cwd(), ".codeclaw", "config.json");
       const raw = await readFile(configPath, "utf-8");
       const parsed: unknown = JSON.parse(raw);
       const cfg = configSchema.parse(parsed);
@@ -159,7 +159,7 @@ export function registerSettingsRoutes(app: FastifyInstance, db: DbConnection): 
 
   app.get("/api/settings/storage", async (_request, _reply) => {
     const cwd = process.cwd();
-    const aiTeamPath = join(cwd, ".ai-team");
+    const aiTeamPath = join(cwd, ".codeclaw");
     const databasePath = join(aiTeamPath, "database.sqlite");
     const runsPath = join(aiTeamPath, "runs");
     const promptsPath = join(aiTeamPath, "prompts");
@@ -195,7 +195,7 @@ export function registerSettingsRoutes(app: FastifyInstance, db: DbConnection): 
     for (const run of runs) {
       const runDate = new Date(run.createdAt);
       if (runDate < cutoff) {
-        const runDir = join(process.cwd(), ".ai-team", "runs", run.id);
+        const runDir = join(process.cwd(), ".codeclaw", "runs", run.id);
         const size = await getDirSize(runDir);
         freedBytes += size;
         try {
@@ -220,18 +220,18 @@ export function registerSettingsRoutes(app: FastifyInstance, db: DbConnection): 
 
     switch (type) {
       case "github": {
-        const { checkStatus } = await import("@aiteam/adapters");
+        const { checkStatus } = await import("@codeclaw/adapters");
         const config = { enabled: true, mode: "gh-cli" as const };
         const status = await checkStatus(config);
         return { success: status.ghCliAvailable, message: status.overall };
       }
       case "jira": {
         try {
-          const configPath = join(process.cwd(), ".ai-team", "config.json");
+          const configPath = join(process.cwd(), ".codeclaw", "config.json");
           const raw = await readFile(configPath, "utf-8");
           const parsed: unknown = JSON.parse(raw);
           const cfg = configSchema.parse(parsed);
-          const { testJiraConnection } = await import("@aiteam/adapters");
+          const { testJiraConnection } = await import("@codeclaw/adapters");
           const result = await testJiraConnection(cfg.integrations.jira);
           return result;
         } catch {
@@ -240,11 +240,11 @@ export function registerSettingsRoutes(app: FastifyInstance, db: DbConnection): 
       }
       case "slack": {
         try {
-          const configPath = join(process.cwd(), ".ai-team", "config.json");
+          const configPath = join(process.cwd(), ".codeclaw", "config.json");
           const raw = await readFile(configPath, "utf-8");
           const parsed: unknown = JSON.parse(raw);
           const cfg = configSchema.parse(parsed);
-          const { testSlackConnection } = await import("@aiteam/adapters");
+          const { testSlackConnection } = await import("@codeclaw/adapters");
           const result = await testSlackConnection(cfg.integrations.slack);
           return result;
         } catch {

@@ -102,7 +102,7 @@ Only then implement the step.
 
 Implement Step 02: Monorepo Structure.
 
-Create or complete the pnpm workspace structure for Local AI Software Team.
+Create or complete the pnpm workspace structure for CodeClaw.
 
 Required structure:
 
@@ -133,15 +133,15 @@ Each package/app needs:
 
 Package names:
 
-- @aiteam/cli
-- @aiteam/local-server
-- @aiteam/local-web
-- @aiteam/shared
-- @aiteam/storage
-- @aiteam/core
+- @codeclaw/cli
+- @codeclaw/local-server
+- @codeclaw/local-web
+- @codeclaw/shared
+- @codeclaw/storage
+- @codeclaw/core
 
 CLI:
-Expose binary name: aiteam
+Expose binary name: codeclaw
 Create placeholder commands only:
 
 - init
@@ -175,7 +175,7 @@ pnpm build works.
 pnpm typecheck works.
 pnpm lint works.
 pnpm test works.
-CLI package exposes aiteam binary.
+CLI package exposes codeclaw binary.
 local-server has health route.
 local-web starts with Vite.
 

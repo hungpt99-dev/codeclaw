@@ -3,7 +3,7 @@ import { mkdir, rm, writeFile, access } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { openDatabase, initializeSchema } from "@aiteam/storage";
+import { openDatabase, initializeSchema } from "@codeclaw/storage";
 import {
   initializeRuntimeMemory,
   loadRuntimeMemoryContext,
@@ -14,7 +14,7 @@ import {
 import { getMemoryDir, getDatabasePath } from "./memoryPaths.js";
 
 function tempDir(): string {
-  return join(tmpdir(), "aiteam-memory-mgr-test-" + randomUUID());
+  return join(tmpdir(), "codeclaw-memory-mgr-test-" + randomUUID());
 }
 
 describe("initializeRuntimeMemory", () => {
@@ -23,7 +23,7 @@ describe("initializeRuntimeMemory", () => {
   beforeEach(async () => {
     projectRoot = tempDir();
     await mkdir(projectRoot, { recursive: true });
-    await mkdir(join(projectRoot, ".ai-team"), { recursive: true });
+    await mkdir(join(projectRoot, ".codeclaw"), { recursive: true });
     const db = openDatabase(getDatabasePath(projectRoot));
     initializeSchema(db);
     db.close();
@@ -83,7 +83,7 @@ describe("loadRuntimeMemoryContext", () => {
   beforeEach(async () => {
     projectRoot = tempDir();
     await mkdir(projectRoot, { recursive: true });
-    await mkdir(join(projectRoot, ".ai-team"), { recursive: true });
+    await mkdir(join(projectRoot, ".codeclaw"), { recursive: true });
     const db = openDatabase(getDatabasePath(projectRoot));
     initializeSchema(db);
     db.close();
@@ -128,7 +128,7 @@ describe("indexRuntimeMemory", () => {
   beforeEach(async () => {
     projectRoot = tempDir();
     await mkdir(projectRoot, { recursive: true });
-    await mkdir(join(projectRoot, ".ai-team"), { recursive: true });
+    await mkdir(join(projectRoot, ".codeclaw"), { recursive: true });
     const db = openDatabase(getDatabasePath(projectRoot));
     initializeSchema(db);
     db.close();
@@ -154,7 +154,7 @@ describe("getMemoryStatus", () => {
   beforeEach(async () => {
     projectRoot = tempDir();
     await mkdir(projectRoot, { recursive: true });
-    await mkdir(join(projectRoot, ".ai-team"), { recursive: true });
+    await mkdir(join(projectRoot, ".codeclaw"), { recursive: true });
     const db = openDatabase(getDatabasePath(projectRoot));
     initializeSchema(db);
     db.close();
@@ -185,7 +185,7 @@ describe("addRunMemory", () => {
   beforeEach(async () => {
     projectRoot = tempDir();
     await mkdir(projectRoot, { recursive: true });
-    await mkdir(join(projectRoot, ".ai-team"), { recursive: true });
+    await mkdir(join(projectRoot, ".codeclaw"), { recursive: true });
     const db = openDatabase(getDatabasePath(projectRoot));
     initializeSchema(db);
     db.close();

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { runSemiAutoWorkflow } from "./semiAutoWorkflow.js";
 
-vi.mock("@aiteam/adapters", () => ({
+vi.mock("@codeclaw/adapters", () => ({
   getChangedFiles: vi.fn().mockResolvedValue(["src/test.ts"]),
   generateDiff: vi.fn().mockResolvedValue(""),
   getGitStatus: vi.fn().mockResolvedValue({ clean: true, branch: "main" }),

@@ -1,4 +1,4 @@
-# Step 29: Test Runner — `aiteam test`
+# Step 29: Test Runner — `codeclaw test`
 
 ## Mandatory Documentation Context Rule
 
@@ -37,7 +37,7 @@ Read these docs if they exist:
 Step-specific docs:
 
 - docs/TECHNICAL_DESIGN.md (SS21 Test Runner)
-- docs/CLI_COMMAND_SPEC.md (SS25 aiteam test)
+- docs/CLI_COMMAND_SPEC.md (SS25 codeclaw test)
 - docs/PRD.md (SS13.9 Test Runner)
 - docs/WORKFLOW_DESIGN.md (SS7.11 Stage 11)
 
@@ -110,7 +110,7 @@ Only then implement the step.
 
 ---
 
-Implement Step 29: Test Runner — `aiteam test`.
+Implement Step 29: Test Runner — `codeclaw test`.
 
 ## Background
 
@@ -275,18 +275,18 @@ export interface TestCommandResult {
 }
 ```
 
-### 6. Create CLI command: aiteam test
+### 6. Create CLI command: codeclaw test
 
 Create `apps/cli/src/commands/test.ts`:
 
 ```bash
-aiteam test --run <runId>
-aiteam test --run <runId> --build
-aiteam test --run <runId> --unit
-aiteam test --run <runId> --integration
-aiteam test --run <runId> --lint
-aiteam test --run <runId> --all
-aiteam test --run <runId> --command "npm run custom"
+codeclaw test --run <runId>
+codeclaw test --run <runId> --build
+codeclaw test --run <runId> --unit
+codeclaw test --run <runId> --integration
+codeclaw test --run <runId> --lint
+codeclaw test --run <runId> --all
+codeclaw test --run <runId> --command "npm run custom"
 ```
 
 Options:
@@ -335,7 +335,7 @@ In `apps/local-web/src/pages/RunDetail.tsx`:
 In the "Tests" tab, add a "Test Execution" section:
 - Show each command with: name, exit code, duration, pass/fail badge
 - Show failed tests list with expandable details
-- [Run Tests] button to trigger `aiteam test` via API
+- [Run Tests] button to trigger `codeclaw test` via API
 - Link to test log files
 
 ### 10. Add test API routes
@@ -361,7 +361,7 @@ Update `packages/server/src/routes/runs.routes.ts`:
 
 
 
-- `aiteam test --run <runId> --all` runs configured test commands and saves results
+- `codeclaw test --run <runId> --all` runs configured test commands and saves results
 - Test result artifacts (`test-result.md`, `failed-tests.json`) are generated
 - Maven and npm/Jest output are parsed for failure details
 - Web UI shows test execution section with pass/fail per command

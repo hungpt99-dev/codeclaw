@@ -19,13 +19,13 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "@aiteam/shared": ["packages/shared/src/index.ts"],
-      "@aiteam/core": ["packages/core/src/index.ts"],
-      "@aiteam/storage": ["packages/storage/src/index.ts"],
-      "@aiteam/adapters": ["packages/adapters/src/index.ts"],
-      "@aiteam/memory": ["packages/memory/src/index.ts"],
-      "@aiteam/local-server": ["apps/local-server/src/index.ts"],
-      "@aiteam/server": ["packages/server/src/index.ts"]
+      "@codeclaw/shared": ["packages/shared/src/index.ts"],
+      "@codeclaw/core": ["packages/core/src/index.ts"],
+      "@codeclaw/storage": ["packages/storage/src/index.ts"],
+      "@codeclaw/adapters": ["packages/adapters/src/index.ts"],
+      "@codeclaw/memory": ["packages/memory/src/index.ts"],
+      "@codeclaw/local-server": ["apps/local-server/src/index.ts"],
+      "@codeclaw/server": ["packages/server/src/index.ts"]
     }
   }
 }

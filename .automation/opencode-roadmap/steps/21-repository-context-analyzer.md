@@ -192,7 +192,7 @@ export async function detectJavaSpringBoot(root: string): Promise<Partial<Reposi
 Update `packages/core/src/index.ts`:
 ```typescript
 export { analyzeRepository } from "./repoAnalyzer/repoAnalyzer.js";
-export type { RepositoryAnalysis } from "@aiteam/shared";
+export type { RepositoryAnalysis } from "@codeclaw/shared";
 ```
 
 ### 5. Add repository analysis to agent context
@@ -240,13 +240,13 @@ Update `packages/core/src/workflows/assistedWorkflow.ts`:
 Update `packages/core/src/artifacts/artifactWriter.ts`:
 - Already has `designDir`, analysis file can be written there
 
-### 9. Add aiteam analyze CLI command
+### 9. Add codeclaw analyze CLI command
 
 Create `apps/cli/src/commands/analyze.ts`:
 
 ```bash
-aiteam analyze
-aiteam analyze --run <runId>
+codeclaw analyze
+codeclaw analyze --run <runId>
 ```
 
 Options:
@@ -276,11 +276,11 @@ Update `packages/server/src/routes/runs.routes.ts`:
 // POST /api/runs/:id/analyze — Trigger repository analysis for a run
 ```
 
-### 12. Update aiteam init to detect project type
+### 12. Update codeclaw init to detect project type
 
 Update `apps/cli/src/commands/init.ts`:
 
-After creating `.ai-team/`, run `analyzeRepository` and print detected project type:
+After creating `.codeclaw/`, run `analyzeRepository` and print detected project type:
 
 ```
 Detected: Java / Spring Boot
@@ -310,10 +310,10 @@ Update `apps/cli/src/commands/doctor.ts`:
 - Node/NestJS detection works (package.json, nest-cli.json, etc.)
 - React/Vite detection works (vite.config.ts, etc.)
 - Architect agent output references detected project type
-- `aiteam analyze` CLI command works
+- `codeclaw analyze` CLI command works
 - Analysis saved as artifact in run
 - Web UI shows analysis in Design tab
-- `aiteam init` prints detected project type
+- `codeclaw init` prints detected project type
 - All existing tests pass
 
 ## Files to Create

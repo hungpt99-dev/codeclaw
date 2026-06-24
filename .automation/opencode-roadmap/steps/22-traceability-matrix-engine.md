@@ -247,7 +247,7 @@ Logic:
 Update `packages/core/src/index.ts`:
 ```typescript
 export { generateTraceability } from "./traceability/traceabilityEngine.js";
-export type { TraceabilityMatrix, TraceabilityItem, CoverageStatus } from "@aiteam/shared";
+export type { TraceabilityMatrix, TraceabilityItem, CoverageStatus } from "@codeclaw/shared";
 ```
 
 ### 7. Update workflow to generate traceability before report
@@ -257,14 +257,14 @@ Update the reporter agent or workflow:
 - Save traceability as `report/traceability.md` and `report/traceability.json`
 - Pass traceability matrix to reporter agent for inclusion in final report
 
-### 8. Add aiteam trace CLI command
+### 8. Add codeclaw trace CLI command
 
 Create `apps/cli/src/commands/trace.ts`:
 
 ```bash
-aiteam trace --run <runId>
-aiteam trace --run <runId> --format json
-aiteam trace --run <runId> --regenerate
+codeclaw trace --run <runId>
+codeclaw trace --run <runId> --format json
+codeclaw trace --run <runId> --regenerate
 ```
 
 Options:
@@ -327,7 +327,7 @@ Update `packages/server/src/routes/runs.routes.ts`:
 - Traceability matrix is generated after workflow completion
 - Requirements, ACs, tasks, and test cases are correctly parsed from artifacts
 - Coverage status is correctly calculated
-- `aiteam trace --run <runId>` generates and displays traceability
+- `codeclaw trace --run <runId>` generates and displays traceability
 - Web UI shows Traceability tab with interactive table
 - Traceability is exported as both markdown and JSON
 - Final report includes traceability summary

@@ -108,22 +108,22 @@ Use Commander.js.
 
 Implement commands:
 
-- aiteam init
-- aiteam doctor
-- aiteam run "raw requirement"
-- aiteam list
-- aiteam show <runId>
-- aiteam ui
+- codeclaw init
+- codeclaw doctor
+- codeclaw run "raw requirement"
+- codeclaw list
+- codeclaw show <runId>
+- codeclaw ui
 
-aiteam init:
+codeclaw init:
 
-1. Create .ai-team.
-2. Create .ai-team/config.json.
-3. Create .ai-team/database.sqlite.
+1. Create .codeclaw.
+2. Create .codeclaw/config.json.
+3. Create .codeclaw/database.sqlite.
 4. Initialize SQLite schema.
-5. Create .ai-team/prompts.
+5. Create .codeclaw/prompts.
 6. Copy templates.
-7. Create .ai-team/runs.
+7. Create .codeclaw/runs.
 
 Options:
 
@@ -133,20 +133,20 @@ Options:
 
 Do not overwrite unless --force.
 
-aiteam doctor checks:
+codeclaw doctor checks:
 
-- .ai-team exists
+- .codeclaw exists
 - config valid
 - SQLite opens
 - prompt templates exist
 - Node.js available
 - Git available
 
-aiteam run:
+codeclaw run:
 
 Only docs-only mode for now.
 
-1. Validate .ai-team.
+1. Validate .codeclaw.
 2. Load config.
 3. Create run ID.
 4. Save run metadata to SQLite.
@@ -161,26 +161,26 @@ Options:
 - --output-language
 - --json
 
-aiteam list:
+codeclaw list:
 
 Show recent runs.
 
-aiteam show <runId>:
+codeclaw show <runId>:
 
 Show run metadata and artifact paths.
 
-aiteam ui:
+codeclaw ui:
 
 For now, start local server if available or print a clear message if dev server must be started separately.
 
 Acceptance criteria:
-aiteam init works.
-aiteam doctor works.
-aiteam run generates local docs.
-aiteam list shows runs.
-aiteam show displays run detail.
+codeclaw init works.
+codeclaw doctor works.
+codeclaw run generates local docs.
+codeclaw list shows runs.
+codeclaw show displays run detail.
 no real AI calls.
-no source files outside .ai-team are modified by run.
+no source files outside .codeclaw are modified by run.
 
 ## Rules
 

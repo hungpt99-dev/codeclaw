@@ -10,50 +10,50 @@ import { generatePRSummary } from "./prSummaryGenerator.js";
 const mockReadFile = readFile as unknown as ReturnType<typeof vi.fn>;
 
 const mockPaths = {
-  runDir: "/test/.ai-team/runs/run_123",
-  inputFile: "/test/.ai-team/runs/run_123/input.md",
-  requirementDir: "/test/.ai-team/runs/run_123/requirement",
-  scopeDir: "/test/.ai-team/runs/run_123/scope",
-  scopeDefinitionPath: "/test/.ai-team/runs/run_123/scope/product-goal.md",
-  outOfScopePath: "/test/.ai-team/runs/run_123/scope/out-of-scope.md",
-  successCriteriaPath: "/test/.ai-team/runs/run_123/scope/success-criteria.md",
-  designDir: "/test/.ai-team/runs/run_123/design",
-  tasksDir: "/test/.ai-team/runs/run_123/tasks",
-  testsDir: "/test/.ai-team/runs/run_123/tests",
-  codingPlanDir: "/test/.ai-team/runs/run_123/coding-plan",
-  codingPlanPath: "/test/.ai-team/runs/run_123/coding-plan/coding-plan.md",
-  implementationDir: "/test/.ai-team/runs/run_123/implementation",
-  implementationPromptPath: "/test/.ai-team/runs/run_123/implementation/implementation-prompt.md",
-  agentLogPath: "/test/.ai-team/runs/run_123/implementation/agent-output.log",
-  diffPatchPath: "/test/.ai-team/runs/run_123/implementation/diff.patch",
-  changedFilesPath: "/test/.ai-team/runs/run_123/implementation/changed-files.json",
-  reportDir: "/test/.ai-team/runs/run_123/report",
-  logsDir: "/test/.ai-team/runs/run_123/logs",
-  traceabilityMd: "/test/.ai-team/runs/run_123/report/traceability.md",
-  traceabilityJson: "/test/.ai-team/runs/run_123/report/traceability.json",
-  snapshotDir: "/test/.ai-team/runs/run_123/snapshots",
-  testResultPath: "/test/.ai-team/runs/run_123/tests/test-result.md",
-  failedTestsPath: "/test/.ai-team/runs/run_123/tests/failed-tests.json",
-  reviewDir: "/test/.ai-team/runs/run_123/review",
-  reviewReportPath: "/test/.ai-team/runs/run_123/review/review-report.md",
-  securityReviewPath: "/test/.ai-team/runs/run_123/review/security-review.md",
-  requirementCoveragePath: "/test/.ai-team/runs/run_123/review/requirement-coverage.md",
-  fixLoopDir: "/test/.ai-team/runs/run_123/implementation/fix-loop",
-  uxDir: "/test/.ai-team/runs/run_123/ux",
-  userJourneyPath: "/test/.ai-team/runs/run_123/ux/user-journey.md",
-  uxDesignPath: "/test/.ai-team/runs/run_123/ux/ux-design.md",
-  uxCopyPath: "/test/.ai-team/runs/run_123/ux/ux-copy.md",
-  componentBreakdownPath: "/test/.ai-team/runs/run_123/ux/component-breakdown.md",
-  frontendDesignPath: "/test/.ai-team/runs/run_123/design/frontend-design.md",
-  backendDesignPath: "/test/.ai-team/runs/run_123/design/backend-design.md",
-  integrationPlanPath: "/test/.ai-team/runs/run_123/integration/integration-plan.md",
-  releasePlanPath: "/test/.ai-team/runs/run_123/release/release-plan.md",
-  changelogPath: "/test/.ai-team/runs/run_123/release/changelog.md",
-  docsDir: "/test/.ai-team/runs/run_123/docs",
-  apiReferencePath: "/test/.ai-team/runs/run_123/docs/api-reference.md",
-  setupGuidePath: "/test/.ai-team/runs/run_123/docs/setup-guide.md",
-  technicalReferencePath: "/test/.ai-team/runs/run_123/docs/technical-reference.md",
-  operationsGuidePath: "/test/.ai-team/runs/run_123/docs/operations-guide.md",
+  runDir: "/test/.codeclaw/runs/run_123",
+  inputFile: "/test/.codeclaw/runs/run_123/input.md",
+  requirementDir: "/test/.codeclaw/runs/run_123/requirement",
+  scopeDir: "/test/.codeclaw/runs/run_123/scope",
+  scopeDefinitionPath: "/test/.codeclaw/runs/run_123/scope/product-goal.md",
+  outOfScopePath: "/test/.codeclaw/runs/run_123/scope/out-of-scope.md",
+  successCriteriaPath: "/test/.codeclaw/runs/run_123/scope/success-criteria.md",
+  designDir: "/test/.codeclaw/runs/run_123/design",
+  tasksDir: "/test/.codeclaw/runs/run_123/tasks",
+  testsDir: "/test/.codeclaw/runs/run_123/tests",
+  codingPlanDir: "/test/.codeclaw/runs/run_123/coding-plan",
+  codingPlanPath: "/test/.codeclaw/runs/run_123/coding-plan/coding-plan.md",
+  implementationDir: "/test/.codeclaw/runs/run_123/implementation",
+  implementationPromptPath: "/test/.codeclaw/runs/run_123/implementation/implementation-prompt.md",
+  agentLogPath: "/test/.codeclaw/runs/run_123/implementation/agent-output.log",
+  diffPatchPath: "/test/.codeclaw/runs/run_123/implementation/diff.patch",
+  changedFilesPath: "/test/.codeclaw/runs/run_123/implementation/changed-files.json",
+  reportDir: "/test/.codeclaw/runs/run_123/report",
+  logsDir: "/test/.codeclaw/runs/run_123/logs",
+  traceabilityMd: "/test/.codeclaw/runs/run_123/report/traceability.md",
+  traceabilityJson: "/test/.codeclaw/runs/run_123/report/traceability.json",
+  snapshotDir: "/test/.codeclaw/runs/run_123/snapshots",
+  testResultPath: "/test/.codeclaw/runs/run_123/tests/test-result.md",
+  failedTestsPath: "/test/.codeclaw/runs/run_123/tests/failed-tests.json",
+  reviewDir: "/test/.codeclaw/runs/run_123/review",
+  reviewReportPath: "/test/.codeclaw/runs/run_123/review/review-report.md",
+  securityReviewPath: "/test/.codeclaw/runs/run_123/review/security-review.md",
+  requirementCoveragePath: "/test/.codeclaw/runs/run_123/review/requirement-coverage.md",
+  fixLoopDir: "/test/.codeclaw/runs/run_123/implementation/fix-loop",
+  uxDir: "/test/.codeclaw/runs/run_123/ux",
+  userJourneyPath: "/test/.codeclaw/runs/run_123/ux/user-journey.md",
+  uxDesignPath: "/test/.codeclaw/runs/run_123/ux/ux-design.md",
+  uxCopyPath: "/test/.codeclaw/runs/run_123/ux/ux-copy.md",
+  componentBreakdownPath: "/test/.codeclaw/runs/run_123/ux/component-breakdown.md",
+  frontendDesignPath: "/test/.codeclaw/runs/run_123/design/frontend-design.md",
+  backendDesignPath: "/test/.codeclaw/runs/run_123/design/backend-design.md",
+  integrationPlanPath: "/test/.codeclaw/runs/run_123/integration/integration-plan.md",
+  releasePlanPath: "/test/.codeclaw/runs/run_123/release/release-plan.md",
+  changelogPath: "/test/.codeclaw/runs/run_123/release/changelog.md",
+  docsDir: "/test/.codeclaw/runs/run_123/docs",
+  apiReferencePath: "/test/.codeclaw/runs/run_123/docs/api-reference.md",
+  setupGuidePath: "/test/.codeclaw/runs/run_123/docs/setup-guide.md",
+  technicalReferencePath: "/test/.codeclaw/runs/run_123/docs/technical-reference.md",
+  operationsGuidePath: "/test/.codeclaw/runs/run_123/docs/operations-guide.md",
 };
 
 const mockRun = {
@@ -73,9 +73,9 @@ describe("prSummaryGenerator", () => {
     mockReadFile.mockRejectedValue(new Error("not found"));
 
     const summary = await generatePRSummary("run_123", mockPaths, mockRun);
-    expect(summary.title).toBe("[AITeam] Add login page");
+    expect(summary.title).toBe("[CodeClaw] Add login page");
     expect(summary.body).toContain("run_123");
-    expect(summary.body).toContain("Generated by AITeam");
+    expect(summary.body).toContain("Generated by CodeClaw");
   });
 
   it("includes requirement section when available", async () => {
@@ -87,7 +87,7 @@ describe("prSummaryGenerator", () => {
       .mockRejectedValueOnce(new Error("not found"));
 
     const summary = await generatePRSummary("run_123", mockPaths, mockRun);
-    expect(summary.title).toBe("[AITeam] Add login page");
+    expect(summary.title).toBe("[CodeClaw] Add login page");
     expect(summary.body).toContain("Requirement");
     expect(summary.body).toContain("User can login");
   });

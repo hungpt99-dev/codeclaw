@@ -6,102 +6,102 @@ Implement Step 34: CLI Management Commands.
 
 CLI Spec defines several management commands that don't run workflow stages but are essential for CLI UX. Currently missing:
 
-- `aiteam config` — View/modify config (Spec SS10)
-- `aiteam status` — Project status overview (Spec SS11)
-- `aiteam prompts` — Manage prompt templates (Spec SS33)
-- `aiteam artifacts` — List run artifacts (Spec SS29)
-- `aiteam open` — Open files/UI (Spec SS30)
-- `aiteam clean` — Clean old runs/logs (Spec SS32)
-- `aiteam rollback` — Rollback code changes (Spec SS38)
+- `codeclaw config` — View/modify config (Spec SS10)
+- `codeclaw status` — Project status overview (Spec SS11)
+- `codeclaw prompts` — Manage prompt templates (Spec SS33)
+- `codeclaw artifacts` — List run artifacts (Spec SS29)
+- `codeclaw open` — Open files/UI (Spec SS30)
+- `codeclaw clean` — Clean old runs/logs (Spec SS32)
+- `codeclaw rollback` — Rollback code changes (Spec SS38)
 
 ## Tasks
 
-### 1. Create aiteam config
+### 1. Create codeclaw config
 
 `apps/cli/src/commands/config.ts`:
 
 ```bash
-aiteam config list                    # Show all config
-aiteam config get <key>               # Get specific key
-aiteam config set <key> <value>       # Set key
-aiteam config validate                # Validate config
-aiteam config path                    # Show config file path
+codeclaw config list                    # Show all config
+codeclaw config get <key>               # Get specific key
+codeclaw config set <key> <value>       # Set key
+codeclaw config validate                # Validate config
+codeclaw config path                    # Show config file path
 ```
 
 Backed by `packages/storage/src/repositories/settingRepository.ts` and direct config.json reading.
 
-### 2. Create aiteam status
+### 2. Create codeclaw status
 
 `apps/cli/src/commands/status.ts`:
 
 ```bash
-aiteam status                         # Overview: project, latest run, AI CLI status
-aiteam status --run <runId>           # Detailed status for a run
-aiteam status --json                  # JSON output
+codeclaw status                         # Overview: project, latest run, AI CLI status
+codeclaw status --run <runId>           # Detailed status for a run
+codeclaw status --json                  # JSON output
 ```
 
 Shows: project name, type, latest run, AI CLI availability, storage paths.
 
-### 3. Create aiteam prompts
+### 3. Create codeclaw prompts
 
 `apps/cli/src/commands/prompts.ts`:
 
 ```bash
-aiteam prompts list                   # List available prompt templates
-aiteam prompts show <name>            # Show template content
-aiteam prompts edit <name>            # Open in default editor ($EDITOR)
-aiteam prompts reset <name>           # Reset to default
-aiteam prompts validate               # Check all templates for valid variables
+codeclaw prompts list                   # List available prompt templates
+codeclaw prompts show <name>            # Show template content
+codeclaw prompts edit <name>            # Open in default editor ($EDITOR)
+codeclaw prompts reset <name>           # Reset to default
+codeclaw prompts validate               # Check all templates for valid variables
 ```
 
 Edit opens `$EDITOR` with the template file. On save, reloads.
 
-### 4. Create aiteam artifacts
+### 4. Create codeclaw artifacts
 
 `apps/cli/src/commands/artifacts.ts`:
 
 ```bash
-aiteam artifacts <runId>              # List all artifacts
-aiteam artifacts <runId> --type design # Filter by type
-aiteam artifacts <runId> --json       # JSON output
+codeclaw artifacts <runId>              # List all artifacts
+codeclaw artifacts <runId> --type design # Filter by type
+codeclaw artifacts <runId> --json       # JSON output
 ```
 
-### 5. Create aiteam open
+### 5. Create codeclaw open
 
 `apps/cli/src/commands/open.ts`:
 
 ```bash
-aiteam open ui                        # Open browser to localhost:4317
-aiteam open run <runId>               # Open run in browser
-aiteam open report <runId>            # Open final report
-aiteam open diff <runId>              # Open diff
-aiteam open config                    # Open config.json in editor
-aiteam open logs <runId>              # Open logs folder
+codeclaw open ui                        # Open browser to localhost:4317
+codeclaw open run <runId>               # Open run in browser
+codeclaw open report <runId>            # Open final report
+codeclaw open diff <runId>              # Open diff
+codeclaw open config                    # Open config.json in editor
+codeclaw open logs <runId>              # Open logs folder
 ```
 
 Uses platform-specific open command (open, xdg-open, start).
 
-### 6. Create aiteam clean
+### 6. Create codeclaw clean
 
 `apps/cli/src/commands/clean.ts`:
 
 ```bash
-aiteam clean --runs --older-than 30d  # Clean old runs
-aiteam clean --logs --older-than 7d   # Clean logs
-aiteam clean --all --older-than 90d   # Clean everything
-aiteam clean --dry-run                # Preview without deleting
+codeclaw clean --runs --older-than 30d  # Clean old runs
+codeclaw clean --logs --older-than 7d   # Clean logs
+codeclaw clean --all --older-than 90d   # Clean everything
+codeclaw clean --dry-run                # Preview without deleting
 ```
 
 Safety: always prompt for confirmation unless `--yes`.
 
-### 7. Create aiteam rollback
+### 7. Create codeclaw rollback
 
 `apps/cli/src/commands/rollback.ts`:
 
 ```bash
-aiteam rollback <runId>               # Rollback code changes
-aiteam rollback <runId> --dry-run     # Preview changes
-aiteam rollback <runId> --yes         # Skip confirmation
+codeclaw rollback <runId>               # Rollback code changes
+codeclaw rollback <runId> --dry-run     # Preview changes
+codeclaw rollback <runId> --yes         # Skip confirmation
 ```
 
 Uses git from Step 23's git service:
@@ -113,11 +113,11 @@ Uses git from Step 23's git service:
 ## Acceptance Criteria
 
 - All 7 management commands are registered and work
-- `aiteam config get/set` reads/writes config.json
-- `aiteam status` shows project overview
-- `aiteam prompts list/show/edit/reset` manages templates
-- `aiteam artifacts` lists run artifacts
-- `aiteam open` opens files/browser
-- `aiteam clean` safely removes old data
-- `aiteam rollback` reverts code changes with confirmation
-- All commands work gracefully when .ai-team is missing (show helpful message)
+- `codeclaw config get/set` reads/writes config.json
+- `codeclaw status` shows project overview
+- `codeclaw prompts list/show/edit/reset` manages templates
+- `codeclaw artifacts` lists run artifacts
+- `codeclaw open` opens files/browser
+- `codeclaw clean` safely removes old data
+- `codeclaw rollback` reverts code changes with confirmation
+- All commands work gracefully when .codeclaw is missing (show helpful message)

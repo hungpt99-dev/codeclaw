@@ -1,6 +1,6 @@
 import { access, readdir } from "node:fs/promises";
 import { join } from "node:path";
-import type { RepositoryAnalysis } from "@aiteam/shared";
+import type { RepositoryAnalysis } from "@codeclaw/shared";
 
 async function pathExists(path: string): Promise<boolean> {
   try {

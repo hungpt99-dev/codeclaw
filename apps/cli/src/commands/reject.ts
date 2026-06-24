@@ -5,8 +5,8 @@ import {
   initializeSchema,
   createRunRepository,
   createApprovalRepository,
-} from "@aiteam/storage";
-import type { ApprovalGate } from "@aiteam/shared";
+} from "@codeclaw/storage";
+import type { ApprovalGate } from "@codeclaw/shared";
 
 interface RejectOptions {
   gate?: string;
@@ -14,12 +14,12 @@ interface RejectOptions {
 }
 
 export async function rejectCommand(runId: string, options: RejectOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 

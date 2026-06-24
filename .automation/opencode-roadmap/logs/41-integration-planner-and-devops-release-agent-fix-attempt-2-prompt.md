@@ -58,7 +58,7 @@ packages/core lint:   16:10  error  'runDevopsReleaseAgent' is defined but never
 packages/core lint: ✖ 1 problem (1 error, 0 warnings)
 packages/core lint: Failed
 /Users/phamthanhhung/Desktop/MyProject/auto-code/packages/core:
-[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @aiteam/core@0.0.0 lint: `eslint src --ext .ts`
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @codeclaw/core@0.0.0 lint: `eslint src --ext .ts`
 Exit status 1
 [ELIFECYCLE] Command failed with exit code 1.
 [ELIFECYCLE] Command failed with exit code 1.

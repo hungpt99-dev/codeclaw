@@ -111,7 +111,7 @@ This step:
 1. Builds a simple mechanism to pipe prompt templates through the user's AI CLI tools
 2. Replaces deterministic agent output with AI-generated output from tools like `claude --print`
 3. Falls back to deterministic output when no AI CLI is available
-4. Loads prompt templates from disk (`.ai-team/prompts/`) instead of inline strings
+4. Loads prompt templates from disk (`.codeclaw/prompts/`) instead of inline strings
 
 The user configures which AI CLI to use per agent role (e.g., BA → `claude`, Architect → `claude`, PM → `gemini`). This is already defined in `config.json` under `agents.defaultBa`, `agents.defaultArchitect`, etc.
 
@@ -119,7 +119,7 @@ The user configures which AI CLI to use per agent role (e.g., BA → `claude`, A
 
 ```
 Agent function
-  → Load prompt template from .ai-team/prompts/<agent>.md
+  → Load prompt template from .codeclaw/prompts/<agent>.md
   → Render {{variables}} with workflow context
   → If AI CLI is configured:
       → Pipe prompt to: claude --print (or codex, gemini, aider)
@@ -462,10 +462,10 @@ Update `apps/cli/src/commands/doctor.ts`:
 
 - When AI CLI is configured and available, agents pipe prompts to `claude --print` (or configured tool) and use the output
 - When no AI CLI is configured or available, agents use deterministic fallback (existing behavior)
-- Prompt templates are loaded from `.ai-team/prompts/` (not inline strings)
+- Prompt templates are loaded from `.codeclaw/prompts/` (not inline strings)
 - Templates on disk are complete, self-contained prompts for AI CLI tools
 - Agent output is parsed into structured sections
-- `aiteam doctor` shows AI CLI availability per tool
+- `codeclaw doctor` shows AI CLI availability per tool
 - All existing tests pass
 - `pnpm build` and `pnpm typecheck` pass
 

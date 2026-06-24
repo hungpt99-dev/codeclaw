@@ -1,10 +1,10 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { execSync } from "node:child_process";
-import { configSchema } from "@aiteam/shared";
-import { openDatabase } from "@aiteam/storage";
-import { getMemoryStatus } from "@aiteam/memory";
-import { analyzeRepository } from "@aiteam/core";
+import { configSchema } from "@codeclaw/shared";
+import { openDatabase } from "@codeclaw/storage";
+import { getMemoryStatus } from "@codeclaw/memory";
+import { analyzeRepository } from "@codeclaw/core";
 import {
   createClaudeCodeAdapter,
   createCodexAdapter,
@@ -14,7 +14,7 @@ import {
   isGhAuthenticated,
   getJiraStatus,
   getSlackStatus,
-} from "@aiteam/adapters";
+} from "@codeclaw/adapters";
 
 interface CheckResult {
   name: string;
@@ -32,14 +32,14 @@ async function fileExists(path: string): Promise<boolean> {
 }
 
 export async function doctorCommand(): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
   const results: CheckResult[] = [];
 
   const aiTeamExists = await fileExists(aiTeamDir);
   results.push({
-    name: ".ai-team directory",
+    name: ".codeclaw directory",
     status: aiTeamExists ? "pass" : "fail",
-    message: aiTeamExists ? "Exists" : "Not found. Run 'aiteam init' first.",
+    message: aiTeamExists ? "Exists" : "Not found. Run 'codeclaw init' first.",
   });
 
   if (!aiTeamExists) {
@@ -279,7 +279,7 @@ export async function doctorCommand(): Promise<void> {
         const status = getSlackStatus({
           enabled: true,
           channelId: slackCfg.channelId,
-          tokenEnvRef: slackCfg.tokenEnvRef ?? "AITEAM_SLACK_TOKEN",
+          tokenEnvRef: slackCfg.tokenEnvRef ?? "CODECLAW_SLACK_TOKEN",
           notifyOn: ["report_ready"],
         });
         results.push({
@@ -311,7 +311,7 @@ export async function doctorCommand(): Promise<void> {
           email: jiraCfg.email,
           projectKey: jiraCfg.projectKey,
           defaultIssueType: "task",
-          tokenEnvRef: jiraCfg.tokenEnvRef ?? "AITEAM_JIRA_TOKEN",
+          tokenEnvRef: jiraCfg.tokenEnvRef ?? "CODECLAW_JIRA_TOKEN",
         });
         results.push({
           name: "Jira integration",
@@ -381,7 +381,7 @@ export async function doctorCommand(): Promise<void> {
     results.push({
       name: "Runtime memory",
       status: "warn",
-      message: "Not found. Run 'aiteam init' to create.",
+      message: "Not found. Run 'codeclaw init' to create.",
     });
   }
 
@@ -394,7 +394,7 @@ export async function doctorCommand(): Promise<void> {
 }
 
 function printResults(results: CheckResult[]): void {
-  console.log("\n🔍 aiteam doctor\n");
+  console.log("\n🔍 codeclaw doctor\n");
   for (const result of results) {
     const icon = result.status === "pass" ? "✅" : result.status === "warn" ? "⚠️" : "❌";
     console.log(`  ${icon} ${result.name}: ${result.message}`);

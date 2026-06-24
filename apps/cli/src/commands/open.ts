@@ -43,7 +43,7 @@ function openFolder(folderPath: string): void {
 }
 
 export function openUiCommand(): void {
-  console.log("\n🌐 Opening AI Team UI...\n");
+  console.log("\n🌐 Opening CodeClaw UI...\n");
   openBrowser("http://localhost:4317");
 }
 
@@ -63,11 +63,11 @@ export function openDiffCommand(runId: string): void {
 }
 
 export async function openConfigCommand(): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -75,7 +75,7 @@ export async function openConfigCommand(): Promise<void> {
   try {
     await access(configPath);
   } catch {
-    console.log("❌ config.json not found. Run 'aiteam init' first.");
+    console.log("❌ config.json not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -84,11 +84,11 @@ export async function openConfigCommand(): Promise<void> {
 }
 
 export async function openLogsCommand(runId: string): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 

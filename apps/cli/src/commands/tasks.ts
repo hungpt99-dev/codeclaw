@@ -1,13 +1,13 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { configSchema } from "@aiteam/shared";
-import { getArtifactPaths, writeArtifact, runPmAgent } from "@aiteam/core";
+import { configSchema } from "@codeclaw/shared";
+import { getArtifactPaths, writeArtifact, runPmAgent } from "@codeclaw/core";
 import {
   openDatabase,
   initializeSchema,
   createRunRepository,
   createArtifactRepository,
-} from "@aiteam/storage";
+} from "@codeclaw/storage";
 
 interface TasksOptions {
   run: string;
@@ -16,12 +16,12 @@ interface TasksOptions {
 }
 
 export async function tasksCommand(options: TasksOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -53,7 +53,7 @@ export async function tasksCommand(options: TasksOptions): Promise<void> {
   const acceptanceCriteria = await readReq(join(paths.requirementDir, "acceptance-criteria.md"));
 
   if (!technicalDesign) {
-    console.log("❌ Technical design not found. Run 'aiteam plan' first.");
+    console.log("❌ Technical design not found. Run 'codeclaw plan' first.");
     db.close();
     process.exit(1);
   }

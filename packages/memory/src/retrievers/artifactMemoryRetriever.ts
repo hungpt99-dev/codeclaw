@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { openDatabase, initializeSchema, createMemoryRepository } from "@aiteam/storage";
+import { openDatabase, initializeSchema, createMemoryRepository } from "@codeclaw/storage";
 import { getDatabasePath } from "../memoryPaths.js";
 
 export interface ArtifactMemoryEntry {

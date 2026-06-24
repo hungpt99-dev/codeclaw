@@ -1,5 +1,5 @@
 {
-  "name": "@aiteam/local-server",
+  "name": "@codeclaw/local-server",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,7 +15,7 @@
     "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
-    "@aiteam/server": "workspace:*",
+    "@codeclaw/server": "workspace:*",
     "fastify": "^5.4.0"
   }
 }

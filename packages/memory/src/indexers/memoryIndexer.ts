@@ -1,7 +1,7 @@
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
-import { openDatabase, initializeSchema, createMemoryRepository } from "@aiteam/storage";
-import type { MemoryScope } from "@aiteam/shared";
+import { openDatabase, initializeSchema, createMemoryRepository } from "@codeclaw/storage";
+import type { MemoryScope } from "@codeclaw/shared";
 import { getMemoryDir, getDatabasePath } from "../memoryPaths.js";
 import { DEFAULT_MEMORY_FILES } from "../memoryDefaults.js";
 

@@ -4,29 +4,29 @@
 
 ## 1. PDFs Found
 
-| #   | PDF File                                    | Size     |
-| --- | ------------------------------------------- | -------- |
-| 1   | Product Requirement Document.pdf            | 32 pages |
-| 2   | Local AI Software Team Technical Design.pdf | 49 pages |
-| 3   | Workflow Design Document.pdf                | 45 pages |
-| 4   | CLI Command Spec.pdf                        | 64 pages |
-| 5   | Local Web UI Specification.pdf              | 56 pages |
-| 6   | Product Roadmap.pdf                         | 34 pages |
-| 7   | Local AI Software Team.pdf                  | 18 pages |
+| #   | PDF File                         | Size     |
+| --- | -------------------------------- | -------- |
+| 1   | Product Requirement Document.pdf | 32 pages |
+| 2   | CodeClaw Technical Design.pdf    | 49 pages |
+| 3   | Workflow Design Document.pdf     | 45 pages |
+| 4   | CLI Command Spec.pdf             | 64 pages |
+| 5   | Local Web UI Specification.pdf   | 56 pages |
+| 6   | Product Roadmap.pdf              | 34 pages |
+| 7   | CodeClaw.pdf                     | 18 pages |
 
 Total: 7 PDFs found.
 
 ## 2. Markdown Files Created
 
-| #   | Markdown File                  | Source PDF                                  |
-| --- | ------------------------------ | ------------------------------------------- |
-| 1   | docs/PRD.md                    | Product Requirement Document.pdf            |
-| 2   | docs/TECHNICAL_DESIGN.md       | Local AI Software Team Technical Design.pdf |
-| 3   | docs/WORKFLOW_DESIGN.md        | Workflow Design Document.pdf                |
-| 4   | docs/CLI_COMMAND_SPEC.md       | CLI Command Spec.pdf                        |
-| 5   | docs/LOCAL_WEB_UI_SPEC.md      | Local Web UI Specification.pdf              |
-| 6   | docs/ROADMAP.md                | Product Roadmap.pdf                         |
-| 7   | docs/LOCAL_AI_SOFTWARE_TEAM.md | Local AI Software Team.pdf                  |
+| #   | Markdown File                  | Source PDF                       |
+| --- | ------------------------------ | -------------------------------- |
+| 1   | docs/PRD.md                    | Product Requirement Document.pdf |
+| 2   | docs/TECHNICAL_DESIGN.md       | CodeClaw Technical Design.pdf    |
+| 3   | docs/WORKFLOW_DESIGN.md        | Workflow Design Document.pdf     |
+| 4   | docs/CLI_COMMAND_SPEC.md       | CLI Command Spec.pdf             |
+| 5   | docs/LOCAL_WEB_UI_SPEC.md      | Local Web UI Specification.pdf   |
+| 6   | docs/ROADMAP.md                | Product Roadmap.pdf              |
+| 7   | docs/LOCAL_AI_SOFTWARE_TEAM.md | CodeClaw.pdf                     |
 
 Total: 7 Markdown files created.
 

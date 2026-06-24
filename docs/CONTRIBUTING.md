@@ -33,7 +33,7 @@ This runs: format check → lint → typecheck → tests → dependency check �
 ## Adding a Package
 
 1. Create directory under `packages/` or `apps/`
-2. Add `package.json` with `@aiteam/<name>` name
+2. Add `package.json` with `@codeclaw/<name>` name
 3. Add `tsconfig.json` extending `../../tsconfig.base.json`
 4. Add scripts: `typecheck`, `lint`, `lint:fix`, `test`, `build`
 5. Update `pnpm-workspace.yaml` if needed

@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
-import { openDatabase, initializeSchema, createMemoryRepository } from "@aiteam/storage";
-import type { AgentRole } from "@aiteam/shared";
+import { openDatabase, initializeSchema, createMemoryRepository } from "@codeclaw/storage";
+import type { AgentRole } from "@codeclaw/shared";
 import { getDatabasePath } from "../memoryPaths.js";
 
 export interface AgentMemoryEntry {

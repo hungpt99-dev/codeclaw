@@ -1,5 +1,5 @@
 {
-  "name": "@aiteam/adapters",
+  "name": "@codeclaw/adapters",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,7 +18,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@aiteam/shared": "workspace:*",
+    "@codeclaw/shared": "workspace:*",
     "execa": "^9.5.2",
     "html-to-docx": "^1.8.0",
     "marked": "^15.0.0"

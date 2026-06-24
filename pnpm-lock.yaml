@@ -56,22 +56,22 @@ importers:
 
   apps/cli:
     dependencies:
-      '@aiteam/adapters':
+      '@codeclaw/adapters':
         specifier: workspace:*
         version: link:../../packages/adapters
-      '@aiteam/core':
+      '@codeclaw/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@aiteam/memory':
+      '@codeclaw/memory':
         specifier: workspace:*
         version: link:../../packages/memory
-      '@aiteam/server':
+      '@codeclaw/server':
         specifier: workspace:*
         version: link:../../packages/server
-      '@aiteam/shared':
+      '@codeclaw/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@aiteam/storage':
+      '@codeclaw/storage':
         specifier: workspace:*
         version: link:../../packages/storage
       commander:
@@ -80,7 +80,7 @@ importers:
 
   apps/local-server:
     dependencies:
-      '@aiteam/server':
+      '@codeclaw/server':
         specifier: workspace:*
         version: link:../../packages/server
       fastify:
@@ -138,7 +138,7 @@ importers:
 
   packages/adapters:
     dependencies:
-      '@aiteam/shared':
+      '@codeclaw/shared':
         specifier: workspace:*
         version: link:../shared
       execa:
@@ -157,34 +157,34 @@ importers:
 
   packages/core:
     dependencies:
-      '@aiteam/adapters':
+      '@codeclaw/adapters':
         specifier: workspace:*
         version: link:../adapters
-      '@aiteam/shared':
+      '@codeclaw/shared':
         specifier: workspace:*
         version: link:../shared
 
   packages/memory:
     dependencies:
-      '@aiteam/shared':
+      '@codeclaw/shared':
         specifier: workspace:*
         version: link:../shared
-      '@aiteam/storage':
+      '@codeclaw/storage':
         specifier: workspace:*
         version: link:../storage
 
   packages/server:
     dependencies:
-      '@aiteam/adapters':
+      '@codeclaw/adapters':
         specifier: workspace:*
         version: link:../adapters
-      '@aiteam/core':
+      '@codeclaw/core':
         specifier: workspace:*
         version: link:../core
-      '@aiteam/shared':
+      '@codeclaw/shared':
         specifier: workspace:*
         version: link:../shared
-      '@aiteam/storage':
+      '@codeclaw/storage':
         specifier: workspace:*
         version: link:../storage
       fastify:
@@ -199,7 +199,7 @@ importers:
 
   packages/storage:
     dependencies:
-      '@aiteam/shared':
+      '@codeclaw/shared':
         specifier: workspace:*
         version: link:../shared
       better-sqlite3:

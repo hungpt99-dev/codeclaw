@@ -1,7 +1,7 @@
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import type { AiTaskInput, AiTaskResult } from "@aiteam/shared";
+import type { AiTaskInput, AiTaskResult } from "@codeclaw/shared";
 import { runShellCommand } from "../../shell/shellRunner.js";
 import { getChangedFiles, saveGitSnapshot, generateDiff } from "../../git/gitService.js";
 import type { AiCliAdapter } from "../aiCliAdapter.js";
@@ -13,8 +13,8 @@ async function checkAiderAvailable(): Promise<boolean> {
       args: ["aider"],
       cwd: process.cwd(),
       timeoutSeconds: 5,
-      stdoutPath: join(tmpdir(), `aiteam-aider-check-${String(Date.now())}.out`),
-      stderrPath: join(tmpdir(), `aiteam-aider-check-${String(Date.now())}.err`),
+      stdoutPath: join(tmpdir(), `codeclaw-aider-check-${String(Date.now())}.out`),
+      stderrPath: join(tmpdir(), `codeclaw-aider-check-${String(Date.now())}.err`),
     });
     return result.exitCode === 0;
   } catch {
@@ -31,12 +31,12 @@ export function createAiderAdapter(): AiCliAdapter {
     },
 
     async runTask(input: AiTaskInput): Promise<AiTaskResult> {
-      const snapshotDir = join(input.workingDir, ".ai-team", ".snapshots");
-      const diffDir = join(input.workingDir, ".ai-team", ".diffs");
+      const snapshotDir = join(input.workingDir, ".codeclaw", ".snapshots");
+      const diffDir = join(input.workingDir, ".codeclaw", ".diffs");
 
       await saveGitSnapshot(input.workingDir, snapshotDir);
 
-      const tmpDir = await mkdtemp(join(tmpdir(), "aiteam-aider-"));
+      const tmpDir = await mkdtemp(join(tmpdir(), "codeclaw-aider-"));
       const promptFile = join(tmpDir, "prompt.md");
       await writeFile(promptFile, input.prompt, "utf-8");
 

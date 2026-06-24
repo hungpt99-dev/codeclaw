@@ -1,6 +1,6 @@
 import { join } from "node:path";
-import { createRunId, nowIso } from "@aiteam/shared";
-import type { SlackIntegrationConfig } from "@aiteam/shared";
+import { createRunId, nowIso } from "@codeclaw/shared";
+import type { SlackIntegrationConfig } from "@codeclaw/shared";
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
 import { runBaAgent } from "../agents/baAgent.js";
 import { runArchitectAgent } from "../agents/architectAgent.js";
@@ -930,7 +930,7 @@ export async function runAssistedWorkflow(
     };
     const slackText = buildReportReadyMessage(slackInput);
     try {
-      const { notifySlack } = await import("@aiteam/adapters");
+      const { notifySlack } = await import("@codeclaw/adapters");
       await notifySlack(input.slackConfig, "report_ready", slackText, true);
     } catch {
       // Slack notification is optional

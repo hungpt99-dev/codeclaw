@@ -1,14 +1,14 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { runAgent, renderPrompt } from "@aiteam/adapters";
-import type { AiCliTool } from "@aiteam/adapters";
+import { runAgent, renderPrompt } from "@codeclaw/adapters";
+import type { AiCliTool } from "@codeclaw/adapters";
 import type { ArtifactPaths } from "../artifacts/artifactWriter.js";
 import {
   generateTraceability,
   traceabilityToMarkdown,
 } from "../traceability/traceabilityEngine.js";
 import { parseTraceabilityOutput } from "./parsers/traceabilityOutputParser.js";
-import type { TraceabilityMatrix } from "@aiteam/shared";
+import type { TraceabilityMatrix } from "@codeclaw/shared";
 
 export interface TraceabilityAgentInput {
   runId: string;

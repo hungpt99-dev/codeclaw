@@ -1,6 +1,6 @@
 import { readdir } from "node:fs/promises";
 import { join, relative } from "node:path";
-import { openDatabase, initializeSchema, createMemoryRepository } from "@aiteam/storage";
+import { openDatabase, initializeSchema, createMemoryRepository } from "@codeclaw/storage";
 import { getDatabasePath } from "../memoryPaths.js";
 
 export interface ArtifactIndexResult {
@@ -20,7 +20,7 @@ const DENY_PATTERNS = [
   "build",
   "coverage",
   ".git",
-  ".ai-team",
+  ".codeclaw",
 ];
 
 function isDenied(filePath: string): boolean {
@@ -39,7 +39,7 @@ export async function indexArtifacts(
   let skipped = 0;
   const errors: string[] = [];
 
-  const searchDir = runDir ?? join(projectRoot, ".ai-team", "runs");
+  const searchDir = runDir ?? join(projectRoot, ".codeclaw", "runs");
 
   try {
     const entries = await readdir(searchDir, { withFileTypes: true });

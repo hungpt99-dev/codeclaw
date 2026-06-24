@@ -39,7 +39,11 @@ export interface JiraStatus {
 }
 
 function getJiraToken(config: JiraConfig): string | undefined {
-  return process.env[config.tokenEnvRef];
+  const legacyMap: Record<string, string> = {
+    CODECLAW_JIRA_TOKEN: "AITEAM_JIRA_TOKEN",
+  };
+  const legacyKey = legacyMap[config.tokenEnvRef];
+  return process.env[config.tokenEnvRef] ?? (legacyKey ? process.env[legacyKey] : undefined);
 }
 
 export function getJiraStatus(config: JiraConfig): JiraStatus {

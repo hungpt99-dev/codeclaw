@@ -1,11 +1,11 @@
-# Local AI Software Team — Full Technical Design Document
+# CodeClaw — Full Technical Design Document
 
-> Converted from: `Local AI Software Team Technical Design.pdf`
+> Converted from: `CodeClaw Technical Design.pdf`
 > Conversion note: Content preserved from PDF extraction. No summarization or rewriting intended.
 
 ## 1. Technical Summary
 
-Local AI Software Team is a local-first developer tool that helps users turn rough software requirements into structured software delivery outputs.
+CodeClaw is a local-first developer tool that helps users turn rough software requirements into structured software delivery outputs.
 
 The product has two main interfaces:
 
@@ -32,7 +32,7 @@ It orchestrates existing AI coding tools such as:
 - OpenHands later
 - other AI CLIs later
 
-The system acts as a local AI software team:
+The system acts as a CodeClaw:
 
 - Business Analyst Agent
 - Product Owner Agent
@@ -49,7 +49,7 @@ The system acts as a local AI software team:
 The user should be able to run:
 
 ```bash
-aiteam ui
+codeclaw ui
 ```
 
 Then open:
@@ -76,7 +76,7 @@ From the local web UI, the user can:
 The user should also be able to run directly from CLI:
 
 ```bash
-aiteam run "Thêm chức năng reset password bằng OTP email"
+codeclaw run "Thêm chức năng reset password bằng OTP email"
 ```
 
 The system will produce:
@@ -133,7 +133,7 @@ The MVP should focus on:
         │                            │
         ▼                            ▼
 ┌─────────────────┐         ┌────────────────────────┐
-│ aiteam CLI       │        │ Local Web UI             │
+│ codeclaw CLI       │        │ Local Web UI             │
 │                  │        │ http://localhost:4317    │
 └────────┬────────┘         └───────────┬────────────┘
           │                              │
@@ -392,7 +392,7 @@ docs/
 Inside each user project:
 
 ```
-.ai-team/
+.codeclaw/
   config.json
   database.sqlite
 
@@ -463,13 +463,13 @@ Inside each user project:
 ### 8.1 init
 
 ```bash
-aiteam init
+codeclaw init
 ```
 
 Actions:
 
 1. Detect Git repository.
-2. Create .ai-team folder.
+2. Create .codeclaw folder.
 3. Create config.json.
 4. Create SQLite database.
 5. Copy default prompt templates.
@@ -479,14 +479,14 @@ Actions:
 Options:
 
 ```bash
-aiteam init --type java-spring-boot
-aiteam init --force
+codeclaw init --type java-spring-boot
+codeclaw init --force
 ```
 
 ### 8.2 ui
 
 ```bash
-aiteam ui
+codeclaw ui
 ```
 
 Default URL: http://localhost:4317
@@ -494,14 +494,14 @@ Default URL: http://localhost:4317
 Options:
 
 ```bash
-aiteam ui --port 4317
-aiteam ui --open
+codeclaw ui --port 4317
+codeclaw ui --open
 ```
 
 ### 8.3 doctor
 
 ```bash
-aiteam doctor
+codeclaw doctor
 ```
 
 Checks:
@@ -509,7 +509,7 @@ Checks:
 - Node.js installed
 - Git installed
 - current folder is Git repo
-- .ai-team initialized
+- .codeclaw initialized
 - Claude Code installed
 - Codex CLI installed
 - Gemini CLI installed
@@ -522,25 +522,25 @@ Checks:
 ### 8.4 run
 
 ```bash
-aiteam run "Thêm chức năng reset password bằng OTP email"
+codeclaw run "Thêm chức năng reset password bằng OTP email"
 ```
 
 Options:
 
 ```bash
-aiteam run "..." --mode docs-only
-aiteam run "..." --mode assisted
-aiteam run "..." --mode semi-auto --agent codex
-aiteam run "..." --mode multi-agent
-aiteam run "..." --max-iterations 3
-aiteam run "..." --no-code
-aiteam run "..." --no-test
+codeclaw run "..." --mode docs-only
+codeclaw run "..." --mode assisted
+codeclaw run "..." --mode semi-auto --agent codex
+codeclaw run "..." --mode multi-agent
+codeclaw run "..." --max-iterations 3
+codeclaw run "..." --no-code
+codeclaw run "..." --no-test
 ```
 
 ### 8.5 spec
 
 ```bash
-aiteam spec --run <runId>
+codeclaw spec --run <runId>
 ```
 
 Output: clarified requirement, business rules, acceptance criteria, open questions, assumptions.
@@ -548,7 +548,7 @@ Output: clarified requirement, business rules, acceptance criteria, open questio
 ### 8.6 plan
 
 ```bash
-aiteam plan --run <runId>
+codeclaw plan --run <runId>
 ```
 
 Output: technical design, API design, DB design, task breakdown, test matrix, implementation plan.
@@ -556,7 +556,7 @@ Output: technical design, API design, DB design, task breakdown, test matrix, im
 ### 8.7 code
 
 ```bash
-aiteam code --run <runId> --agent codex
+codeclaw code --run <runId> --agent codex
 ```
 
 Supported agent values: claude, codex, gemini, aider.
@@ -566,7 +566,7 @@ Output: agent logs, changed files, diff patch, implementation notes.
 ### 8.8 test
 
 ```bash
-aiteam test --run <runId>
+codeclaw test --run <runId>
 ```
 
 Options: --unit, --integration, --build, --lint.
@@ -574,7 +574,7 @@ Options: --unit, --integration, --build, --lint.
 ### 8.9 review
 
 ```bash
-aiteam review --run <runId>
+codeclaw review --run <runId>
 ```
 
 Output: review report, security review, requirement coverage report.
@@ -582,7 +582,7 @@ Output: review report, security review, requirement coverage report.
 ### 8.10 report
 
 ```bash
-aiteam report --run <runId>
+codeclaw report --run <runId>
 ```
 
 Output: final report, traceability matrix, next steps, remaining risks.
@@ -692,7 +692,7 @@ POST   /api/integrations/github/test
 
 ## 11. Configuration
 
-Config file: `.ai-team/config.json`
+Config file: `.codeclaw/config.json`
 
 Example:
 
@@ -792,7 +792,7 @@ Config stores only token references:
     "siteUrl": "https://company.atlassian.net",
     "email": "user@example.com",
     "projectKey": "ABC",
-    "tokenRef": "aiteam:jira:default"
+    "tokenRef": "codeclaw:jira:default"
   }
 }
 ```
@@ -802,9 +802,9 @@ Actual token is stored in OS keychain.
 ### 12.4 Environment Variable Option
 
 ```bash
-export AITEAM_JIRA_TOKEN="..."
-export AITEAM_SLACK_BOT_TOKEN="..."
-export AITEAM_GITHUB_TOKEN="..."
+export CODECLAW_JIRA_TOKEN="..."
+export CODECLAW_SLACK_BOT_TOKEN="..."
+export CODECLAW_GITHUB_TOKEN="..."
 ```
 
 Resolution priority:
@@ -1080,7 +1080,7 @@ interface WorkflowStep {
 type WorkflowContext = {
   project: Project;
   run: Run;
-  config: AiTeamConfig;
+  config: CodeClawConfig;
   paths: RunPaths;
   artifacts: Artifact[];
   state: Record<string, unknown>;
@@ -1594,7 +1594,7 @@ The selected agent "codex" is not available on this machine.
 Suggested actions:
 1. Install Codex CLI.
 2. Change default developer agent in Settings.
-3. Run: aiteam doctor
+3. Run: codeclaw doctor
 ```
 
 ## 27. Logging
@@ -1611,7 +1611,7 @@ Suggested actions:
 ### 27.2 Log Location
 
 ```
-.ai-team/runs/<runId>/logs/
+.codeclaw/runs/<runId>/logs/
   workflow.log
   shell.log
   agent.log
@@ -1632,9 +1632,9 @@ Before writing logs:
 
 ## 28. MVP Implementation Plan
 
-**Phase 1: CLI + Local Data Foundation**: monorepo setup, CLI app, init, doctor, config loader, .ai-team folder creation, SQLite setup, run folder creation.
+**Phase 1: CLI + Local Data Foundation**: monorepo setup, CLI app, init, doctor, config loader, .codeclaw folder creation, SQLite setup, run folder creation.
 
-**Phase 2: Local Web UI Foundation**: aiteam ui, Fastify local server, React local web UI, settings page, run history page, run detail page, docs viewer.
+**Phase 2: Local Web UI Foundation**: codeclaw ui, Fastify local server, React local web UI, settings page, run history page, run detail page, docs viewer.
 
 **Phase 3: Requirement Docs Workflow**: run --mode docs-only, BA Agent prompt, Architect Agent prompt, PM Agent prompt, QA Agent prompt, Markdown artifact generator, artifact metadata storage. Outputs: clarified requirement, acceptance criteria, technical design, task breakdown, test matrix, final report.
 
@@ -1662,7 +1662,7 @@ Avoid in MVP: cloud backend, desktop app, login, billing, full Jira automation, 
 
 ## 30. Example End-to-End Flow
 
-User starts local UI: `aiteam ui`
+User starts local UI: `codeclaw ui`
 
 User enters: "Thêm API export invoice CSV theo hotelId, date range, status."
 
@@ -1689,7 +1689,7 @@ If user approves code generation:
 Final output:
 
 ```
-.ai-team/runs/2026-06-22-export-invoice-csv/
+.codeclaw/runs/2026-06-22-export-invoice-csv/
   requirement/
   design/
   tasks/
@@ -1702,7 +1702,7 @@ Final output:
 
 ## 31. Final Technical Statement
 
-Local AI Software Team should be built as:
+CodeClaw should be built as:
 
 - CLI-first
 - Local-web-assisted
@@ -1728,4 +1728,4 @@ AI CLI execution → code patch → test result → review report → traceabili
 
 The long-term version should become:
 
-a local AI software team that coordinates existing AI coding tools and optional external integrations to move software work from vague requirement to reviewed delivery package.
+a CodeClaw that coordinates existing AI coding tools and optional external integrations to move software work from vague requirement to reviewed delivery package.

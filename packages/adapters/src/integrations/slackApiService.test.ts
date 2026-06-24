@@ -10,17 +10,17 @@ import type { SlackConfig } from "./slackAdapter.js";
 const mockConfig: SlackConfig = {
   enabled: true,
   channelId: "C12345",
-  tokenEnvRef: "AITEAM_SLACK_TOKEN",
+  tokenEnvRef: "CODECLAW_SLACK_TOKEN",
   notifyOn: ["report_ready"],
 };
 
 beforeEach(() => {
   vi.clearAllMocks();
-  process.env.AITEAM_SLACK_TOKEN = "xoxb-test-token";
+  process.env.CODECLAW_SLACK_TOKEN = "xoxb-test-token";
 });
 
 afterEach(() => {
-  delete process.env.AITEAM_SLACK_TOKEN;
+  delete process.env.CODECLAW_SLACK_TOKEN;
 });
 
 function resolveOk(data: Record<string, unknown>): Response {
@@ -62,7 +62,7 @@ describe("slackRequest", () => {
   });
 
   it("throws SlackApiError when token is missing", async () => {
-    delete process.env.AITEAM_SLACK_TOKEN;
+    delete process.env.CODECLAW_SLACK_TOKEN;
     await expect(slackRequest(mockConfig, "auth.test", {})).rejects.toThrow(SlackApiError);
     await expect(slackRequest(mockConfig, "auth.test", {})).rejects.toThrow(
       "Slack token not found",

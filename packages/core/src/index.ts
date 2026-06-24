@@ -87,7 +87,7 @@ export type { AiToolConfig, PlannerSelection } from "./workflows/workflowHelpers
 export { resolvePlannerSelection, detectPlannerSelection } from "./workflows/workflowHelpers.js";
 export { runWorkflowWithGates } from "./workflows/workflowRunner.js";
 export { analyzeRepository, analysisToMarkdown } from "./repoAnalyzer/repoAnalyzer.js";
-export type { RepositoryAnalysis } from "@aiteam/shared";
+export type { RepositoryAnalysis } from "@codeclaw/shared";
 export type {
   WorkflowInput,
   WorkflowResult,
@@ -110,7 +110,7 @@ export {
   clearEventHistory,
 } from "./workflows/workflowEmitter.js";
 export { parseTraceabilityOutput } from "./agents/parsers/traceabilityOutputParser.js";
-export type { TraceabilityMatrix, TraceabilityItem, CoverageStatus } from "@aiteam/shared";
+export type { TraceabilityMatrix, TraceabilityItem, CoverageStatus } from "@codeclaw/shared";
 export {
   checkFileSafety,
   checkCommandSafety,

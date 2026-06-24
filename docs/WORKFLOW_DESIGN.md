@@ -5,11 +5,11 @@
 
 ## 1. Document Overview
 
-**Product Name**: Local AI Software Team
+**Product Name**: CodeClaw
 
 **Document Type**: Workflow Design Document
 
-**Purpose**: This document defines the main workflows of Local AI Software Team.
+**Purpose**: This document defines the main workflows of CodeClaw.
 
 It explains how a rough requirement moves through different AI roles and product stages until it becomes structured software delivery output.
 
@@ -28,7 +28,7 @@ This document does not focus on low-level technical implementation.
 
 ## 2. Workflow Philosophy
 
-Local AI Software Team should behave like a structured software team, not like a single AI chat.
+CodeClaw should behave like a structured software team, not like a single AI chat.
 
 A normal AI coding tool often works like this:
 
@@ -36,7 +36,7 @@ A normal AI coding tool often works like this:
 User prompt → AI writes code
 ```
 
-Local AI Software Team should work like this:
+CodeClaw should work like this:
 
 ```
 Rough requirement
@@ -979,42 +979,42 @@ User options: approve, reject, edit plan, switch mode, cancel.
 ### 13.1 CLI Flow Commands
 
 ```
-aiteam run
-aiteam spec
-aiteam scope
-aiteam analyze
-aiteam plan
-aiteam tasks
-aiteam tests
-aiteam code
-aiteam review
-aiteam report
+codeclaw run
+codeclaw spec
+codeclaw scope
+codeclaw analyze
+codeclaw plan
+codeclaw tasks
+codeclaw tests
+codeclaw code
+codeclaw review
+codeclaw report
 ```
 
 ### 13.2 Full Run Command
 
 ```
-aiteam run "raw requirement" --mode docs-only
-aiteam run "raw requirement" --mode assisted
-aiteam run "raw requirement" --mode semi-auto --agent codex
+codeclaw run "raw requirement" --mode docs-only
+codeclaw run "raw requirement" --mode assisted
+codeclaw run "raw requirement" --mode semi-auto --agent codex
 ```
 
 ### 13.3 Resume Command
 
 ```
-aiteam resume <runId>
+codeclaw resume <runId>
 ```
 
 ### 13.4 Cancel Command
 
 ```
-aiteam cancel <runId>
+codeclaw cancel <runId>
 ```
 
 ### 13.5 Report Command
 
 ```
-aiteam report <runId>
+codeclaw report <runId>
 ```
 
 ## 14. Example Workflow: Docs-only Mode
@@ -1163,7 +1163,7 @@ Generate Jira-ready tasks: true
 
 ## 21. Final Workflow Summary
 
-Local AI Software Team should not simply send a prompt to a coding agent.
+CodeClaw should not simply send a prompt to a coding agent.
 
 It should guide a software delivery workflow:
 

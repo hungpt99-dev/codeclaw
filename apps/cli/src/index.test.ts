@@ -11,7 +11,7 @@ import { showCommand } from "./commands/show.js";
 import { uiCommand } from "./commands/ui.js";
 
 function tempDir(): string {
-  return join(tmpdir(), "aiteam-cli-test-" + randomUUID());
+  return join(tmpdir(), "codeclaw-cli-test-" + randomUUID());
 }
 
 function mockProcessExit() {
@@ -36,22 +36,22 @@ describe("initCommand", () => {
     await rm(cwd, { recursive: true, force: true });
   });
 
-  it("creates .ai-team with all required files", async () => {
+  it("creates .codeclaw with all required files", async () => {
     await initCommand({});
 
     const { access } = await import("node:fs/promises");
-    await access(join(cwd, ".ai-team"));
-    await access(join(cwd, ".ai-team", "config.json"));
-    await access(join(cwd, ".ai-team", "database.sqlite"));
-    await access(join(cwd, ".ai-team", "prompts"));
-    await access(join(cwd, ".ai-team", "runs"));
+    await access(join(cwd, ".codeclaw"));
+    await access(join(cwd, ".codeclaw", "config.json"));
+    await access(join(cwd, ".codeclaw", "database.sqlite"));
+    await access(join(cwd, ".codeclaw", "prompts"));
+    await access(join(cwd, ".codeclaw", "runs"));
   });
 
   it("creates valid config.json", async () => {
     await initCommand({});
 
     const { readFile } = await import("node:fs/promises");
-    const raw = await readFile(join(cwd, ".ai-team", "config.json"), "utf-8");
+    const raw = await readFile(join(cwd, ".codeclaw", "config.json"), "utf-8");
     const config = JSON.parse(raw) as Record<string, unknown>;
     expect(config.version).toBe("0.1.0");
     const workflow = config.workflow as Record<string, unknown>;
@@ -62,7 +62,7 @@ describe("initCommand", () => {
     await initCommand({ type: "mobile" });
 
     const { readFile } = await import("node:fs/promises");
-    const raw = await readFile(join(cwd, ".ai-team", "config.json"), "utf-8");
+    const raw = await readFile(join(cwd, ".codeclaw", "config.json"), "utf-8");
     const config = JSON.parse(raw) as Record<string, unknown>;
     const project = config.project as Record<string, unknown>;
     expect(project.type).toBe("mobile");
@@ -72,7 +72,7 @@ describe("initCommand", () => {
     await initCommand({ outputLanguage: "vietnamese" });
 
     const { readFile } = await import("node:fs/promises");
-    const raw = await readFile(join(cwd, ".ai-team", "config.json"), "utf-8");
+    const raw = await readFile(join(cwd, ".codeclaw", "config.json"), "utf-8");
     const config = JSON.parse(raw) as Record<string, unknown>;
     const workflow = config.workflow as Record<string, unknown>;
     expect(workflow.defaultOutputLanguage).toBe("vietnamese");
@@ -93,7 +93,7 @@ describe("initCommand", () => {
     await initCommand({ force: true });
 
     const { access } = await import("node:fs/promises");
-    await access(join(cwd, ".ai-team", "config.json"));
+    await access(join(cwd, ".codeclaw", "config.json"));
   });
 });
 
@@ -113,7 +113,7 @@ describe("doctorCommand", () => {
     await rm(cwd, { recursive: true, force: true });
   });
 
-  it("fails when .ai-team does not exist", async () => {
+  it("fails when .codeclaw does not exist", async () => {
     const mockExit = mockProcessExit();
 
     await expect(doctorCommand()).rejects.toThrow("process.exit");
@@ -121,7 +121,7 @@ describe("doctorCommand", () => {
     mockExit.mockRestore();
   });
 
-  it("passes when .ai-team is properly initialized", async () => {
+  it("passes when .codeclaw is properly initialized", async () => {
     await initCommand({});
 
     const mockExit = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
@@ -151,7 +151,7 @@ describe("runCommand", () => {
     await rm(cwd, { recursive: true, force: true });
   });
 
-  it("fails when .ai-team does not exist", async () => {
+  it("fails when .codeclaw does not exist", async () => {
     const emptyDir = tempDir();
     await mkdir(emptyDir, { recursive: true });
     process.chdir(emptyDir);
@@ -168,7 +168,7 @@ describe("runCommand", () => {
     await runCommand("Build a todo app", {});
 
     const { readdir, access } = await import("node:fs/promises");
-    const runsDir = join(cwd, ".ai-team", "runs");
+    const runsDir = join(cwd, ".codeclaw", "runs");
     const entries = await readdir(runsDir);
     expect(entries.length).toBeGreaterThan(0);
 
@@ -259,7 +259,7 @@ describe("listCommand", () => {
     spy.mockRestore();
   });
 
-  it("fails when .ai-team does not exist", async () => {
+  it("fails when .codeclaw does not exist", async () => {
     const emptyDir = tempDir();
     await mkdir(emptyDir, { recursive: true });
     process.chdir(emptyDir);
@@ -323,7 +323,7 @@ describe("showCommand", () => {
     runSpy.mockRestore();
   });
 
-  it("fails when .ai-team does not exist", async () => {
+  it("fails when .codeclaw does not exist", async () => {
     const emptyDir = tempDir();
     await mkdir(emptyDir, { recursive: true });
     process.chdir(emptyDir);
@@ -353,7 +353,7 @@ describe("uiCommand", () => {
     await rm(cwd, { recursive: true, force: true });
   });
 
-  it("fails when .ai-team does not exist", async () => {
+  it("fails when .codeclaw does not exist", async () => {
     const mockExit = mockProcessExit();
 
     await expect(uiCommand({})).rejects.toThrow("process.exit");
@@ -364,10 +364,10 @@ describe("uiCommand", () => {
   it("starts server and prints URL", async () => {
     await initCommand({});
 
-    const { createApp } = await import("@aiteam/server");
+    const { createApp } = await import("@codeclaw/server");
     const app = createApp({
-      dbPath: join(cwd, ".ai-team", "database.sqlite"),
-      promptsDir: join(cwd, ".ai-team", "prompts"),
+      dbPath: join(cwd, ".codeclaw", "database.sqlite"),
+      promptsDir: join(cwd, ".codeclaw", "prompts"),
     });
 
     const port = 14317;
@@ -383,10 +383,10 @@ describe("uiCommand", () => {
   it("uses custom port option", async () => {
     await initCommand({});
 
-    const { createApp } = await import("@aiteam/server");
+    const { createApp } = await import("@codeclaw/server");
     const app = createApp({
-      dbPath: join(cwd, ".ai-team", "database.sqlite"),
-      promptsDir: join(cwd, ".ai-team", "prompts"),
+      dbPath: join(cwd, ".codeclaw", "database.sqlite"),
+      promptsDir: join(cwd, ".codeclaw", "prompts"),
     });
 
     const customPort = 14318;
@@ -401,18 +401,18 @@ describe("uiCommand", () => {
   it("reports error when port is already in use", async () => {
     await initCommand({});
 
-    const { createApp } = await import("@aiteam/server");
+    const { createApp } = await import("@codeclaw/server");
     const app1 = createApp({
-      dbPath: join(cwd, ".ai-team", "database.sqlite"),
-      promptsDir: join(cwd, ".ai-team", "prompts"),
+      dbPath: join(cwd, ".codeclaw", "database.sqlite"),
+      promptsDir: join(cwd, ".codeclaw", "prompts"),
     });
 
     const port = 14319;
     await app1.listen({ port, host: "127.0.0.1" });
 
     const app2 = createApp({
-      dbPath: join(cwd, ".ai-team", "database.sqlite"),
-      promptsDir: join(cwd, ".ai-team", "prompts"),
+      dbPath: join(cwd, ".codeclaw", "database.sqlite"),
+      promptsDir: join(cwd, ".codeclaw", "prompts"),
     });
 
     await expect(app2.listen({ port, host: "127.0.0.1" })).rejects.toThrow();

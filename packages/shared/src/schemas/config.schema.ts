@@ -85,12 +85,12 @@ export const configSchema = z.object({
       email: z.string().optional(),
       projectKey: z.string().optional(),
       defaultIssueType: z.enum(["epic", "story", "task", "subtask"]).default("task"),
-      tokenEnvRef: z.string().default("AITEAM_JIRA_TOKEN"),
+      tokenEnvRef: z.string().default("CODECLAW_JIRA_TOKEN"),
     }),
     slack: z.object({
       enabled: z.boolean().default(false),
       channelId: z.string().optional(),
-      tokenEnvRef: z.string().default("AITEAM_SLACK_TOKEN"),
+      tokenEnvRef: z.string().default("CODECLAW_SLACK_TOKEN"),
       notifyOn: z.array(slackNotifyEnum).default(["report_ready"]),
     }),
   }),
@@ -159,12 +159,12 @@ export const defaultConfig: Config = {
     jira: {
       enabled: false,
       defaultIssueType: "task",
-      tokenEnvRef: "AITEAM_JIRA_TOKEN",
+      tokenEnvRef: "CODECLAW_JIRA_TOKEN",
     },
     slack: {
       enabled: false,
       notifyOn: ["report_ready"],
-      tokenEnvRef: "AITEAM_SLACK_TOKEN",
+      tokenEnvRef: "CODECLAW_SLACK_TOKEN",
     },
   },
 };

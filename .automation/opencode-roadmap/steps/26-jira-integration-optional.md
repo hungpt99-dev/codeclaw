@@ -127,7 +127,7 @@ integrations: {
     email: z.string().optional();
     projectKey: z.string().optional();
     defaultIssueType: z.enum(["epic", "story", "task", "subtask"]).default("task");
-    tokenEnvRef: z.string().default("AITEAM_JIRA_TOKEN");
+    tokenEnvRef: z.string().default("CODECLAW_JIRA_TOKEN");
   };
 }
 ```
@@ -243,16 +243,16 @@ export async function jiraRequest<T>(
 
 Handle errors: invalid token, network error, rate limiting, project not found.
 
-### 5. Create CLI command: aiteam jira
+### 5. Create CLI command: codeclaw jira
 
 Create `apps/cli/src/commands/jira.ts`:
 
 ```bash
-aiteam jira status
-aiteam jira test
-aiteam jira export --run <runId>
-aiteam jira create --run <runId> [--approve]
-aiteam jira comment --run <runId> --issue <issueKey> [--approve]
+codeclaw jira status
+codeclaw jira test
+codeclaw jira export --run <runId>
+codeclaw jira create --run <runId> [--approve]
+codeclaw jira comment --run <runId> --issue <issueKey> [--approve]
 ```
 
 Register in CLI entry point:
@@ -325,7 +325,7 @@ function getJiraToken(config: JiraConfig): string | undefined {
 
 Update `.env.example`:
 ```bash
-# AITEAM_JIRA_TOKEN=<your-jira-api-token>
+# CODECLAW_JIRA_TOKEN=<your-jira-api-token>
 ```
 
 ### 10. Update doctor command
@@ -347,9 +347,9 @@ Update `apps/cli/src/commands/doctor.ts`:
 
 ## Acceptance Criteria
 
-- `aiteam jira export --run <runId>` generates Jira-ready markdown from run artifacts
-- `aiteam jira test` tests connection when Jira is configured
-- `aiteam jira create` creates issues only after user approval
+- `codeclaw jira export --run <runId>` generates Jira-ready markdown from run artifacts
+- `codeclaw jira test` tests connection when Jira is configured
+- `codeclaw jira create` creates issues only after user approval
 - Jira-ready task artifacts are generated during workflow
 - Web UI shows Jira-ready markdown with copy button
 - All commands work gracefully when Jira is not configured

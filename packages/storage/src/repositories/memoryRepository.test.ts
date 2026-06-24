@@ -3,10 +3,10 @@ import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { openDatabase, initializeSchema, createMemoryRepository } from "@aiteam/storage";
+import { openDatabase, initializeSchema, createMemoryRepository } from "@codeclaw/storage";
 
 function tempDir(): string {
-  return join(tmpdir(), "aiteam-memory-test-" + randomUUID());
+  return join(tmpdir(), "codeclaw-memory-test-" + randomUUID());
 }
 
 describe("MemoryRepository", () => {

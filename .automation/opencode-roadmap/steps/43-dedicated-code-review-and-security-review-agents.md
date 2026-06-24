@@ -52,7 +52,7 @@ Code review and security review become independently actionable stages. The user
 1. After code generation and test execution, Code Reviewer Agent runs
 2. Code Reviewer produces structured review report with requirement coverage, code quality, test coverage
 3. Security Reviewer Agent runs independently with security-focused output
-4. Both agents can be triggered separately via CLI: `aiteam review --code`, `aiteam review --security`
+4. Both agents can be triggered separately via CLI: `codeclaw review --code`, `codeclaw review --security`
 5. Both agents produce deterministic fallback when no AI CLI is available
 6. Review artifacts feed into fix loop and final report
 
@@ -81,7 +81,7 @@ Code review and security review become independently actionable stages. The user
 - Security Reviewer Agent produces security-focused review with risk assessment
 - Both reviewers can be triggered independently
 - Both reviewers have deterministic fallback
-- Existing `aiteam review --all` still works (runs both)
+- Existing `codeclaw review --all` still works (runs both)
 - Review outputs are consistent across AI and deterministic modes
 
 ## Tests / Verification

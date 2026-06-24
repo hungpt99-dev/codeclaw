@@ -8,9 +8,11 @@ coverage
 
 .DS_Store
 
-.ai-team/database.sqlite
-.ai-team/runs
-.ai-team/logs
-.ai-team/tmp
+.codeclaw/database.sqlite
+.codeclaw/runs
+.codeclaw/logs
+.codeclaw/tmp
+# Legacy .ai-team directory (deprecated)
+.ai-team/
 
 *.log

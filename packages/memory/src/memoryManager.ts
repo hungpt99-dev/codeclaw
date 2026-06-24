@@ -1,9 +1,9 @@
 import { mkdir, writeFile, access } from "node:fs/promises";
 import { join } from "node:path";
-import { nowIso } from "@aiteam/shared";
-import type { MemoryScope, MemoryItem, RuntimeMemoryContext } from "@aiteam/shared";
-import { openDatabase, initializeSchema, createMemoryRepository } from "@aiteam/storage";
-import type { MemoryItemRecord } from "@aiteam/storage";
+import { nowIso } from "@codeclaw/shared";
+import type { MemoryScope, MemoryItem, RuntimeMemoryContext } from "@codeclaw/shared";
+import { openDatabase, initializeSchema, createMemoryRepository } from "@codeclaw/storage";
+import type { MemoryItemRecord } from "@codeclaw/storage";
 import {
   getMemoryDir,
   getProjectMemoryDir,

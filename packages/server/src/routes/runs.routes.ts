@@ -1,14 +1,14 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { FastifyInstance } from "fastify";
-import type { DbConnection } from "@aiteam/storage";
+import type { DbConnection } from "@codeclaw/storage";
 import {
   createRunRepository,
   createArtifactRepository,
   createApprovalRepository,
   createTraceabilityRepository,
-} from "@aiteam/storage";
-import { exportRunArtifacts } from "@aiteam/adapters";
+} from "@codeclaw/storage";
+import { exportRunArtifacts } from "@codeclaw/adapters";
 import type {
   ArtifactType,
   RunMode,
@@ -16,8 +16,8 @@ import type {
   ApprovalGate,
   ApprovalStatus,
   AiAdapterName,
-} from "@aiteam/shared";
-import { createRunId, ArtifactTypeValues } from "@aiteam/shared";
+} from "@codeclaw/shared";
+import { createRunId, ArtifactTypeValues } from "@codeclaw/shared";
 import {
   runDocsOnlyWorkflow,
   runAssistedWorkflow,
@@ -29,7 +29,7 @@ import {
   loadAndReview,
   persistReview,
   emitWorkflowProgress,
-} from "@aiteam/core";
+} from "@codeclaw/core";
 
 interface ArtifactDef {
   type: ArtifactType;
@@ -542,7 +542,7 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
     };
     try {
       const { readFile: rf } = await import("node:fs/promises");
-      const raw = await rf(join(".ai-team", "config.json"), "utf-8");
+      const raw = await rf(join(".codeclaw", "config.json"), "utf-8");
       config = JSON.parse(raw) as typeof config;
     } catch {
       return reply.status(500).send({ error: "Failed to load config" });
@@ -679,7 +679,7 @@ export function registerRunsRoutes(app: FastifyInstance, db: DbConnection): void
       | "json"
       | "all";
 
-    const defaultDir = join(process.cwd(), ".ai-team", "runs", params.id, "export");
+    const defaultDir = join(process.cwd(), ".codeclaw", "runs", params.id, "export");
     let outputPath: string;
     if (format === "combined-md") {
       outputPath = join(defaultDir, "combined-report.md");

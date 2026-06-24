@@ -3,7 +3,7 @@ import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { openDatabase, initializeSchema } from "@aiteam/storage";
+import { openDatabase, initializeSchema } from "@codeclaw/storage";
 import { initializeRuntimeMemory } from "../memoryManager.js";
 import { getDatabasePath } from "../memoryPaths.js";
 import { retrieveProjectMemory } from "./projectMemoryRetriever.js";
@@ -14,7 +14,7 @@ import { retrieveArtifactMemory } from "./artifactMemoryRetriever.js";
 import { buildAgentContext } from "../context/buildAgentContext.js";
 
 function tempDir(): string {
-  return join(tmpdir(), "aiteam-retrievers-test-" + randomUUID());
+  return join(tmpdir(), "codeclaw-retrievers-test-" + randomUUID());
 }
 
 describe("retrievers", () => {
@@ -23,7 +23,7 @@ describe("retrievers", () => {
   beforeEach(async () => {
     projectRoot = tempDir();
     await mkdir(projectRoot, { recursive: true });
-    await mkdir(join(projectRoot, ".ai-team"), { recursive: true });
+    await mkdir(join(projectRoot, ".codeclaw"), { recursive: true });
     const db = openDatabase(getDatabasePath(projectRoot));
     initializeSchema(db);
     db.close();

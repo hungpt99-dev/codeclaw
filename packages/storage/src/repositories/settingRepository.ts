@@ -1,4 +1,4 @@
-import { nowIso } from "@aiteam/shared";
+import { nowIso } from "@codeclaw/shared";
 import type { DbConnection } from "../db.js";
 
 interface SettingRow {

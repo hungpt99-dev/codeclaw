@@ -9,7 +9,7 @@ vi.mock("node:fs/promises", () => ({
   mkdir: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@aiteam/adapters", () => ({
+vi.mock("@codeclaw/adapters", () => ({
   runAgentPrompt: vi.fn().mockResolvedValue({ success: true, output: "fixed" }),
   getChangedFiles: vi.fn().mockResolvedValue(["src/fixed.ts"]),
   generateDiff: vi.fn().mockResolvedValue("diff --git a/src/fixed.ts b/src/fixed.ts\n+fixed"),

@@ -8,8 +8,8 @@ import {
   initializeSchema,
   createRunRepository,
   createApprovalRepository,
-} from "@aiteam/storage";
-import type { ApprovalGate } from "@aiteam/shared";
+} from "@codeclaw/storage";
+import type { ApprovalGate } from "@codeclaw/shared";
 
 interface RollbackOptions {
   dryRun?: boolean;
@@ -92,12 +92,12 @@ function performRollback(workingDir: string, files: string[]): void {
 }
 
 export async function rollbackCommand(runId: string, options: RollbackOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -176,8 +176,8 @@ export async function rollbackCommand(runId: string, options: RollbackOptions): 
       console.log("  ✅ ROLLBACK gate auto-approved (--yes).\n");
     } else {
       console.log(`  ⏸️  ROLLBACK approval gate created for run ${runId}.`);
-      console.log(`  To approve: aiteam approve ${runId} --gate ROLLBACK`);
-      console.log(`  To reject:  aiteam reject ${runId} --gate ROLLBACK`);
+      console.log(`  To approve: codeclaw approve ${runId} --gate ROLLBACK`);
+      console.log(`  To reject:  codeclaw reject ${runId} --gate ROLLBACK`);
       console.log("");
 
       const confirmed = await promptConfirm(

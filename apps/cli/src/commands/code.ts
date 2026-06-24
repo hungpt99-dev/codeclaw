@@ -1,14 +1,14 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { configSchema } from "@aiteam/shared";
-import type { AiCliTool } from "@aiteam/shared";
-import { getArtifactPaths, writeArtifact, runDeveloperAgent } from "@aiteam/core";
+import { configSchema } from "@codeclaw/shared";
+import type { AiCliTool } from "@codeclaw/shared";
+import { getArtifactPaths, writeArtifact, runDeveloperAgent } from "@codeclaw/core";
 import {
   openDatabase,
   initializeSchema,
   createRunRepository,
   createArtifactRepository,
-} from "@aiteam/storage";
+} from "@codeclaw/storage";
 
 interface CodeOptions {
   run: string;
@@ -19,12 +19,12 @@ interface CodeOptions {
 }
 
 export async function codeCommand(options: CodeOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -65,7 +65,9 @@ export async function codeCommand(options: CodeOptions): Promise<void> {
   const codingPlanMd = await readReq(paths.codingPlanPath);
 
   if (!clarifiedRequirement || !technicalDesign) {
-    console.log("❌ Prerequisite artifacts not found. Run 'aiteam spec' and 'aiteam plan' first.");
+    console.log(
+      "❌ Prerequisite artifacts not found. Run 'codeclaw spec' and 'codeclaw plan' first.",
+    );
     db.close();
     process.exit(1);
   }
@@ -139,7 +141,7 @@ export async function codeCommand(options: CodeOptions): Promise<void> {
     console.log("   (Actual code execution not yet implemented in standalone mode.)");
     console.log(`   Prompt saved to: ${paths.implementationPromptPath}`);
     console.log(
-      `   Use: aiteam run --mode semi-auto --agent ${defaultAgent} "${run.rawRequirement}"`,
+      `   Use: codeclaw run --mode semi-auto --agent ${defaultAgent} "${run.rawRequirement}"`,
     );
   }
 

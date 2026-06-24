@@ -1,5 +1,5 @@
 {
-  "name": "@aiteam/memory",
+  "name": "@codeclaw/memory",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,7 +18,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@aiteam/shared": "workspace:*",
-    "@aiteam/storage": "workspace:*"
+    "@codeclaw/shared": "workspace:*",
+    "@codeclaw/storage": "workspace:*"
   }
 }

@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { readFile, access } from "node:fs/promises";
-import { openDatabase, initializeSchema, createTraceabilityRepository } from "@aiteam/storage";
+import { openDatabase, initializeSchema, createTraceabilityRepository } from "@codeclaw/storage";
 import {
   generateTraceability,
   traceabilityToMarkdown,
@@ -8,7 +8,7 @@ import {
   traceabilityToEnhancedMarkdown,
   getArtifactPaths,
   getAiToolConfig,
-} from "@aiteam/core";
+} from "@codeclaw/core";
 
 interface TraceOptions {
   run: string;
@@ -31,11 +31,11 @@ function printJson(matrixStr: string): void {
 }
 
 export async function traceCommand(options: TraceOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -141,7 +141,7 @@ export async function traceCommand(options: TraceOptions): Promise<void> {
 
   if (records.length === 0 && !options.regenerate) {
     console.log(`No traceability data found for run: ${runId}`);
-    console.log("Try: aiteam trace --run <runId> --regenerate");
+    console.log("Try: codeclaw trace --run <runId> --regenerate");
     db.close();
     return;
   }

@@ -1,15 +1,15 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { configSchema } from "@aiteam/shared";
-import { getSlackStatus, testSlackConnection, notifySlack } from "@aiteam/adapters";
-import type { SlackConfig } from "@aiteam/adapters";
-import { getArtifactPaths, buildReportReadyMessage } from "@aiteam/core";
-import type { SlackMessageInput } from "@aiteam/core";
-import { openDatabase, initializeSchema, createApprovalRepository } from "@aiteam/storage";
+import { configSchema } from "@codeclaw/shared";
+import { getSlackStatus, testSlackConnection, notifySlack } from "@codeclaw/adapters";
+import type { SlackConfig } from "@codeclaw/adapters";
+import { getArtifactPaths, buildReportReadyMessage } from "@codeclaw/core";
+import type { SlackMessageInput } from "@codeclaw/core";
+import { openDatabase, initializeSchema, createApprovalRepository } from "@codeclaw/storage";
 
 function loadSlackConfig(): SlackConfig | null {
   try {
-    const configPath = join(process.cwd(), ".ai-team", "config.json");
+    const configPath = join(process.cwd(), ".codeclaw", "config.json");
     const rawContent = readFileSync(configPath, "utf-8");
     const raw: unknown = JSON.parse(rawContent);
     const parsed = configSchema.parse(raw);
@@ -59,7 +59,7 @@ export async function slackTestCommand(): Promise<void> {
 
 function loadSafetyConfig(): { requireApprovalBeforeExternalUpdate?: boolean } | null {
   try {
-    const configPath = join(process.cwd(), ".ai-team", "config.json");
+    const configPath = join(process.cwd(), ".codeclaw", "config.json");
     const rawContent = readFileSync(configPath, "utf-8");
     const raw: unknown = JSON.parse(rawContent);
     const parsed = configSchema.parse(raw);
@@ -122,7 +122,7 @@ export async function slackPostCommand(options: {
     const autoApprove = options.approve ?? !requireApproval;
 
     if (!autoApprove) {
-      const aiTeamDir = join(process.cwd(), ".ai-team");
+      const aiTeamDir = join(process.cwd(), ".codeclaw");
       const db = openDatabase(join(aiTeamDir, "database.sqlite"));
       initializeSchema(db);
       const approvalRepo = createApprovalRepository(db);
@@ -144,8 +144,8 @@ export async function slackPostCommand(options: {
         console.log(`   Channel: #${config.channelId}`);
         console.log(`   Message preview:\n`);
         console.log(text);
-        console.log(`\n   To approve: aiteam approve ${runId} --gate EXTERNAL_UPDATE`);
-        console.log(`   To reject:  aiteam reject ${runId} --gate EXTERNAL_UPDATE\n`);
+        console.log(`\n   To approve: codeclaw approve ${runId} --gate EXTERNAL_UPDATE`);
+        console.log(`   To reject:  codeclaw reject ${runId} --gate EXTERNAL_UPDATE\n`);
         db.close();
         return;
       }

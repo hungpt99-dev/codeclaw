@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { runAgent, renderPrompt } from "@aiteam/adapters";
-import type { AiCliTool } from "@aiteam/adapters";
-import type { RepositoryAnalysis } from "@aiteam/shared";
+import { runAgent, renderPrompt } from "@codeclaw/adapters";
+import type { AiCliTool } from "@codeclaw/adapters";
+import type { RepositoryAnalysis } from "@codeclaw/shared";
 import { parseArchitectOutput } from "./parsers/architectOutputParser.js";
 
 export interface ArchitectAgentInput {

@@ -127,7 +127,7 @@ Rules:
 - Run and artifact metadata are saved to SQLite.
 - Artifact content route reads local file content.
 - Prompt routes must reject path traversal.
-- Prompt routes only allow files inside .ai-team/prompts.
+- Prompt routes only allow files inside .codeclaw/prompts.
 - Bind to localhost by default.
 - No auth needed because local-only.
 

@@ -22,13 +22,13 @@ export async function convertHtmlToDocx(
     throw new Error(
       "DOCX conversion requires the 'html-to-docx' package.\n" +
         "Install it: pnpm add html-to-docx\n" +
-        "Or try: aiteam export --format html",
+        "Or try: codeclaw export --format html",
     );
   }
 
   const docxOptions: Record<string, unknown> = {
     title: options.title,
-    author: options.author ?? "AITeam",
+    author: options.author ?? "CodeClaw",
     company: options.company ?? "",
   };
 

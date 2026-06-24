@@ -1,14 +1,14 @@
 import { access } from "node:fs/promises";
 import { join } from "node:path";
-import { getMemoryStatus, indexRuntimeMemory } from "@aiteam/memory";
+import { getMemoryStatus, indexRuntimeMemory } from "@codeclaw/memory";
 
 export async function memoryStatusCommand(): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -18,7 +18,7 @@ export async function memoryStatusCommand(): Promise<void> {
 
   if (!status.exists) {
     console.log("  Runtime memory: Missing");
-    console.log("  Run 'aiteam init' to create runtime memory.\n");
+    console.log("  Run 'codeclaw init' to create runtime memory.\n");
     return;
   }
 
@@ -33,12 +33,12 @@ export async function memoryStatusCommand(): Promise<void> {
 }
 
 export async function memoryIndexCommand(): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 

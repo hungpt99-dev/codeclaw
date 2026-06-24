@@ -1,5 +1,5 @@
 {
-  "name": "@aiteam/storage",
+  "name": "@codeclaw/storage",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,7 +18,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@aiteam/shared": "workspace:*",
+    "@codeclaw/shared": "workspace:*",
     "better-sqlite3": "^12.11.1"
   },
   "devDependencies": {

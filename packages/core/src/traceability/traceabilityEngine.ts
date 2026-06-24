@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { nowIso } from "@aiteam/shared";
-import type { CoverageStatus, TraceabilityItem, TraceabilityMatrix } from "@aiteam/shared";
+import { nowIso } from "@codeclaw/shared";
+import type { CoverageStatus, TraceabilityItem, TraceabilityMatrix } from "@codeclaw/shared";
 import type { ArtifactPaths } from "../artifacts/artifactWriter.js";
 import {
   parseRequirementId,

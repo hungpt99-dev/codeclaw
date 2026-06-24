@@ -1,4 +1,4 @@
-import type { RepositoryAnalysis } from "@aiteam/shared";
+import type { RepositoryAnalysis } from "@codeclaw/shared";
 import { detectJavaSpringBoot } from "./detectors/javaDetector.js";
 import { detectNodeNestJs } from "./detectors/nodeDetector.js";
 import { detectReactVite } from "./detectors/reactDetector.js";

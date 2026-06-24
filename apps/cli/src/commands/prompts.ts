@@ -119,18 +119,18 @@ export async function promptsValidateCommand(): Promise<void> {
 }
 
 async function ensurePrompts(): Promise<string> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
   const promptsDir = join(aiTeamDir, "prompts");
   try {
     await access(promptsDir);
   } catch {
-    console.log("❌ prompts directory not found. Run 'aiteam init' first.");
+    console.log("❌ prompts directory not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
   return promptsDir;

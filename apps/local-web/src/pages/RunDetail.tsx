@@ -609,7 +609,7 @@ export function RunDetail(): ReactElement {
                     setExportDocAuthor(e.target.value);
                   }}
                   className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white text-gray-700"
-                  placeholder="AITeam"
+                  placeholder="CodeClaw"
                 />
               </div>
 

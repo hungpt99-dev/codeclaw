@@ -133,7 +133,7 @@ packages/server test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
 packages/server test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*
 packages/server test: Failed
 /Users/phamthanhhung/Desktop/MyProject/auto-code/packages/server:
-[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @aiteam/server@0.0.0 test: `vitest run`
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @codeclaw/server@0.0.0 test: `vitest run`
 Exit status 1
 packages/memory test:  RUN  v3.2.6 /Users/phamthanhhung/Desktop/MyProject/auto-code/packages/memory
 [ELIFECYCLE] Test failed. See above for more details.

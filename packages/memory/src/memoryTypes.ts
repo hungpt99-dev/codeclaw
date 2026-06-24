@@ -1,4 +1,4 @@
-import type { AgentRole } from "@aiteam/shared";
+import type { AgentRole } from "@codeclaw/shared";
 
 export interface InitializeRuntimeMemoryOptions {
   projectRoot: string;

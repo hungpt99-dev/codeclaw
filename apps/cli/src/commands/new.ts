@@ -1,8 +1,8 @@
 import { access } from "node:fs/promises";
 import { join } from "node:path";
-import { createRunId } from "@aiteam/shared";
-import { createArtifactDirs, writeArtifact } from "@aiteam/core";
-import { openDatabase, initializeSchema, createRunRepository } from "@aiteam/storage";
+import { createRunId } from "@codeclaw/shared";
+import { createArtifactDirs, writeArtifact } from "@codeclaw/core";
+import { openDatabase, initializeSchema, createRunRepository } from "@codeclaw/storage";
 
 interface NewOptions {
   title?: string;
@@ -10,12 +10,12 @@ interface NewOptions {
 }
 
 export async function newCommand(requirement: string, options: NewOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -47,5 +47,5 @@ export async function newCommand(requirement: string, options: NewOptions): Prom
   db.close();
 
   console.log(`✅ New run created: ${runId}`);
-  console.log(`\nNext: aiteam spec --run ${runId}`);
+  console.log(`\nNext: codeclaw spec --run ${runId}`);
 }

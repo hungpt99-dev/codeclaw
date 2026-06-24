@@ -39,8 +39,8 @@ Quality log:
 
 ```
 apps/cli test: stdout | src/index.test.ts > initCommand > creates valid config.json
-apps/cli test: ✅ Created .ai-team/config.json
-apps/cli test: ✅ Created .ai-team/database.sqlite
+apps/cli test: ✅ Created .codeclaw/config.json
+apps/cli test: ✅ Created .codeclaw/database.sqlite
 apps/cli test: stdout | src/index.test.ts > initCommand > creates valid config.json
 apps/cli test: ⚠️  Could not copy template: ba-agent.md
 apps/cli test: stdout | src/index.test.ts > initCommand > creates valid config.json
@@ -51,15 +51,15 @@ apps/cli test: stdout | src/index.test.ts > initCommand > creates valid config.j
 apps/cli test: ⚠️  Could not copy template: qa-agent.md
 apps/cli test: stdout | src/index.test.ts > initCommand > creates valid config.json
 apps/cli test: ⚠️  Could not copy template: reporter-agent.md
-apps/cli test: ✅ Created .ai-team/prompts/
+apps/cli test: ✅ Created .codeclaw/prompts/
 apps/cli test: stdout | src/index.test.ts > initCommand > creates valid config.json
-apps/cli test: ✅ Created .ai-team/runs/
+apps/cli test: ✅ Created .codeclaw/runs/
 apps/cli test: stdout | src/index.test.ts > initCommand > creates valid config.json
-apps/cli test: ✅ Created .ai-team/memory/ (14 files created, 0 skipped)
-apps/cli test: 🎉 aiteam initialized successfully!
+apps/cli test: ✅ Created .codeclaw/memory/ (14 files created, 0 skipped)
+apps/cli test: 🎉 codeclaw initialized successfully!
 apps/cli test: stdout | src/index.test.ts > initCommand > applies --type option to config
-apps/cli test: ✅ Created .ai-team/config.json
-apps/cli test: ✅ Created .ai-team/database.sqlite
+apps/cli test: ✅ Created .codeclaw/config.json
+apps/cli test: ✅ Created .codeclaw/database.sqlite
 apps/cli test: stdout | src/index.test.ts > initCommand > applies --type option to config
 apps/cli test: ⚠️  Could not copy template: ba-agent.md
 apps/cli test: stdout | src/index.test.ts > initCommand > applies --type option to config
@@ -70,15 +70,15 @@ apps/cli test: stdout | src/index.test.ts > initCommand > applies --type option 
 apps/cli test: ⚠️  Could not copy template: qa-agent.md
 apps/cli test: stdout | src/index.test.ts > initCommand > applies --type option to config
 apps/cli test: ⚠️  Could not copy template: reporter-agent.md
-apps/cli test: ✅ Created .ai-team/prompts/
+apps/cli test: ✅ Created .codeclaw/prompts/
 apps/cli test: stdout | src/index.test.ts > initCommand > applies --type option to config
-apps/cli test: ✅ Created .ai-team/runs/
+apps/cli test: ✅ Created .codeclaw/runs/
 apps/cli test: stdout | src/index.test.ts > initCommand > applies --type option to config
-apps/cli test: ✅ Created .ai-team/memory/ (14 files created, 0 skipped)
-apps/cli test: 🎉 aiteam initialized successfully!
+apps/cli test: ✅ Created .codeclaw/memory/ (14 files created, 0 skipped)
+apps/cli test: 🎉 codeclaw initialized successfully!
 apps/cli test: stdout | src/index.test.ts > initCommand > applies --output-language option to config
-apps/cli test: ✅ Created .ai-team/config.json
-apps/cli test: ✅ Created .ai-team/database.sqlite
+apps/cli test: ✅ Created .codeclaw/config.json
+apps/cli test: ✅ Created .codeclaw/database.sqlite
 apps/cli test: stdout | src/index.test.ts > initCommand > applies --output-language option to config
 apps/cli test: ⚠️  Could not copy template: ba-agent.md
 apps/cli test: stdout | src/index.test.ts > initCommand > applies --output-language option to config
@@ -89,19 +89,19 @@ apps/cli test: stdout | src/index.test.ts > initCommand > applies --output-langu
 apps/cli test: ⚠️  Could not copy template: qa-agent.md
 apps/cli test: stdout | src/index.test.ts > initCommand > applies --output-language option to config
 apps/cli test: ⚠️  Could not copy template: reporter-agent.md
-apps/cli test: ✅ Created .ai-team/prompts/
+apps/cli test: ✅ Created .codeclaw/prompts/
 apps/cli test: stdout | src/index.test.ts > initCommand > applies --output-language option to config
-apps/cli test: ✅ Created .ai-team/runs/
+apps/cli test: ✅ Created .codeclaw/runs/
 apps/local-server test: Failed
 /Users/phamthanhhung/Desktop/MyProject/auto-code/apps/local-server:
-[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @aiteam/local-server@0.0.0 test: `vitest run`
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @codeclaw/local-server@0.0.0 test: `vitest run`
 Exit status 1
 apps/cli test: stdout | src/index.test.ts > initCommand > applies --output-language option to config
-apps/cli test: ✅ Created .ai-team/memory/ (14 files created, 0 skipped)
-apps/cli test: 🎉 aiteam initialized successfully!
+apps/cli test: ✅ Created .codeclaw/memory/ (14 files created, 0 skipped)
+apps/cli test: 🎉 codeclaw initialized successfully!
 apps/cli test: stdout | src/index.test.ts > initCommand > refuses to overwrite without --force
-apps/cli test: ✅ Created .ai-team/config.json
-apps/cli test: ✅ Created .ai-team/database.sqlite
+apps/cli test: ✅ Created .codeclaw/config.json
+apps/cli test: ✅ Created .codeclaw/database.sqlite
 apps/cli test: stdout | src/index.test.ts > initCommand > refuses to overwrite without --force
 apps/cli test: ⚠️  Could not copy template: ba-agent.md
 apps/cli test: stdout | src/index.test.ts > initCommand > refuses to overwrite without --force
@@ -112,17 +112,17 @@ apps/cli test: stdout | src/index.test.ts > initCommand > refuses to overwrite w
 apps/cli test: ⚠️  Could not copy template: qa-agent.md
 apps/cli test: stdout | src/index.test.ts > initCommand > refuses to overwrite without --force
 apps/cli test: ⚠️  Could not copy template: reporter-agent.md
-apps/cli test: ✅ Created .ai-team/prompts/
+apps/cli test: ✅ Created .codeclaw/prompts/
 apps/cli test: stdout | src/index.test.ts > initCommand > refuses to overwrite without --force
-apps/cli test: ✅ Created .ai-team/runs/
+apps/cli test: ✅ Created .codeclaw/runs/
 apps/cli test: stdout | src/index.test.ts > initCommand > refuses to overwrite without --force
-apps/cli test: ✅ Created .ai-team/memory/ (14 files created, 0 skipped)
-apps/cli test: 🎉 aiteam initialized successfully!
+apps/cli test: ✅ Created .codeclaw/memory/ (14 files created, 0 skipped)
+apps/cli test: 🎉 codeclaw initialized successfully!
 apps/cli test: stdout | src/index.test.ts > initCommand > refuses to overwrite without --force
-apps/cli test: ❌ .ai-team already exists. Use --force to overwrite.
+apps/cli test: ❌ .codeclaw already exists. Use --force to overwrite.
 apps/cli test: stdout | src/index.test.ts > initCommand > overwrites with --force
-apps/cli test: ✅ Created .ai-team/config.json
-apps/cli test: ✅ Created .ai-team/database.sqlite
+apps/cli test: ✅ Created .codeclaw/config.json
+apps/cli test: ✅ Created .codeclaw/database.sqlite
 apps/cli test: stdout | src/index.test.ts > initCommand > overwrites with --force
 apps/cli test: ⚠️  Could not copy template: ba-agent.md
 apps/cli test: stdout | src/index.test.ts > initCommand > overwrites with --force
@@ -133,9 +133,9 @@ apps/cli test: stdout | src/index.test.ts > initCommand > overwrites with --forc
 apps/cli test: ⚠️  Could not copy template: qa-agent.md
 apps/cli test: stdout | src/index.test.ts > initCommand > overwrites with --force
 apps/cli test: ⚠️  Could not copy template: reporter-agent.md
-apps/cli test: ✅ Created .ai-team/prompts/
+apps/cli test: ✅ Created .codeclaw/prompts/
 apps/cli test: stdout | src/index.test.ts > initCommand > overwrites with --force
-apps/cli test: ✅ Created .ai-team/runs/
+apps/cli test: ✅ Created .codeclaw/runs/
 [ELIFECYCLE] Test failed. See above for more details.
 [ELIFECYCLE] Command failed with exit code 1.
 ```

@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import type { TestCommandResult } from "@aiteam/shared";
+import type { TestCommandResult } from "@codeclaw/shared";
 import { getArtifactPaths } from "../artifacts/artifactWriter.js";
 
 export interface TestWorkflowInput {
@@ -24,7 +24,7 @@ export interface TestWorkflowOutput {
 
 export async function runTestsForRun(input: TestWorkflowInput): Promise<TestWorkflowOutput> {
   const paths = getArtifactPaths(input.runId);
-  const { runTests, writeTestResultArtifacts } = await import("@aiteam/adapters");
+  const { runTests, writeTestResultArtifacts } = await import("@codeclaw/adapters");
 
   const allCommands = [
     { name: "build", command: input.commands.build },

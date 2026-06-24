@@ -30,7 +30,7 @@ export async function runAgentPrompt(
 ): Promise<{ success: boolean; output: string; error?: string }> {
   const tmpFile = join(
     tmpdir(),
-    `aiteam-prompt-${String(Date.now())}-${Math.random().toString(36).slice(2)}.txt`,
+    `codeclaw-prompt-${String(Date.now())}-${Math.random().toString(36).slice(2)}.txt`,
   );
 
   try {

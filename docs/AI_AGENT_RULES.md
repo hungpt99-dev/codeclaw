@@ -20,7 +20,7 @@ These rules apply to all AI coding agents working on this repository.
 - Prefer small, focused commits.
 - Follow roadmap phase boundaries.
 - Write tests for new functionality.
-- Use `@aiteam/*` workspace imports for internal packages.
+- Use `@codeclaw/*` workspace imports for internal packages.
 - Follow the architecture dependency direction (see `docs/ARCHITECTURE.md`).
 
 ## Commit Format

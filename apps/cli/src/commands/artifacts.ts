@@ -1,6 +1,6 @@
 import { access } from "node:fs/promises";
 import { join } from "node:path";
-import { openDatabase, initializeSchema, createArtifactRepository } from "@aiteam/storage";
+import { openDatabase, initializeSchema, createArtifactRepository } from "@codeclaw/storage";
 
 interface ArtifactsOptions {
   type?: string;
@@ -8,12 +8,12 @@ interface ArtifactsOptions {
 }
 
 export async function artifactsCommand(runId: string, options: ArtifactsOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 

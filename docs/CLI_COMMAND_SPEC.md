@@ -5,15 +5,15 @@
 
 ## 1. Document Overview
 
-**Product Name**: Local AI Software Team
+**Product Name**: CodeClaw
 
-**CLI Name**: Recommended command name: `aiteam`
+**CLI Name**: Recommended command name: `codeclaw`
 
 Alternative command names: specforge, reqpilot, teamforge.
 
-This document uses aiteam as the default CLI command.
+This document uses codeclaw as the default CLI command.
 
-**Purpose**: This document defines the CLI commands for Local AI Software Team.
+**Purpose**: This document defines the CLI commands for CodeClaw.
 
 The CLI is the main execution interface of the product. It allows users to initialize projects, start the local web UI, create workflow runs, generate documents, coordinate AI coding agents, run tests, review results, and generate final reports.
 
@@ -67,19 +67,19 @@ The CLI should support both:
 Full-run mode:
 
 ```bash
-aiteam run "Thêm API export invoice CSV theo hotelId, date range, status"
+codeclaw run "Thêm API export invoice CSV theo hotelId, date range, status"
 ```
 
 Step-by-step mode:
 
 ```bash
-aiteam new "Thêm API export invoice CSV theo hotelId, date range, status"
-aiteam spec
-aiteam plan
-aiteam code --agent codex
-aiteam test
-aiteam review
-aiteam report
+codeclaw new "Thêm API export invoice CSV theo hotelId, date range, status"
+codeclaw spec
+codeclaw plan
+codeclaw code --agent codex
+codeclaw test
+codeclaw review
+codeclaw report
 ```
 
 ### 2.5 Human-readable output
@@ -91,22 +91,22 @@ Every command should show: current step, output files created, next suggested co
 ## 3. Global Command Structure
 
 ```
-aiteam <command> [arguments] [options]
+codeclaw <command> [arguments] [options]
 ```
 
 Examples:
 
 ```bash
-aiteam init
-aiteam ui
-aiteam doctor
-aiteam run "Add password reset by email OTP"
-aiteam spec --run run_123
-aiteam plan --run run_123
-aiteam code --run run_123 --agent codex
-aiteam test --run run_123
-aiteam review --run run_123
-aiteam report --run run_123
+codeclaw init
+codeclaw ui
+codeclaw doctor
+codeclaw run "Add password reset by email OTP"
+codeclaw spec --run run_123
+codeclaw plan --run run_123
+codeclaw code --run run_123 --agent codex
+codeclaw test --run run_123
+codeclaw review --run run_123
+codeclaw report --run run_123
 ```
 
 ## 4. Global Options
@@ -115,7 +115,7 @@ These options should be available for most commands.
 
 ```
 --project <path>     Project root path. Defaults to current working directory.
---config <path>      Path to custom config file. Defaults to .ai-team/config.json.
+--config <path>      Path to custom config file. Defaults to .codeclaw/config.json.
 --run <runId>        Target run ID.
 --verbose            Show detailed logs.
 --json               Output machine-readable JSON.
@@ -152,77 +152,77 @@ These options should be available for most commands.
 ### 6.1 Project and Environment Commands
 
 ```
-aiteam init
-aiteam ui
-aiteam doctor
-aiteam config
-aiteam status
+codeclaw init
+codeclaw ui
+codeclaw doctor
+codeclaw config
+codeclaw status
 ```
 
 ### 6.2 Workflow Commands
 
 ```
-aiteam new
-aiteam run
-aiteam resume
-aiteam cancel
-aiteam list
-aiteam show
+codeclaw new
+codeclaw run
+codeclaw resume
+codeclaw cancel
+codeclaw list
+codeclaw show
 ```
 
 ### 6.3 Stage Commands
 
 ```
-aiteam spec
-aiteam scope
-aiteam analyze
-aiteam plan
-aiteam tasks
-aiteam tests
-aiteam code
-aiteam test
-aiteam review
-aiteam trace
-aiteam report
+codeclaw spec
+codeclaw scope
+codeclaw analyze
+codeclaw plan
+codeclaw tasks
+codeclaw tests
+codeclaw code
+codeclaw test
+codeclaw review
+codeclaw trace
+codeclaw report
 ```
 
 ### 6.4 Artifact Commands
 
 ```
-aiteam artifacts
-aiteam open
-aiteam export
-aiteam clean
+codeclaw artifacts
+codeclaw open
+codeclaw export
+codeclaw clean
 ```
 
 ### 6.5 Integration Commands
 
 ```
-aiteam github
-aiteam jira
-aiteam slack
+codeclaw github
+codeclaw jira
+codeclaw slack
 ```
 
 ### 6.6 Prompt and Template Commands
 
 ```
-aiteam prompts
-aiteam templates
+codeclaw prompts
+codeclaw templates
 ```
 
-## 7. Command: aiteam init
+## 7. Command: codeclaw init
 
-**Purpose**: Initialize Local AI Software Team in the current project.
+**Purpose**: Initialize CodeClaw in the current project.
 
-This command creates the .ai-team directory, default config, prompt templates, local database, and run folder structure.
+This command creates the .codeclaw directory, default config, prompt templates, local database, and run folder structure.
 
-**Syntax**: `aiteam init [options]`
+**Syntax**: `codeclaw init [options]`
 
 **Options**:
 
 ```
 --type <type>              Project type. Supported: java-spring-boot, node-nestjs, react-vite, generic.
---force                    Overwrite existing .ai-team setup.
+--force                    Overwrite existing .codeclaw setup.
 --no-detect                Skip automatic project detection.
 --output-language <lang>   Default output language. Supported: en, vi, bilingual.
 ```
@@ -230,21 +230,21 @@ This command creates the .ai-team directory, default config, prompt templates, l
 **Examples**:
 
 ```bash
-aiteam init
-aiteam init --type java-spring-boot
-aiteam init --type java-spring-boot --output-language bilingual
+codeclaw init
+codeclaw init --type java-spring-boot
+codeclaw init --type java-spring-boot --output-language bilingual
 ```
 
 **Actions**: The command should:
 
 1. Detect current working directory.
 2. Check if directory is a Git repository.
-3. Create .ai-team/.
-4. Create .ai-team/config.json.
-5. Create .ai-team/database.sqlite.
-6. Create .ai-team/prompts/.
+3. Create .codeclaw/.
+4. Create .codeclaw/config.json.
+5. Create .codeclaw/database.sqlite.
+6. Create .codeclaw/prompts/.
 7. Copy default prompt templates.
-8. Create .ai-team/runs/.
+8. Create .codeclaw/runs/.
 9. Detect project type if possible.
 10. Suggest build/test commands.
 11. Print next steps.
@@ -252,13 +252,13 @@ aiteam init --type java-spring-boot --output-language bilingual
 **Output**:
 
 ```
-Local AI Software Team initialized.
+CodeClaw initialized.
 
 Project: hotel-booking-service
 Type: java-spring-boot
-Config: .ai-team/config.json
-Prompts: .ai-team/prompts
-Runs: .ai-team/runs
+Config: .codeclaw/config.json
+Prompts: .codeclaw/prompts
+Runs: .codeclaw/runs
 
 Detected:
 - Build tool: Maven
@@ -266,15 +266,15 @@ Detected:
 - Build command: mvn clean package -DskipTests
 
 Next:
-1. Run: aiteam doctor
-2. Run: aiteam ui
-3. Or start with: aiteam run "your requirement"
+1. Run: codeclaw doctor
+2. Run: codeclaw ui
+3. Or start with: codeclaw run "your requirement"
 ```
 
 **Generated Files**:
 
 ```
-.ai-team/
+.codeclaw/
   config.json
   database.sqlite
   prompts/
@@ -292,17 +292,17 @@ Next:
 
 **Error Cases**:
 
-Already initialized: "Error: Project already initialized. .ai-team already exists. Use --force to reinitialize." Exit code: 4.
+Already initialized: "Error: Project already initialized. .codeclaw already exists. Use --force to reinitialize." Exit code: 4.
 
-Not writable: "Error: Cannot create .ai-team directory. Check folder permissions." Exit code: 1.
+Not writable: "Error: Cannot create .codeclaw directory. Check folder permissions." Exit code: 1.
 
-## 8. Command: aiteam ui
+## 8. Command: codeclaw ui
 
 **Purpose**: Start the local web UI.
 
 The local web UI is used for settings, run history, document viewing, logs, prompt templates, integrations, and approval screens.
 
-**Syntax**: `aiteam ui [options]`
+**Syntax**: `codeclaw ui [options]`
 
 **Options**:
 
@@ -316,8 +316,8 @@ The local web UI is used for settings, run history, document viewing, logs, prom
 **Examples**:
 
 ```bash
-aiteam ui
-aiteam ui --port 4321 --open
+codeclaw ui
+codeclaw ui --port 4321 --open
 ```
 
 **Actions**: The command should:
@@ -331,7 +331,7 @@ aiteam ui --port 4321 --open
 **Output**:
 
 ```
-Local AI Software Team UI is running.
+CodeClaw UI is running.
 
 URL: http://localhost:4317
 
@@ -340,15 +340,15 @@ Press Ctrl+C to stop.
 
 **Error Cases**:
 
-Project not initialized: "Error: Project not initialized. Run: aiteam init". Exit code: 3.
+Project not initialized: "Error: Project not initialized. Run: codeclaw init". Exit code: 3.
 
-Port already in use: "Error: Port 4317 is already in use. Try: aiteam ui --port 4321". Exit code: 1.
+Port already in use: "Error: Port 4317 is already in use. Try: codeclaw ui --port 4321". Exit code: 1.
 
-## 9. Command: aiteam doctor
+## 9. Command: codeclaw doctor
 
 **Purpose**: Check whether the local environment is ready.
 
-**Syntax**: `aiteam doctor [options]`
+**Syntax**: `codeclaw doctor [options]`
 
 **Options**:
 
@@ -360,8 +360,8 @@ Port already in use: "Error: Port 4317 is already in use. Try: aiteam ui --port 
 **Examples**:
 
 ```bash
-aiteam doctor
-aiteam doctor --json
+codeclaw doctor
+codeclaw doctor --json
 ```
 
 **Checks**: The command should check:
@@ -369,7 +369,7 @@ aiteam doctor --json
 - Node.js installed
 - Git installed
 - current folder is Git repository
-- .ai-team initialized
+- .codeclaw initialized
 - config valid
 - SQLite accessible
 - Claude Code installed
@@ -384,10 +384,10 @@ aiteam doctor --json
 **Output**:
 
 ```
-AI Team Doctor
+CodeClaw Doctor
 
 Project
-  .ai-team initialized: OK
+  .codeclaw initialized: OK
   Config valid: OK
   SQLite: OK
 
@@ -415,30 +415,30 @@ Status: READY_WITH_WARNINGS
 
 **Exit Behavior**: Exit code 0 if ready. Exit code 1 if critical error. Exit code 5 if selected default AI CLI is missing. Exit code 12 if required credential is missing.
 
-## 10. Command: aiteam config
+## 10. Command: codeclaw config
 
 **Purpose**: View or modify local configuration.
 
-**Syntax**: `aiteam config <subcommand> [options]`
+**Syntax**: `codeclaw config <subcommand> [options]`
 
 **Subcommands**:
 
 ```bash
-aiteam config get <key>
-aiteam config set <key> <value>
-aiteam config list
-aiteam config validate
-aiteam config path
+codeclaw config get <key>
+codeclaw config set <key> <value>
+codeclaw config list
+codeclaw config validate
+codeclaw config path
 ```
 
 **Examples**:
 
 ```bash
-aiteam config list
-aiteam config get agents.defaultDeveloper
-aiteam config set agents.defaultDeveloper codex
-aiteam config set commands.unitTest "mvn test"
-aiteam config validate
+codeclaw config list
+codeclaw config get agents.defaultDeveloper
+codeclaw config set agents.defaultDeveloper codex
+codeclaw config set commands.unitTest "mvn test"
+codeclaw config validate
 ```
 
 **Error Cases**:
@@ -447,11 +447,11 @@ Unknown key: "Error: Unknown config key: agents.defaultBackend". Exit code: 2.
 
 Invalid value: "Error: Invalid value for agents.defaultDeveloper. Allowed values: claude, codex, gemini, aider". Exit code: 4.
 
-## 11. Command: aiteam status
+## 11. Command: codeclaw status
 
 **Purpose**: Show current project status and latest workflow run status.
 
-**Syntax**: `aiteam status [options]`
+**Syntax**: `codeclaw status [options]`
 
 **Options**:
 
@@ -463,8 +463,8 @@ Invalid value: "Error: Invalid value for agents.defaultDeveloper. Allowed values
 **Examples**:
 
 ```bash
-aiteam status
-aiteam status --run run_20260622_143000
+codeclaw status
+codeclaw status --run run_20260622_143000
 ```
 
 **Output**:
@@ -488,11 +488,11 @@ Artifacts:
   Report: generated
 ```
 
-## 12. Command: aiteam new
+## 12. Command: codeclaw new
 
 **Purpose**: Create a new workflow run from a raw requirement, but do not execute workflow stages automatically.
 
-**Syntax**: `aiteam new <requirement> [options]`
+**Syntax**: `codeclaw new <requirement> [options]`
 
 **Arguments**: `<requirement>` - Raw requirement text.
 
@@ -508,8 +508,8 @@ Artifacts:
 **Examples**:
 
 ```bash
-aiteam new "Thêm chức năng reset password bằng email OTP"
-aiteam new "Add invoice CSV export" --title "Invoice CSV Export" --mode docs-only
+codeclaw new "Thêm chức năng reset password bằng email OTP"
+codeclaw new "Add invoice CSV export" --title "Invoice CSV Export" --mode docs-only
 ```
 
 **Actions**: The command should:
@@ -530,17 +530,17 @@ Title: Reset password by email OTP
 Mode: docs-only
 
 Input saved:
-.ai-team/runs/run_20260622_143000/input.md
+.codeclaw/runs/run_20260622_143000/input.md
 
 Next:
-aiteam spec --run run_20260622_143000
+codeclaw spec --run run_20260622_143000
 ```
 
-## 13. Command: aiteam run
+## 13. Command: codeclaw run
 
 **Purpose**: Run a workflow from raw requirement. This is the main command for end-to-end execution.
 
-**Syntax**: `aiteam run <requirement> [options]`
+**Syntax**: `codeclaw run <requirement> [options]`
 
 **Arguments**: `<requirement>` - Raw requirement text.
 
@@ -562,10 +562,10 @@ aiteam spec --run run_20260622_143000
 **Examples**:
 
 ```bash
-aiteam run "Thêm API export invoice CSV theo hotelId, date range, status"
-aiteam run "Add password reset by email OTP" --mode assisted
-aiteam run "Add password reset by email OTP" --mode semi-auto --agent codex
-aiteam run "Create expense approval system" --mode docs-only --output-language bilingual
+codeclaw run "Thêm API export invoice CSV theo hotelId, date range, status"
+codeclaw run "Add password reset by email OTP" --mode assisted
+codeclaw run "Add password reset by email OTP" --mode semi-auto --agent codex
+codeclaw run "Create expense approval system" --mode docs-only --output-language bilingual
 ```
 
 **Docs-only Flow**: new → spec → scope → plan → tasks → tests → report
@@ -601,20 +601,20 @@ Artifacts:
 - report/final-report.md
 
 Open in UI:
-aiteam ui
+codeclaw ui
 ```
 
 **Error Cases**:
 
-AI CLI missing: "Error: Selected agent 'codex' is not available. Run: aiteam doctor". Exit code: 5.
+AI CLI missing: "Error: Selected agent 'codex' is not available. Run: codeclaw doctor". Exit code: 5.
 
-Approval required: "Approval required before code generation. Run: aiteam code --run run_20260622_143000 --agent codex". Exit code: 15.
+Approval required: "Approval required before code generation. Run: codeclaw code --run run_20260622_143000 --agent codex". Exit code: 15.
 
-## 14. Command: aiteam resume
+## 14. Command: codeclaw resume
 
 **Purpose**: Resume a paused, failed, or incomplete run.
 
-**Syntax**: `aiteam resume <runId> [options]`
+**Syntax**: `codeclaw resume <runId> [options]`
 
 **Options**:
 
@@ -626,30 +626,30 @@ Approval required: "Approval required before code generation. Run: aiteam code -
 **Examples**:
 
 ```bash
-aiteam resume run_20260622_143000
-aiteam resume run_20260622_143000 --from review
+codeclaw resume run_20260622_143000
+codeclaw resume run_20260622_143000 --from review
 ```
 
-## 15. Command: aiteam cancel
+## 15. Command: codeclaw cancel
 
 **Purpose**: Cancel a running or paused workflow.
 
-**Syntax**: `aiteam cancel <runId> [options]`
+**Syntax**: `codeclaw cancel <runId> [options]`
 
 **Options**: `--reason <reason>` - Cancellation reason.
 
 **Examples**:
 
 ```bash
-aiteam cancel run_20260622_143000
-aiteam cancel run_20260622_143000 --reason "Requirement changed"
+codeclaw cancel run_20260622_143000
+codeclaw cancel run_20260622_143000 --reason "Requirement changed"
 ```
 
-## 16. Command: aiteam list
+## 16. Command: codeclaw list
 
 **Purpose**: List workflow runs.
 
-**Syntax**: `aiteam list [options]`
+**Syntax**: `codeclaw list [options]`
 
 **Options**:
 
@@ -663,8 +663,8 @@ aiteam cancel run_20260622_143000 --reason "Requirement changed"
 **Examples**:
 
 ```bash
-aiteam list
-aiteam list --status REPORT_GENERATED
+codeclaw list
+codeclaw list --status REPORT_GENERATED
 ```
 
 **Output**:
@@ -678,11 +678,11 @@ run_20260622_151200             TEST_FAILED         semi-auto   Reset password O
 run_20260621_180500             PLAN_GENERATED      assisted    Booking cancellation approval
 ```
 
-## 17. Command: aiteam show
+## 17. Command: codeclaw show
 
 **Purpose**: Show details of a specific run.
 
-**Syntax**: `aiteam show <runId> [options]`
+**Syntax**: `codeclaw show <runId> [options]`
 
 **Options**:
 
@@ -695,8 +695,8 @@ run_20260621_180500             PLAN_GENERATED      assisted    Booking cancella
 **Examples**:
 
 ```bash
-aiteam show run_20260622_143000
-aiteam show run_20260622_143000 --artifacts
+codeclaw show run_20260622_143000
+codeclaw show run_20260622_143000 --artifacts
 ```
 
 **Output**:
@@ -718,11 +718,11 @@ Artifacts:
 - report/final-report.md
 ```
 
-## 18. Command: aiteam spec
+## 18. Command: codeclaw spec
 
 **Purpose**: Generate clarified requirement, business rules, assumptions, open questions, and acceptance criteria.
 
-**Syntax**: `aiteam spec [options]`
+**Syntax**: `codeclaw spec [options]`
 
 **Options**:
 
@@ -738,9 +738,9 @@ Artifacts:
 **Examples**:
 
 ```bash
-aiteam spec
-aiteam spec --run run_20260622_143000
-aiteam spec --run run_20260622_143000 --output-language bilingual
+codeclaw spec
+codeclaw spec --run run_20260622_143000
+codeclaw spec --run run_20260622_143000 --output-language bilingual
 ```
 
 **Generated Artifacts**:
@@ -754,11 +754,11 @@ requirement/
   assumptions.md
 ```
 
-## 19. Command: aiteam scope
+## 19. Command: codeclaw scope
 
 **Purpose**: Generate scope definition, MVP scope, out-of-scope list, priorities, and success criteria.
 
-**Syntax**: `aiteam scope [options]`
+**Syntax**: `codeclaw scope [options]`
 
 **Options**:
 
@@ -771,8 +771,8 @@ requirement/
 **Examples**:
 
 ```bash
-aiteam scope --run run_20260622_143000
-aiteam scope --run run_20260622_143000 --strict
+codeclaw scope --run run_20260622_143000
+codeclaw scope --run run_20260622_143000 --strict
 ```
 
 **Generated Artifacts**:
@@ -784,11 +784,11 @@ scope/
   success-criteria.md
 ```
 
-## 20. Command: aiteam analyze
+## 20. Command: codeclaw analyze
 
 **Purpose**: Analyze repository context. This is especially useful for brownfield projects.
 
-**Syntax**: `aiteam analyze [options]`
+**Syntax**: `codeclaw analyze [options]`
 
 **Options**:
 
@@ -804,9 +804,9 @@ scope/
 **Examples**:
 
 ```bash
-aiteam analyze --run run_20260622_143000
-aiteam analyze --run run_20260622_143000 --deep
-aiteam analyze --include "src/main/java/**" --exclude "target/**"
+codeclaw analyze --run run_20260622_143000
+codeclaw analyze --run run_20260622_143000 --deep
+codeclaw analyze --include "src/main/java/**" --exclude "target/**"
 ```
 
 **Generated Artifacts**:
@@ -819,11 +819,11 @@ design/
   existing-patterns.md
 ```
 
-## 21. Command: aiteam plan
+## 21. Command: codeclaw plan
 
 **Purpose**: Generate technical design and implementation plan.
 
-**Syntax**: `aiteam plan [options]`
+**Syntax**: `codeclaw plan [options]`
 
 **Options**:
 
@@ -837,8 +837,8 @@ design/
 **Examples**:
 
 ```bash
-aiteam plan --run run_20260622_143000
-aiteam plan --run run_20260622_143000 --level detailed
+codeclaw plan --run run_20260622_143000
+codeclaw plan --run run_20260622_143000 --level detailed
 ```
 
 **Generated Artifacts**:
@@ -853,11 +853,11 @@ design/
   implementation-plan.md
 ```
 
-## 22. Command: aiteam tasks
+## 22. Command: codeclaw tasks
 
 **Purpose**: Generate task breakdown.
 
-**Syntax**: `aiteam tasks [options]`
+**Syntax**: `codeclaw tasks [options]`
 
 **Options**:
 
@@ -870,8 +870,8 @@ design/
 **Examples**:
 
 ```bash
-aiteam tasks --run run_20260622_143000
-aiteam tasks --run run_20260622_143000 --format jira
+codeclaw tasks --run run_20260622_143000
+codeclaw tasks --run run_20260622_143000 --format jira
 ```
 
 **Generated Artifacts**:
@@ -883,11 +883,11 @@ tasks/
   jira-ready-tasks.md
 ```
 
-## 23. Command: aiteam tests
+## 23. Command: codeclaw tests
 
 **Purpose**: Generate test matrix and manual test checklist. This command plans tests but does not execute tests.
 
-**Syntax**: `aiteam tests [options]`
+**Syntax**: `codeclaw tests [options]`
 
 **Options**:
 
@@ -900,8 +900,8 @@ tasks/
 **Examples**:
 
 ```bash
-aiteam tests --run run_20260622_143000
-aiteam tests --run run_20260622_143000 --type unit
+codeclaw tests --run run_20260622_143000
+codeclaw tests --run run_20260622_143000 --type unit
 ```
 
 **Generated Artifacts**:
@@ -913,11 +913,11 @@ tests/
   manual-test-checklist.md
 ```
 
-## 24. Command: aiteam code
+## 24. Command: codeclaw code
 
 **Purpose**: Run a selected AI coding CLI to implement the approved plan. This command should only run after the requirement, design, task breakdown, and test matrix are ready.
 
-**Syntax**: `aiteam code [options]`
+**Syntax**: `codeclaw code [options]`
 
 **Options**:
 
@@ -934,9 +934,9 @@ tests/
 **Examples**:
 
 ```bash
-aiteam code --run run_20260622_143000 --agent codex
-aiteam code --run run_20260622_143000 --agent claude --approve
-aiteam code --run run_20260622_143000 --prompt-only
+codeclaw code --run run_20260622_143000 --agent codex
+codeclaw code --run run_20260622_143000 --agent claude --approve
+codeclaw code --run run_20260622_143000 --prompt-only
 ```
 
 **Actions**: The command should:
@@ -973,11 +973,11 @@ Missing AI CLI: Exit code 5.
 
 Protected file modified: Exit code 11.
 
-## 25. Command: aiteam test
+## 25. Command: codeclaw test
 
-**Purpose**: Run configured test/build commands. This command executes tests. It is different from `aiteam tests`, which generates test plans.
+**Purpose**: Run configured test/build commands. This command executes tests. It is different from `codeclaw tests`, which generates test plans.
 
-**Syntax**: `aiteam test [options]`
+**Syntax**: `codeclaw test [options]`
 
 **Options**:
 
@@ -995,9 +995,9 @@ Protected file modified: Exit code 11.
 **Examples**:
 
 ```bash
-aiteam test --run run_20260622_143000
-aiteam test --run run_20260622_143000 --all
-aiteam test --run run_20260622_143000 --command "mvn test"
+codeclaw test --run run_20260622_143000
+codeclaw test --run run_20260622_143000 --all
+codeclaw test --run run_20260622_143000 --command "mvn test"
 ```
 
 **Generated Artifacts**:
@@ -1013,11 +1013,11 @@ logs/
 
 **Exit Behavior**: If tests fail, the command should return exit code 8, but still generate artifacts.
 
-## 26. Command: aiteam review
+## 26. Command: codeclaw review
 
 **Purpose**: Review generated code, tests, and requirement coverage.
 
-**Syntax**: `aiteam review [options]`
+**Syntax**: `codeclaw review [options]`
 
 **Options**:
 
@@ -1032,8 +1032,8 @@ logs/
 **Examples**:
 
 ```bash
-aiteam review --run run_20260622_143000
-aiteam review --run run_20260622_143000 --all
+codeclaw review --run run_20260622_143000
+codeclaw review --run run_20260622_143000 --all
 ```
 
 **Generated Artifacts**:
@@ -1045,11 +1045,11 @@ review/
   requirement-coverage.md
 ```
 
-## 27. Command: aiteam trace
+## 27. Command: codeclaw trace
 
 **Purpose**: Generate or update traceability matrix.
 
-**Syntax**: `aiteam trace [options]`
+**Syntax**: `codeclaw trace [options]`
 
 **Options**:
 
@@ -1062,8 +1062,8 @@ review/
 **Examples**:
 
 ```bash
-aiteam trace --run run_20260622_143000
-aiteam trace --run run_20260622_143000 --format markdown
+codeclaw trace --run run_20260622_143000
+codeclaw trace --run run_20260622_143000 --format markdown
 ```
 
 **Generated Artifacts**:
@@ -1074,11 +1074,11 @@ report/
   traceability.json
 ```
 
-## 28. Command: aiteam report
+## 28. Command: codeclaw report
 
 **Purpose**: Generate final delivery report.
 
-**Syntax**: `aiteam report [options]`
+**Syntax**: `codeclaw report [options]`
 
 **Options**:
 
@@ -1092,8 +1092,8 @@ report/
 **Examples**:
 
 ```bash
-aiteam report --run run_20260622_143000
-aiteam report --run run_20260622_143000 --format all
+codeclaw report --run run_20260622_143000
+codeclaw report --run run_20260622_143000 --format all
 ```
 
 **Generated Artifacts**:
@@ -1105,11 +1105,11 @@ report/
   final-report.html
 ```
 
-## 29. Command: aiteam artifacts
+## 29. Command: codeclaw artifacts
 
 **Purpose**: List artifacts generated for a run.
 
-**Syntax**: `aiteam artifacts <runId> [options]`
+**Syntax**: `codeclaw artifacts <runId> [options]`
 
 **Options**:
 
@@ -1121,32 +1121,32 @@ report/
 **Examples**:
 
 ```bash
-aiteam artifacts run_20260622_143000
-aiteam artifacts run_20260622_143000 --type design
+codeclaw artifacts run_20260622_143000
+codeclaw artifacts run_20260622_143000 --type design
 ```
 
-## 30. Command: aiteam open
+## 30. Command: codeclaw open
 
 **Purpose**: Open generated artifacts or local UI.
 
-**Syntax**: `aiteam open [target] [options]`
+**Syntax**: `codeclaw open [target] [options]`
 
 **Targets**: ui, run, report, diff, logs, config.
 
 **Examples**:
 
 ```bash
-aiteam open ui
-aiteam open report --run run_20260622_143000
-aiteam open diff --run run_20260622_143000
-aiteam open config
+codeclaw open ui
+codeclaw open report --run run_20260622_143000
+codeclaw open diff --run run_20260622_143000
+codeclaw open config
 ```
 
-## 31. Command: aiteam export
+## 31. Command: codeclaw export
 
 **Purpose**: Export generated artifacts.
 
-**Syntax**: `aiteam export <runId> [options]`
+**Syntax**: `codeclaw export <runId> [options]`
 
 **Options**:
 
@@ -1160,15 +1160,15 @@ aiteam open config
 **Examples**:
 
 ```bash
-aiteam export run_20260622_143000 --format zip
-aiteam export run_20260622_143000 --format markdown --output ./delivery-docs
+codeclaw export run_20260622_143000 --format zip
+codeclaw export run_20260622_143000 --format markdown --output ./delivery-docs
 ```
 
-## 32. Command: aiteam clean
+## 32. Command: codeclaw clean
 
 **Purpose**: Clean old runs, logs, or temporary files.
 
-**Syntax**: `aiteam clean [options]`
+**Syntax**: `codeclaw clean [options]`
 
 **Options**:
 
@@ -1183,148 +1183,148 @@ aiteam export run_20260622_143000 --format markdown --output ./delivery-docs
 **Examples**:
 
 ```bash
-aiteam clean --logs --older-than 30d
-aiteam clean --runs --older-than 90d --dry-run
+codeclaw clean --logs --older-than 30d
+codeclaw clean --runs --older-than 90d --dry-run
 ```
 
 **Safety**: This command must ask for confirmation unless --yes is provided.
 
-## 33. Command: aiteam prompts
+## 33. Command: codeclaw prompts
 
 **Purpose**: Manage prompt templates.
 
-**Syntax**: `aiteam prompts <subcommand> [options]`
+**Syntax**: `codeclaw prompts <subcommand> [options]`
 
 **Subcommands**:
 
 ```bash
-aiteam prompts list
-aiteam prompts show <name>
-aiteam prompts edit <name>
-aiteam prompts reset <name>
-aiteam prompts validate
+codeclaw prompts list
+codeclaw prompts show <name>
+codeclaw prompts edit <name>
+codeclaw prompts reset <name>
+codeclaw prompts validate
 ```
 
 **Examples**:
 
 ```bash
-aiteam prompts list
-aiteam prompts show ba-agent
-aiteam prompts edit architect-agent
-aiteam prompts reset developer-agent
+codeclaw prompts list
+codeclaw prompts show ba-agent
+codeclaw prompts edit architect-agent
+codeclaw prompts reset developer-agent
 ```
 
-## 34. Command: aiteam templates
+## 34. Command: codeclaw templates
 
 **Purpose**: Manage project templates.
 
-**Syntax**: `aiteam templates <subcommand> [options]`
+**Syntax**: `codeclaw templates <subcommand> [options]`
 
 **Subcommands**:
 
 ```bash
-aiteam templates list
-aiteam templates show <name>
-aiteam templates apply <name>
+codeclaw templates list
+codeclaw templates show <name>
+codeclaw templates apply <name>
 ```
 
 **Examples**:
 
 ```bash
-aiteam templates list
-aiteam templates apply java-spring-boot
+codeclaw templates list
+codeclaw templates apply java-spring-boot
 ```
 
-## 35. Command: aiteam github
+## 35. Command: codeclaw github
 
 **Purpose**: Manage GitHub integration. GitHub integration should be optional.
 
-**Syntax**: `aiteam github <subcommand> [options]`
+**Syntax**: `codeclaw github <subcommand> [options]`
 
 **Subcommands**:
 
 ```bash
-aiteam github status
-aiteam github test
-aiteam github pr create
-aiteam github pr view
-aiteam github actions
+codeclaw github status
+codeclaw github test
+codeclaw github pr create
+codeclaw github pr view
+codeclaw github actions
 ```
 
 **Examples**:
 
 ```bash
-aiteam github status
-aiteam github pr create --run run_20260622_143000
-aiteam github actions --run run_20260622_143000
+codeclaw github status
+codeclaw github pr create --run run_20260622_143000
+codeclaw github actions --run run_20260622_143000
 ```
 
 **MVP Recommendation**: Use GitHub CLI first. The product can call: `gh auth status`, `gh pr create`, `gh pr view`, `gh run list`.
 
 **Approval**: Creating a PR should require approval unless user explicitly passes `--approve`.
 
-## 36. Command: aiteam jira
+## 36. Command: codeclaw jira
 
 **Purpose**: Manage Jira integration. Jira integration should be optional.
 
-**Syntax**: `aiteam jira <subcommand> [options]`
+**Syntax**: `codeclaw jira <subcommand> [options]`
 
 **Subcommands**:
 
 ```bash
-aiteam jira status
-aiteam jira test
-aiteam jira export
-aiteam jira create
-aiteam jira comment
+codeclaw jira status
+codeclaw jira test
+codeclaw jira export
+codeclaw jira create
+codeclaw jira comment
 ```
 
 **Examples**:
 
 ```bash
-aiteam jira status
-aiteam jira export --run run_20260622_143000
-aiteam jira create --run run_20260622_143000
-aiteam jira comment --run run_20260622_143000 --issue ABC-123
+codeclaw jira status
+codeclaw jira export --run run_20260622_143000
+codeclaw jira create --run run_20260622_143000
+codeclaw jira comment --run run_20260622_143000 --issue ABC-123
 ```
 
-**MVP Behavior**: MVP should support `aiteam jira export --run <runId>`. This generates Jira-ready markdown without calling Jira API.
+**MVP Behavior**: MVP should support `codeclaw jira export --run <runId>`. This generates Jira-ready markdown without calling Jira API.
 
 **Future Behavior**: Later, the CLI can create: epic, story, subtask, comment, task link.
 
 **Approval**: API-based Jira updates must require approval.
 
-## 37. Command: aiteam slack
+## 37. Command: codeclaw slack
 
 **Purpose**: Manage Slack integration. Slack integration should be optional.
 
-**Syntax**: `aiteam slack <subcommand> [options]`
+**Syntax**: `codeclaw slack <subcommand> [options]`
 
 **Subcommands**:
 
 ```bash
-aiteam slack status
-aiteam slack test
-aiteam slack post
+codeclaw slack status
+codeclaw slack test
+codeclaw slack post
 ```
 
 **Examples**:
 
 ```bash
-aiteam slack status
-aiteam slack test
-aiteam slack post --run run_20260622_143000
+codeclaw slack status
+codeclaw slack test
+codeclaw slack post --run run_20260622_143000
 ```
 
 **MVP Behavior**: MVP should support post-only behavior: post final report summary, post PR-ready notification, post workflow result. Receiving Slack events is out of scope for MVP.
 
 **Approval**: Posting to Slack must require approval unless user passes `--approve`.
 
-## 38. Command: aiteam rollback
+## 38. Command: codeclaw rollback
 
 **Purpose**: Rollback code changes generated during a run. This command is dangerous and must require confirmation.
 
-**Syntax**: `aiteam rollback <runId> [options]`
+**Syntax**: `codeclaw rollback <runId> [options]`
 
 **Options**:
 
@@ -1336,15 +1336,15 @@ aiteam slack post --run run_20260622_143000
 **Examples**:
 
 ```bash
-aiteam rollback run_20260622_143000 --dry-run
-aiteam rollback run_20260622_143000 --yes
+codeclaw rollback run_20260622_143000 --dry-run
+codeclaw rollback run_20260622_143000 --yes
 ```
 
-## 39. Command: aiteam approve
+## 39. Command: codeclaw approve
 
 **Purpose**: Approve a pending workflow gate from CLI.
 
-**Syntax**: `aiteam approve <runId> [options]`
+**Syntax**: `codeclaw approve <runId> [options]`
 
 **Options**:
 
@@ -1356,15 +1356,15 @@ aiteam rollback run_20260622_143000 --yes
 **Examples**:
 
 ```bash
-aiteam approve run_20260622_143000 --gate plan
-aiteam approve run_20260622_143000 --gate code --note "Plan looks safe"
+codeclaw approve run_20260622_143000 --gate plan
+codeclaw approve run_20260622_143000 --gate code --note "Plan looks safe"
 ```
 
-## 40. Command: aiteam reject
+## 40. Command: codeclaw reject
 
 **Purpose**: Reject a pending workflow gate from CLI.
 
-**Syntax**: `aiteam reject <runId> [options]`
+**Syntax**: `codeclaw reject <runId> [options]`
 
 **Options**:
 
@@ -1376,7 +1376,7 @@ aiteam approve run_20260622_143000 --gate code --note "Plan looks safe"
 **Examples**:
 
 ```bash
-aiteam reject run_20260622_143000 --gate plan --reason "API design is too complex"
+codeclaw reject run_20260622_143000 --gate plan --reason "API design is too complex"
 ```
 
 ## 41. Command Naming Notes
@@ -1385,63 +1385,63 @@ aiteam reject run_20260622_143000 --gate plan --reason "API design is too comple
 
 The CLI should distinguish:
 
-- `aiteam tests` - Generates test matrix and test cases.
-- `aiteam test` - Executes configured test commands.
+- `codeclaw tests` - Generates test matrix and test cases.
+- `codeclaw test` - Executes configured test commands.
 
 This distinction is important.
 
 ### 41.2 plan vs tasks
 
-- `aiteam plan` - Generates technical plan.
-- `aiteam tasks` - Generates task breakdown.
+- `codeclaw plan` - Generates technical plan.
+- `codeclaw tasks` - Generates task breakdown.
 
 ### 41.3 review vs report
 
-- `aiteam review` - Reviews code/test/coverage.
-- `aiteam report` - Summarizes final delivery.
+- `codeclaw review` - Reviews code/test/coverage.
+- `codeclaw report` - Summarizes final delivery.
 
 ## 42. Recommended MVP Commands
 
 **MVP Required**:
 
 ```
-aiteam init
-aiteam ui
-aiteam doctor
-aiteam run
-aiteam new
-aiteam spec
-aiteam plan
-aiteam tasks
-aiteam tests
-aiteam report
-aiteam list
-aiteam show
+codeclaw init
+codeclaw ui
+codeclaw doctor
+codeclaw run
+codeclaw new
+codeclaw spec
+codeclaw plan
+codeclaw tasks
+codeclaw tests
+codeclaw report
+codeclaw list
+codeclaw show
 ```
 
 **MVP+ Commands**:
 
 ```
-aiteam code
-aiteam test
-aiteam review
-aiteam trace
-aiteam artifacts
-aiteam open
-aiteam prompts
+codeclaw code
+codeclaw test
+codeclaw review
+codeclaw trace
+codeclaw artifacts
+codeclaw open
+codeclaw prompts
 ```
 
 **Later Commands**:
 
 ```
-aiteam github
-aiteam jira
-aiteam slack
-aiteam rollback
-aiteam approve
-aiteam reject
-aiteam export
-aiteam clean
+codeclaw github
+codeclaw jira
+codeclaw slack
+codeclaw rollback
+codeclaw approve
+codeclaw reject
+codeclaw export
+codeclaw clean
 ```
 
 ## 43. Example Full CLI Session
@@ -1450,63 +1450,63 @@ aiteam clean
 
 ```bash
 cd hotel-booking-service
-aiteam init --type java-spring-boot
+codeclaw init --type java-spring-boot
 ```
 
 **Step 2: Check environment**:
 
 ```bash
-aiteam doctor
+codeclaw doctor
 ```
 
 **Step 3: Start local UI**:
 
 ```bash
-aiteam ui --open
+codeclaw ui --open
 ```
 
 **Step 4: Create docs-only run**:
 
 ```bash
-aiteam run "Thêm API export invoice CSV theo hotelId, date range, status" --mode docs-only
+codeclaw run "Thêm API export invoice CSV theo hotelId, date range, status" --mode docs-only
 ```
 
 **Step 5: View run**:
 
 ```bash
-aiteam list
-aiteam show run_20260622_143000 --artifacts
+codeclaw list
+codeclaw show run_20260622_143000 --artifacts
 ```
 
 **Step 6: Generate implementation prompt**:
 
 ```bash
-aiteam run "Thêm API export invoice CSV theo hotelId, date range, status" --mode assisted
+codeclaw run "Thêm API export invoice CSV theo hotelId, date range, status" --mode assisted
 ```
 
 **Step 7: Run coding agent**:
 
 ```bash
-aiteam code --run run_20260622_143000 --agent codex
+codeclaw code --run run_20260622_143000 --agent codex
 ```
 
 **Step 8: Run tests**:
 
 ```bash
-aiteam test --run run_20260622_143000 --all
+codeclaw test --run run_20260622_143000 --all
 ```
 
 **Step 9: Review**:
 
 ```bash
-aiteam review --run run_20260622_143000 --all
+codeclaw review --run run_20260622_143000 --all
 ```
 
 **Step 10: Generate final report**:
 
 ```bash
-aiteam trace --run run_20260622_143000
-aiteam report --run run_20260622_143000
+codeclaw trace --run run_20260622_143000
+codeclaw report --run run_20260622_143000
 ```
 
 ## 44. Final CLI Summary
@@ -1532,15 +1532,15 @@ init project
 The most important commands for the first version are:
 
 ```
-aiteam init
-aiteam ui
-aiteam doctor
-aiteam run
-aiteam spec
-aiteam plan
-aiteam tasks
-aiteam tests
-aiteam report
+codeclaw init
+codeclaw ui
+codeclaw doctor
+codeclaw run
+codeclaw spec
+codeclaw plan
+codeclaw tasks
+codeclaw tests
+codeclaw report
 ```
 
 The product should start with documentation and workflow commands first.

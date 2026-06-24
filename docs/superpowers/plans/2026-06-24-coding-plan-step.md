@@ -6,7 +6,7 @@
 
 **Architecture:** Follow existing agent/parser/workflow pattern: create a CodingPlanAgent with input interface, output interface, inline template, optional external template loader, and output parser. Add paths to ArtifactWriter, insert the step in semi-auto and assisted workflows, and update the DeveloperAgent to reference the coding plan. Add a new ApprovalGate for optional user review.
 
-**Tech Stack:** TypeScript, existing @aiteam/core agent patterns, mustache-style templates
+**Tech Stack:** TypeScript, existing @codeclaw/core agent patterns, mustache-style templates
 
 ---
 
@@ -109,8 +109,8 @@ export function parseCodingPlanOutput(raw: string): CodingPlanParsedOutput {
 ```typescript
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { runAgent, renderPrompt } from "@aiteam/adapters";
-import type { AiCliTool } from "@aiteam/adapters";
+import { runAgent, renderPrompt } from "@codeclaw/adapters";
+import type { AiCliTool } from "@codeclaw/adapters";
 import { parseCodingPlanOutput } from "./parsers/codingPlanOutputParser.js";
 
 export interface CodingPlanAgentInput {

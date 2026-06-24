@@ -1,4 +1,4 @@
-import { createApp, getDefaultDbPath, getDefaultPromptsDir } from "@aiteam/server";
+import { createApp, getDefaultDbPath, getDefaultPromptsDir } from "@codeclaw/server";
 
 async function start(): Promise<void> {
   const app = createApp({

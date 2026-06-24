@@ -1,6 +1,6 @@
 import { access, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { configSchema } from "@aiteam/shared";
+import { configSchema } from "@codeclaw/shared";
 
 export async function configListCommand(): Promise<void> {
   const configPath = await ensureConfig();
@@ -50,29 +50,29 @@ export async function configValidateCommand(): Promise<void> {
 }
 
 export async function configPathCommand(): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
   console.log(`\n  ${join(aiTeamDir, "config.json")}\n`);
 }
 
 async function ensureConfig(): Promise<string> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
   const configPath = join(aiTeamDir, "config.json");
   try {
     await access(configPath);
   } catch {
-    console.log("❌ config.json not found. Run 'aiteam init' first.");
+    console.log("❌ config.json not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
   return configPath;

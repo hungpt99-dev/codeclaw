@@ -88,14 +88,14 @@ outOfScopePath: string;
 successCriteriaPath: string;
 ```
 
-### 5. Create CLI command: aiteam scope
+### 5. Create CLI command: codeclaw scope
 
 Create `apps/cli/src/commands/scope.ts`:
 
 ```bash
-aiteam scope --run <runId>
-aiteam scope --run <runId> --strict
-aiteam scope --run <runId> --regenerate
+codeclaw scope --run <runId>
+codeclaw scope --run <runId> --strict
+codeclaw scope --run <runId> --regenerate
 ```
 
 ### 6. Add scope tab in web UI
@@ -113,7 +113,7 @@ Reuse Gate system from Step 20: SCOPE gate (new gate type).
 
 ## Acceptance Criteria
 
-- `aiteam scope --run <runId>` generates scope artifacts
+- `codeclaw scope --run <runId>` generates scope artifacts
 - PO Agent prompt template exists
 - Scope stage runs after requirement, before design in workflow
 - Web UI shows Scope tab

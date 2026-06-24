@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import type { DbConnection } from "@aiteam/storage";
-import { createRunRepository, createApprovalRepository } from "@aiteam/storage";
+import type { DbConnection } from "@codeclaw/storage";
+import { createRunRepository, createApprovalRepository } from "@codeclaw/storage";
 import {
   checkStatus,
   testConnection,
@@ -14,8 +14,8 @@ import {
   getSlackStatus,
   testSlackConnection,
   notifySlack,
-} from "@aiteam/adapters";
-import type { JiraConfig } from "@aiteam/adapters";
+} from "@codeclaw/adapters";
+import type { JiraConfig } from "@codeclaw/adapters";
 import {
   generatePRSummary,
   getArtifactPaths,
@@ -23,9 +23,9 @@ import {
   buildDocsGeneratedMessage,
   buildCodeGeneratedMessage,
   buildTestResultMessage,
-} from "@aiteam/core";
-import type { SlackMessageInput } from "@aiteam/core";
-import { configSchema } from "@aiteam/shared";
+} from "@codeclaw/core";
+import type { SlackMessageInput } from "@codeclaw/core";
+import { configSchema } from "@codeclaw/shared";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -82,7 +82,7 @@ export function registerIntegrationRoutes(app: FastifyInstance, _db: DbConnectio
 
   app.post("/api/integrations/jira/test", async (_request, reply) => {
     try {
-      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const configPath = join(process.cwd(), ".codeclaw", "config.json");
       const raw = await readFile(configPath, "utf-8");
       const parsed: unknown = JSON.parse(raw);
       const cfg = configSchema.parse(parsed);
@@ -96,7 +96,7 @@ export function registerIntegrationRoutes(app: FastifyInstance, _db: DbConnectio
 
   app.get("/api/integrations/jira/status", async (_request, _reply) => {
     try {
-      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const configPath = join(process.cwd(), ".codeclaw", "config.json");
       const rawContent = await readFile(configPath, "utf-8");
       const parsedConfig: unknown = JSON.parse(rawContent);
       const cfg = configSchema.parse(parsedConfig);
@@ -119,7 +119,7 @@ export function registerIntegrationRoutes(app: FastifyInstance, _db: DbConnectio
       return reply.send({ message: "Approval required", gate: "EXTERNAL_UPDATE" });
     }
     try {
-      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const configPath = join(process.cwd(), ".codeclaw", "config.json");
       const rawConfig = await readFile(configPath, "utf-8");
       const parsedConfig: unknown = JSON.parse(rawConfig);
       const cfg = configSchema.parse(parsedConfig);
@@ -181,7 +181,7 @@ export function registerIntegrationRoutes(app: FastifyInstance, _db: DbConnectio
         "utf-8",
       ).catch(() => "");
 
-      const { generateJiraReadyMarkdown } = await import("@aiteam/core");
+      const { generateJiraReadyMarkdown } = await import("@codeclaw/core");
       const markdown = generateJiraReadyMarkdown({
         title: `Run: ${body.runId}`,
         requirementSummary: requirement.slice(0, 500),
@@ -267,7 +267,7 @@ export function registerIntegrationRoutes(app: FastifyInstance, _db: DbConnectio
 
   app.post("/api/integrations/slack/test", async (_request, reply) => {
     try {
-      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const configPath = join(process.cwd(), ".codeclaw", "config.json");
       const raw = await readFile(configPath, "utf-8");
       const parsed: unknown = JSON.parse(raw);
       const cfg = configSchema.parse(parsed);
@@ -281,7 +281,7 @@ export function registerIntegrationRoutes(app: FastifyInstance, _db: DbConnectio
 
   app.get("/api/integrations/slack/status", async (_request, _reply) => {
     try {
-      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const configPath = join(process.cwd(), ".codeclaw", "config.json");
       const rawContent = await readFile(configPath, "utf-8");
       const parsedConfig: unknown = JSON.parse(rawContent);
       const cfg = configSchema.parse(parsedConfig);
@@ -309,7 +309,7 @@ export function registerIntegrationRoutes(app: FastifyInstance, _db: DbConnectio
     }
 
     try {
-      const configPath = join(process.cwd(), ".ai-team", "config.json");
+      const configPath = join(process.cwd(), ".codeclaw", "config.json");
       const rawConfig = await readFile(configPath, "utf-8");
       const parsedConfig: unknown = JSON.parse(rawConfig);
       const cfg = configSchema.parse(parsedConfig);

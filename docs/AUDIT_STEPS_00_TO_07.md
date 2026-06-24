@@ -107,8 +107,8 @@ a588990 chore(repo): setup codebase engineering foundation
 - `packages/core/` exists
 - `packages/adapters/` exists (stub)
 - `templates/prompts/` exists
-- All package names correct: `@aiteam/cli`, `@aiteam/local-server`, `@aiteam/local-web`, `@aiteam/shared`, `@aiteam/storage`, `@aiteam/core`, `@aiteam/adapters`
-- CLI exposes `aiteam` binary
+- All package names correct: `@codeclaw/cli`, `@codeclaw/local-server`, `@codeclaw/local-web`, `@codeclaw/shared`, `@codeclaw/storage`, `@codeclaw/core`, `@codeclaw/adapters`
+- CLI exposes `codeclaw` binary
 - local-server has health route (stub)
 - local-web has placeholder App component
 
@@ -124,7 +124,7 @@ a588990 chore(repo): setup codebase engineering foundation
 
 **Current:**
 
-- `packages/shared/src/types/domain.ts` — RunMode (4 values), RunStatus (6 values), ArtifactType (12 values), Run, Artifact, AiTeamConfig interfaces
+- `packages/shared/src/types/domain.ts` — RunMode (4 values), RunStatus (6 values), ArtifactType (12 values), Run, Artifact, CodeClawConfig interfaces
 - `packages/shared/src/schemas/config.schema.ts` — Zod schema + defaultConfig
 - `packages/shared/src/schemas/run.schema.ts` — Zod run schema
 - `packages/shared/src/utils/ids.ts` — createRunId, slugify
@@ -135,7 +135,7 @@ a588990 chore(repo): setup codebase engineering foundation
 
 **Status: PASS**
 
-**Issue:** `packages/shared/src/utils/fs.ts` imports `node:fs/promises`. This is a Node-only module. When `apps/local-web` imports `@aiteam/shared`, Vite's bundler tries to resolve `node:fs/promises` and fails. The web app only needs `createRunId` from shared, but the barrel export pulls in everything.
+**Issue:** `packages/shared/src/utils/fs.ts` imports `node:fs/promises`. This is a Node-only module. When `apps/local-web` imports `@codeclaw/shared`, Vite's bundler tries to resolve `node:fs/promises` and fails. The web app only needs `createRunId` from shared, but the barrel export pulls in everything.
 
 ---
 
@@ -175,9 +175,9 @@ a588990 chore(repo): setup codebase engineering foundation
 - `packages/core/src/prompts/promptRenderer.ts` — {{variable}} replacement
 - No real AI API calls
 - No AI CLI execution
-- Generates 14 artifacts under `.ai-team/runs/<runId>/`
+- Generates 14 artifacts under `.codeclaw/runs/<runId>/`
 - Tests: 23 tests pass (renderer, writer, workflow, agents)
-- All output goes to `.ai-team/` only
+- All output goes to `.codeclaw/` only
 
 **Status: PASS**
 
@@ -200,7 +200,7 @@ a588990 chore(repo): setup codebase engineering foundation
 
 **Status: PASS**
 
-**Note:** Template copy during `aiteam init` shows warnings "Could not copy template" in tests because the test runs from a different working directory. The templates exist in the repo at `templates/prompts/` and the copy logic uses relative paths. This is a test environment issue, not a code bug.
+**Note:** Template copy during `codeclaw init` shows warnings "Could not copy template" in tests because the test runs from a different working directory. The templates exist in the repo at `templates/prompts/` and the copy logic uses relative paths. This is a test environment issue, not a code bug.
 
 ---
 
@@ -211,8 +211,8 @@ a588990 chore(repo): setup codebase engineering foundation
 **Current:**
 
 - `apps/cli/src/index.ts` — Commander.js with 6 commands
-- `apps/cli/src/commands/init.ts` — creates .ai-team/ with config, db, prompts, runs
-- `apps/cli/src/commands/doctor.ts` — checks .ai-team, config, db, templates, node, git
+- `apps/cli/src/commands/init.ts` — creates .codeclaw/ with config, db, prompts, runs
+- `apps/cli/src/commands/doctor.ts` — checks .codeclaw, config, db, templates, node, git
 - `apps/cli/src/commands/run.ts` — executes docsOnlyWorkflow, saves to SQLite
 - `apps/cli/src/commands/list.ts` — shows recent 20 runs
 - `apps/cli/src/commands/show.ts` — shows run details + artifacts
@@ -221,18 +221,18 @@ a588990 chore(repo): setup codebase engineering foundation
 - No real AI calls
 - No integrations required
 - Only docs-only mode supported
-- `aiteam run` modifies only `.ai-team/`
+- `codeclaw run` modifies only `.codeclaw/`
 
 **Status: PASS**
 
 **Smoke test results:**
 
-- `aiteam --help` ✅ Shows all 6 commands
-- `aiteam init --force` ✅ Creates .ai-team/ with config, db, prompts/, runs/
-- `aiteam doctor` ✅ All checks pass (templates show warning due to path)
-- `aiteam run "Create a simple task management feature"` ✅ Generates 14 artifacts
-- `aiteam list` ✅ Shows run with correct metadata
-- `aiteam show <runId>` ✅ Shows run details + 14 artifacts
+- `codeclaw --help` ✅ Shows all 6 commands
+- `codeclaw init --force` ✅ Creates .codeclaw/ with config, db, prompts/, runs/
+- `codeclaw doctor` ✅ All checks pass (templates show warning due to path)
+- `codeclaw run "Create a simple task management feature"` ✅ Generates 14 artifacts
+- `codeclaw list` ✅ Shows run with correct metadata
+- `codeclaw show <runId>` ✅ Shows run details + 14 artifacts
 
 ---
 
@@ -269,7 +269,7 @@ a588990 chore(repo): setup codebase engineering foundation
 | ----------------------------- | ----------------------------------------------------------------------------------- |
 | dependency-cruiser arch:check | ❌ 1 violation: `apps/local-web/dist/packages/shared/src/utils/fs.js → fs/promises` |
 
-**Explanation:** This is a build-time issue. `apps/local-web` imports `@aiteam/shared` which barrel-exports `ensureDir`/`fileExists` from `fs.ts`. Vite/Rollup cannot bundle `node:fs/promises`. The web app only uses `createRunId` from shared, but the barrel export pulls in all exports.
+**Explanation:** This is a build-time issue. `apps/local-web` imports `@codeclaw/shared` which barrel-exports `ensureDir`/`fileExists` from `fs.ts`. Vite/Rollup cannot bundle `node:fs/promises`. The web app only uses `createRunId` from shared, but the barrel export pulls in all exports.
 
 ---
 
@@ -307,14 +307,14 @@ a588990 chore(repo): setup codebase engineering foundation
 
 ## 9. Smoke Test Results
 
-| Test                  | Result                         |
-| --------------------- | ------------------------------ |
-| `aiteam --help`       | ✅ 6 commands listed           |
-| `aiteam init --force` | ✅ Creates .ai-team/ structure |
-| `aiteam doctor`       | ✅ All checks pass             |
-| `aiteam run "..."`    | ✅ 14 artifacts generated      |
-| `aiteam list`         | ✅ Shows runs                  |
-| `aiteam show <runId>` | ✅ Shows details + artifacts   |
+| Test                    | Result                          |
+| ----------------------- | ------------------------------- |
+| `codeclaw --help`       | ✅ 6 commands listed            |
+| `codeclaw init --force` | ✅ Creates .codeclaw/ structure |
+| `codeclaw doctor`       | ✅ All checks pass              |
+| `codeclaw run "..."`    | ✅ 14 artifacts generated       |
+| `codeclaw list`         | ✅ Shows runs                   |
+| `codeclaw show <runId>` | ✅ Shows details + artifacts    |
 
 ---
 
@@ -326,7 +326,7 @@ a588990 chore(repo): setup codebase engineering foundation
 | 2   | `docs/DOCS_INDEX.md` missing                                   | Low      | Docs gap                 |
 | 3   | `README.md` missing                                            | Low      | Docs gap                 |
 | 4   | `docs/AI_AGENT_RULES.md` missing docs-loading rule             | Low      | Docs gap                 |
-| 5   | Template copy warnings during `aiteam init` in non-repo-root   | Low      | Path resolution issue    |
+| 5   | Template copy warnings during `codeclaw init` in non-repo-root | Low      | Path resolution issue    |
 | 6   | `packages/adapters/` stub exists but is not in roadmap for MVP | Low      | Harmless placeholder     |
 
 ---
@@ -338,7 +338,7 @@ a588990 chore(repo): setup codebase engineering foundation
 1. **Fix local-web build:** Split `packages/shared` barrel exports so `apps/local-web` only imports web-safe modules. Options:
    - Create `packages/shared/src/web.ts` that only exports web-safe utilities
    - Or use conditional exports in `package.json`
-   - Or have `apps/local-web` import from `@aiteam/shared/utils/ids` directly instead of the barrel
+   - Or have `apps/local-web` import from `@codeclaw/shared/utils/ids` directly instead of the barrel
 
 ### Priority 2 (Should fix before Step 08):
 
@@ -348,7 +348,7 @@ a588990 chore(repo): setup codebase engineering foundation
 
 ### Priority 3 (Nice to have):
 
-5. **Fix template copy paths** in `aiteam init` to resolve templates relative to package root instead of CWD
+5. **Fix template copy paths** in `codeclaw init` to resolve templates relative to package root instead of CWD
 6. **Run `pnpm format --write`** on docs markdown files
 
 ---

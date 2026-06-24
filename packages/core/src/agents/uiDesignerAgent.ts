@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { runAgent, renderPrompt } from "@aiteam/adapters";
-import type { AiCliTool } from "@aiteam/adapters";
+import { runAgent, renderPrompt } from "@codeclaw/adapters";
+import type { AiCliTool } from "@codeclaw/adapters";
 import { parseUiDesignerOutput } from "./parsers/uiDesignerOutputParser.js";
 
 export interface UiDesignerAgentInput {

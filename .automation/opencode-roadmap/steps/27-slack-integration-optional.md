@@ -124,7 +124,7 @@ integrations: {
   slack: {
     enabled: z.boolean().default(false);
     channelId: z.string().optional();
-    tokenEnvRef: z.string().default("AITEAM_SLACK_TOKEN");
+    tokenEnvRef: z.string().default("CODECLAW_SLACK_TOKEN");
     notifyOn: z.array(z.enum([
       "docs_generated",
       "code_generated",
@@ -165,7 +165,7 @@ Each function returns a markdown-formatted message suitable for Slack.
 Example (report ready):
 
 ```
-*📋 AITeam Delivery Report Ready*
+*📋 CodeClaw Delivery Report Ready*
 
 *Project:* <project name>
 *Requirement:* <run title>
@@ -253,14 +253,14 @@ export async function notifySlack(
 - Require approval before posting (Gate 5)
 - Post to Slack channel
 
-### 6. Create CLI command: aiteam slack
+### 6. Create CLI command: codeclaw slack
 
 Create `apps/cli/src/commands/slack.ts`:
 
 ```bash
-aiteam slack status
-aiteam slack test
-aiteam slack post --run <runId> [--event report_ready] [--approve]
+codeclaw slack status
+codeclaw slack test
+codeclaw slack post --run <runId> [--event report_ready] [--approve]
 ```
 
 Register in CLI entry point:
@@ -335,7 +335,7 @@ function getSlackToken(config: SlackConfig): string | undefined {
 
 Update `.env.example`:
 ```bash
-# AITEAM_SLACK_TOKEN=xoxb-<your-slack-bot-token>
+# CODECLAW_SLACK_TOKEN=xoxb-<your-slack-bot-token>
 ```
 
 ### 11. Update doctor command
@@ -358,9 +358,9 @@ Update `apps/cli/src/commands/doctor.ts`:
 
 ## Acceptance Criteria
 
-- `aiteam slack status` shows Slack integration status
-- `aiteam slack test` tests connection when Slack is configured
-- `aiteam slack post --run <runId>` posts a report-ready message after approval
+- `codeclaw slack status` shows Slack integration status
+- `codeclaw slack test` tests connection when Slack is configured
+- `codeclaw slack post --run <runId>` posts a report-ready message after approval
 - Slack message templates exist for all workflow events
 - Web UI shows Slack section with [Post to Slack] button
 - All commands work gracefully when Slack is not configured

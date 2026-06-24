@@ -1,28 +1,28 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { configSchema } from "@aiteam/shared";
-import type { ApprovalGate, RunStatus, SlackIntegrationConfig } from "@aiteam/shared";
+import { configSchema } from "@codeclaw/shared";
+import type { ApprovalGate, RunStatus, SlackIntegrationConfig } from "@codeclaw/shared";
 import {
   runWorkflowWithGates,
   continueSemiAutoWorkflow,
   continueAfterRiskyFileApproval,
-} from "@aiteam/core";
+} from "@codeclaw/core";
 import {
   openDatabase,
   initializeSchema,
   createRunRepository,
   createApprovalRepository,
   createArtifactRepository,
-} from "@aiteam/storage";
-import { getMemoryStatus, addRunMemory } from "@aiteam/memory";
+} from "@codeclaw/storage";
+import { getMemoryStatus, addRunMemory } from "@codeclaw/memory";
 
 export async function resumeCommand(runId: string): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -62,7 +62,7 @@ export async function resumeCommand(runId: string): Promise<void> {
   const approval = approvalRepo.findByRunIdAndGate(runId, gateToCheck);
   if (approval?.status !== "APPROVED") {
     console.log(
-      `⏸️ Gate ${gateToCheck} is not yet approved. Run: aiteam approve ${runId} --gate ${gateToCheck}`,
+      `⏸️ Gate ${gateToCheck} is not yet approved. Run: codeclaw approve ${runId} --gate ${gateToCheck}`,
     );
     db.close();
     return;
@@ -116,7 +116,7 @@ export async function resumeCommand(runId: string): Promise<void> {
 
     if (result.pendingGate) {
       console.log(`⏸️ ${result.pendingGate.summary}`);
-      console.log(`   Run: aiteam approve ${runId} --gate ${result.pendingGate.gate}`);
+      console.log(`   Run: codeclaw approve ${runId} --gate ${result.pendingGate.gate}`);
     } else {
       console.log(`\n🚀 Run completed: ${runId}`);
       console.log(`   Status: ${result.status}`);
@@ -156,7 +156,7 @@ export async function resumeCommand(runId: string): Promise<void> {
 
     if (result.pendingGate) {
       console.log(`⏸️ ${result.pendingGate.summary}`);
-      console.log(`   Run: aiteam approve ${runId} --gate ${result.pendingGate.gate}`);
+      console.log(`   Run: codeclaw approve ${runId} --gate ${result.pendingGate.gate}`);
     } else {
       console.log(`\n🚀 Run completed: ${runId}`);
       console.log(`   Status: ${result.status}`);
@@ -206,7 +206,7 @@ export async function resumeCommand(runId: string): Promise<void> {
 
   if (result.pendingGate) {
     console.log(`⏸️ ${result.pendingGate.summary}`);
-    console.log(`   Run: aiteam approve ${runId} --gate ${result.pendingGate.gate}`);
+    console.log(`   Run: codeclaw approve ${runId} --gate ${result.pendingGate.gate}`);
   } else {
     console.log(`\n🚀 Run completed: ${runId}`);
     console.log(`   Status: ${result.status}`);

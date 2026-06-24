@@ -1,20 +1,20 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { configSchema } from "@aiteam/shared";
-import { generateJiraReadyMarkdown } from "@aiteam/core";
+import { configSchema } from "@codeclaw/shared";
+import { generateJiraReadyMarkdown } from "@codeclaw/core";
 import {
   getJiraStatus,
   testJiraConnection,
   createJiraIssue,
   createIssuesFromRun,
-} from "@aiteam/adapters";
-import type { JiraConfig } from "@aiteam/adapters";
-import { getArtifactPaths } from "@aiteam/core";
-import { openDatabase, initializeSchema, createApprovalRepository } from "@aiteam/storage";
+} from "@codeclaw/adapters";
+import type { JiraConfig } from "@codeclaw/adapters";
+import { getArtifactPaths } from "@codeclaw/core";
+import { openDatabase, initializeSchema, createApprovalRepository } from "@codeclaw/storage";
 
 function loadJiraConfig(): JiraConfig | null {
   try {
-    const configPath = join(process.cwd(), ".ai-team", "config.json");
+    const configPath = join(process.cwd(), ".codeclaw", "config.json");
     const rawContent = readFileSync(configPath, "utf-8");
     const raw: unknown = JSON.parse(rawContent);
     const parsed = configSchema.parse(raw);
@@ -130,7 +130,7 @@ export async function jiraCreateCommand(options: {
   const autoApprove = options.approve ?? !requireApproval;
 
   if (!autoApprove) {
-    const aiTeamDir = join(process.cwd(), ".ai-team");
+    const aiTeamDir = join(process.cwd(), ".codeclaw");
     const db = openDatabase(join(aiTeamDir, "database.sqlite"));
     initializeSchema(db);
     const approvalRepo = createApprovalRepository(db);
@@ -153,8 +153,8 @@ export async function jiraCreateCommand(options: {
       console.log("\n⚠️  Approval required: Creating Jira issues will modify your Jira project.");
       console.log(`   Project: ${config.projectKey}`);
       console.log(`   Site: ${config.siteUrl ?? "?"}`);
-      console.log(`   To approve: aiteam approve ${runId} --gate EXTERNAL_UPDATE`);
-      console.log(`   To reject:  aiteam reject ${runId} --gate EXTERNAL_UPDATE\n`);
+      console.log(`   To approve: codeclaw approve ${runId} --gate EXTERNAL_UPDATE`);
+      console.log(`   To reject:  codeclaw reject ${runId} --gate EXTERNAL_UPDATE\n`);
       db.close();
       return;
     }
@@ -197,7 +197,7 @@ export async function jiraCreateCommand(options: {
 
 function loadSafetyConfig(): { requireApprovalBeforeExternalUpdate?: boolean } | null {
   try {
-    const configPath = join(process.cwd(), ".ai-team", "config.json");
+    const configPath = join(process.cwd(), ".codeclaw", "config.json");
     const rawContent = readFileSync(configPath, "utf-8");
     const raw: unknown = JSON.parse(rawContent);
     const parsed = configSchema.parse(raw);
@@ -231,7 +231,7 @@ export async function jiraCommentCommand(options: {
   const autoApprove = options.approve ?? !requireApproval;
 
   if (!autoApprove) {
-    const aiTeamDir = join(process.cwd(), ".ai-team");
+    const aiTeamDir = join(process.cwd(), ".codeclaw");
     const db = openDatabase(join(aiTeamDir, "database.sqlite"));
     initializeSchema(db);
     const approvalRepo = createApprovalRepository(db);
@@ -251,8 +251,8 @@ export async function jiraCommentCommand(options: {
     if (existing?.status !== "APPROVED") {
       console.log("\n⚠️  Approval required: Adding Jira comment will modify your Jira project.");
       console.log(`   Issue: ${issueKey}`);
-      console.log(`   To approve: aiteam approve ${runId} --gate EXTERNAL_UPDATE`);
-      console.log(`   To reject:  aiteam reject ${runId} --gate EXTERNAL_UPDATE\n`);
+      console.log(`   To approve: codeclaw approve ${runId} --gate EXTERNAL_UPDATE`);
+      console.log(`   To reject:  codeclaw reject ${runId} --gate EXTERNAL_UPDATE\n`);
       db.close();
       return;
     }

@@ -1,5 +1,5 @@
-import { nowIso } from "@aiteam/shared";
-import type { RunMode, RunStatus } from "@aiteam/shared";
+import { nowIso } from "@codeclaw/shared";
+import type { RunMode, RunStatus } from "@codeclaw/shared";
 import type { DbConnection } from "../db.js";
 
 interface RunRow {

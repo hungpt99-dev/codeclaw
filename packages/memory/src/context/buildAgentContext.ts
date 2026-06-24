@@ -1,4 +1,4 @@
-import type { AgentRole } from "@aiteam/shared";
+import type { AgentRole } from "@codeclaw/shared";
 import type { ProjectMemoryEntry } from "../retrievers/projectMemoryRetriever.js";
 import type { DecisionMemoryEntry } from "../retrievers/decisionMemoryRetriever.js";
 import type { AgentMemoryEntry } from "../retrievers/agentMemoryRetriever.js";

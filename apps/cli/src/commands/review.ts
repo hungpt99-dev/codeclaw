@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { access } from "node:fs/promises";
-import { loadAndReview, persistReview, getArtifactPaths } from "@aiteam/core";
+import { loadAndReview, persistReview, getArtifactPaths } from "@codeclaw/core";
 
 interface ReviewCliOptions {
   run: string;
@@ -17,11 +17,11 @@ function ensureRunId(options: ReviewCliOptions): string {
 }
 
 export async function reviewCommand(options: ReviewCliOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
   try {
     await access(aiTeamDir);
   } catch {
-    console.log(".ai-team not found. Run 'aiteam init' first.");
+    console.log(".codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 

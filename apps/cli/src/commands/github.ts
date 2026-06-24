@@ -2,11 +2,11 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
-import { checkStatus, testConnection, createPR, readCIRun, readPRStatus } from "@aiteam/adapters";
-import { generatePRSummary } from "@aiteam/core";
-import { getArtifactPaths } from "@aiteam/core";
-import { configSchema } from "@aiteam/shared";
-import { openDatabase, initializeSchema, createApprovalRepository } from "@aiteam/storage";
+import { checkStatus, testConnection, createPR, readCIRun, readPRStatus } from "@codeclaw/adapters";
+import { generatePRSummary } from "@codeclaw/core";
+import { getArtifactPaths } from "@codeclaw/core";
+import { configSchema } from "@codeclaw/shared";
+import { openDatabase, initializeSchema, createApprovalRepository } from "@codeclaw/storage";
 
 interface GitHubOptions {
   run?: string;
@@ -18,7 +18,7 @@ function createReadline() {
 }
 
 async function loadConfig(): Promise<unknown> {
-  const configPath = join(process.cwd(), ".ai-team", "config.json");
+  const configPath = join(process.cwd(), ".codeclaw", "config.json");
   const raw = await readFile(configPath, "utf-8");
   return JSON.parse(raw);
 }
@@ -67,7 +67,7 @@ export async function githubStatusCommand(): Promise<void> {
     );
     console.log("");
   } catch {
-    console.error("\nError: Cannot read config. Ensure .ai-team is initialized.\n");
+    console.error("\nError: Cannot read config. Ensure .codeclaw is initialized.\n");
     process.exit(1);
   }
 }
@@ -89,7 +89,7 @@ export async function githubTestCommand(): Promise<void> {
     console.log(`  Message:  ${result.message}`);
     console.log("");
   } catch {
-    console.error("\nError: Cannot read config. Ensure .ai-team is initialized.\n");
+    console.error("\nError: Cannot read config. Ensure .codeclaw is initialized.\n");
     process.exit(1);
   }
 }
@@ -148,7 +148,7 @@ async function githubPRCreateCommand(options: GitHubOptions): Promise<void> {
     const autoApprove = options.approve ?? !requireApproval;
 
     if (!autoApprove) {
-      const aiTeamDir = join(process.cwd(), ".ai-team");
+      const aiTeamDir = join(process.cwd(), ".codeclaw");
       const db = openDatabase(join(aiTeamDir, "database.sqlite"));
       initializeSchema(db);
       const approvalRepo = createApprovalRepository(db);
@@ -170,8 +170,8 @@ async function githubPRCreateCommand(options: GitHubOptions): Promise<void> {
       } else {
         console.log("  ⚠️  Creating a GitHub PR requires approval.");
         console.log(`  Gate: EXTERNAL_UPDATE`);
-        console.log(`  To approve: aiteam approve ${runId} --gate EXTERNAL_UPDATE`);
-        console.log(`  To reject:  aiteam reject ${runId} --gate EXTERNAL_UPDATE\n`);
+        console.log(`  To approve: codeclaw approve ${runId} --gate EXTERNAL_UPDATE`);
+        console.log(`  To reject:  codeclaw reject ${runId} --gate EXTERNAL_UPDATE\n`);
 
         const approved = await promptForApproval();
         if (!approved) {

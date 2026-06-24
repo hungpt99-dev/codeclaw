@@ -6,7 +6,7 @@ import { runShellCommand } from "./shellRunner.js";
 
 describe("runShellCommand", () => {
   it("executes a command and returns exit code 0", async () => {
-    const tmpDir = await mkdtemp(join(tmpdir(), "aiteam-test-"));
+    const tmpDir = await mkdtemp(join(tmpdir(), "codeclaw-test-"));
     const outPath = join(tmpDir, "stdout.log");
     const errPath = join(tmpDir, "stderr.log");
 
@@ -32,7 +32,7 @@ describe("runShellCommand", () => {
   });
 
   it("captures non-zero exit code", async () => {
-    const tmpDir = await mkdtemp(join(tmpdir(), "aiteam-test-"));
+    const tmpDir = await mkdtemp(join(tmpdir(), "codeclaw-test-"));
     const outPath = join(tmpDir, "stdout.log");
     const errPath = join(tmpDir, "stderr.log");
 
@@ -54,7 +54,7 @@ describe("runShellCommand", () => {
   });
 
   it("enforces timeout", async () => {
-    const tmpDir = await mkdtemp(join(tmpdir(), "aiteam-test-"));
+    const tmpDir = await mkdtemp(join(tmpdir(), "codeclaw-test-"));
     const outPath = join(tmpDir, "stdout.log");
     const errPath = join(tmpDir, "stderr.log");
 

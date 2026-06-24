@@ -275,8 +275,8 @@ export async function runWorkflowWithGates(
 Create `apps/cli/src/commands/approve.ts`:
 
 ```bash
-aiteam approve <runId> --gate REQUIREMENT --note "Looks good"
-aiteam reject <runId> --gate PLAN --reason "Design too complex"
+codeclaw approve <runId> --gate REQUIREMENT --note "Looks good"
+codeclaw reject <runId> --gate PLAN --reason "Design too complex"
 ```
 
 Options:
@@ -313,8 +313,8 @@ Update `apps/cli/src/commands/run.ts`:
 - After generating requirement artifacts, if approval gates are enabled (config setting), print:
   ```
   ⏸️ Requirement approval needed.
-  Run: aiteam approve <runId> --gate REQUIREMENT
-  Or: aiteam ui to approve in browser
+  Run: codeclaw approve <runId> --gate REQUIREMENT
+  Or: codeclaw ui to approve in browser
   ```
 - After user approves, continue to plan phase
 - After plan phase, if plan approval is enabled, print similar message
@@ -325,7 +325,7 @@ Update `apps/cli/src/commands/run.ts`:
 Create `apps/cli/src/commands/resume.ts`:
 
 ```bash
-aiteam resume <runId>
+codeclaw resume <runId>
 ```
 
 This checks the current run status and pending gates, then continues the workflow.
@@ -335,7 +335,7 @@ This checks the current run status and pending gates, then continues the workflo
 Create `apps/cli/src/commands/cancel.ts`:
 
 ```bash
-aiteam cancel <runId> --reason "Requirement changed"
+codeclaw cancel <runId> --reason "Requirement changed"
 ```
 
 Sets run status to CANCELLED.
@@ -375,10 +375,10 @@ Update `packages/server/src/routes/runs.routes.ts`:
 
 ## Acceptance Criteria
 
-- `aiteam run "..."` with gates enabled pauses after requirement generation
-- User can approve via `aiteam approve <runId> --gate REQUIREMENT`
+- `codeclaw run "..."` with gates enabled pauses after requirement generation
+- User can approve via `codeclaw approve <runId> --gate REQUIREMENT`
 - Workflow resumes and completes after approval
-- `aiteam reject` sets gate to REJECTED, run to CANCELLED
+- `codeclaw reject` sets gate to REJECTED, run to CANCELLED
 - Web UI shows approval status and buttons
 - Run status reflects waiting state
 - Gates are optional — if disabled in config, workflow runs straight through

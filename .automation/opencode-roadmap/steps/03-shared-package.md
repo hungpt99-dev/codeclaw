@@ -120,7 +120,7 @@ Types:
 - ArtifactType
 - Run
 - Artifact
-- AiTeamConfig
+- CodeClawConfig
 
 RunMode values:
 
@@ -153,7 +153,7 @@ ArtifactType values:
 - TEST_MATRIX
 - FINAL_REPORT
 
-Implement Zod config schema and default config for .ai-team/config.json.
+Implement Zod config schema and default config for .codeclaw/config.json.
 
 Default config:
 

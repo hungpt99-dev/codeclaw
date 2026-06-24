@@ -5,11 +5,11 @@
 
 ## 1. Document Overview
 
-**Product Name**: Local AI Software Team
+**Product Name**: CodeClaw
 
 **Document Type**: Local Web UI Specification
 
-**Purpose**: This document defines the local web UI for Local AI Software Team.
+**Purpose**: This document defines the local web UI for CodeClaw.
 
 The local web UI is a browser-based interface that runs on the user's machine. It is used for settings, workflow control, run history, document review, prompt template editing, logs, reports, traceability, and optional integration setup.
 
@@ -17,7 +17,7 @@ The local web UI is not a cloud SaaS dashboard.
 
 It runs locally at: `http://localhost:4317`
 
-The user starts it with: `aiteam ui`
+The user starts it with: `codeclaw ui`
 
 ## 2. UI Product Summary
 
@@ -122,7 +122,7 @@ Templates
 Recommended MVP sidebar:
 
 ```
-Local AI Software Team
+CodeClaw
 
 - Dashboard
 - New Requirement
@@ -143,7 +143,7 @@ The local web UI should use a simple app shell.
 Example:
 
 ```
-Local AI Software Team
+CodeClaw
 
 Project:
 hotel-booking-service
@@ -180,7 +180,7 @@ No project initialized yet.
 Start by initializing this repository or selecting a project folder.
 
 [Initialize Project]
-[Open Existing .ai-team Project]
+[Open Existing .codeclaw Project]
 ```
 
 ### 7.2 Loading State
@@ -211,7 +211,7 @@ The selected Developer Agent requires Codex CLI, but it is not installed or not 
 Suggested actions:
 1. Install Codex CLI.
 2. Change Developer Agent in Settings.
-3. Run aiteam doctor.
+3. Run codeclaw doctor.
 ```
 
 ### 7.4 Approval Required State
@@ -542,7 +542,7 @@ Shows test matrix, manual checklist, and test execution results.
 
 **Manual Test Checklist**: Checklist UI.
 
-**Test Execution Result**: Only available after `aiteam test`. Shows: command, exit code, duration, status, failed tests, logs.
+**Test Execution Result**: Only available after `codeclaw test`. Shows: command, exit code, duration, status, failed tests, logs.
 
 ### 18.3 Actions
 
@@ -884,11 +884,11 @@ Show where local data is stored.
 
 ### 32.2 Fields
 
-.ai-team folder path, Database path, Runs folder path, Prompt templates path, Logs folder path.
+.codeclaw folder path, Database path, Runs folder path, Prompt templates path, Logs folder path.
 
 ### 32.3 Actions
 
-[Open .ai-team Folder], [Open Runs Folder], [Clean Old Runs], [Export Settings], [Import Settings].
+[Open .codeclaw Folder], [Open Runs Folder], [Clean Old Runs], [Export Settings], [Import Settings].
 
 ## 33. Page: Prompt Templates
 
@@ -1199,7 +1199,7 @@ Cloud account login, Team collaboration, Real-time Slack event receiving, Full J
 
 ### 48.1 First-time Setup
 
-1. User runs: `aiteam ui`
+1. User runs: `codeclaw ui`
 2. Browser opens: `http://localhost:4317`
 3. UI shows setup screen.
 4. User sets: Project path, Project type, Default output language, AI CLI availability, Test command, Safety settings.
@@ -1237,7 +1237,7 @@ User gets a complete delivery package without code modification.
 
 ## 50. Final UI Summary
 
-The local web UI should be the control center for the local AI software team.
+The local web UI should be the control center for the CodeClaw.
 
 It should help the user move from: rough requirement → clear requirement → technical design → task breakdown → test matrix → implementation prompt → review report → traceability → final report.
 

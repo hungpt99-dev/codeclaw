@@ -39,7 +39,7 @@ Currently, AI-powered agent output relies entirely on the user's installed AI CL
 - OpenAI-compatible API client (works with OpenAI, Anthropic via API, Azure OpenAI)
 - Ollama client for local model inference
 - LM Studio client (OpenAI-compatible local server)
-- Provider configuration in `.ai-team/config.json` (provider name, model, base URL only — no secrets)
+- Provider configuration in `.codeclaw/config.json` (provider name, model, base URL only — no secrets)
 - API key management via environment variables only (no storage in config)
 - Provider as alternative to CLI tools for agent output
 - Deterministic fallback when neither CLI tool nor LLM provider is available

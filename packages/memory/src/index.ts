@@ -13,7 +13,7 @@ export type {
 } from "./memoryTypes.js";
 
 export {
-  getAiTeamDir,
+  getCodeClawDir,
   getMemoryDir,
   getProjectMemoryDir,
   getDecisionMemoryDir,

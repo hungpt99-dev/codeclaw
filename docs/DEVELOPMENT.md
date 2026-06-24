@@ -18,9 +18,9 @@ pnpm install
 pnpm dev
 
 # Run specific package
-pnpm --filter @aiteam/cli dev
-pnpm --filter @aiteam/local-server dev
-pnpm --filter @aiteam/local-web dev
+pnpm --filter @codeclaw/cli dev
+pnpm --filter @codeclaw/local-server dev
+pnpm --filter @codeclaw/local-web dev
 ```
 
 ## Building
@@ -60,6 +60,6 @@ pnpm arch:check
 ## CLI Local Linking
 
 ```bash
-pnpm --filter @aiteam/cli build
+pnpm --filter @codeclaw/cli build
 # Then use the built CLI directly
 ```

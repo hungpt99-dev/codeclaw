@@ -645,7 +645,7 @@ export function Settings(): ReactElement {
         ) : storageInfo ? (
           <>
             <div className="space-y-2 mb-4 text-sm">
-              <StorageRow label=".ai-team path" value={storageInfo.aiTeamPath} />
+              <StorageRow label=".codeclaw path" value={storageInfo.aiTeamPath} />
               <StorageRow label="Database path" value={storageInfo.databasePath} />
               <StorageRow label="Runs path" value={storageInfo.runsPath} />
               <StorageRow label="Prompts path" value={storageInfo.promptsPath} />
@@ -662,7 +662,7 @@ export function Settings(): ReactElement {
                 }}
                 className="px-3 py-1.5 text-sm rounded-md border bg-white text-gray-600 hover:bg-gray-50 transition-colors"
               >
-                Copy .ai-team Path
+                Copy .codeclaw Path
               </button>
               <button
                 type="button"

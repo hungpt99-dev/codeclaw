@@ -28,7 +28,7 @@ Templates:
 
 Security:
 
-- only allow editing files inside .ai-team/prompts.
+- only allow editing files inside .codeclaw/prompts.
 - reject path traversal.
 
 Acceptance criteria:

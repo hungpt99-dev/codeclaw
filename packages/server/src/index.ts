@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import Fastify from "fastify";
 import type { FastifyInstance } from "fastify";
-import { openDatabase, initializeSchema } from "@aiteam/storage";
+import { openDatabase, initializeSchema } from "@codeclaw/storage";
 import { registerHealthRoutes } from "./routes/health.routes.js";
 import { registerSettingsRoutes } from "./routes/settings.routes.js";
 import { registerRunsRoutes } from "./routes/runs.routes.js";
@@ -32,9 +32,9 @@ export function createApp(options: AppOptions): FastifyInstance {
 }
 
 export function getDefaultDbPath(): string {
-  return join(".ai-team", "database.sqlite");
+  return join(".codeclaw", "database.sqlite");
 }
 
 export function getDefaultPromptsDir(): string {
-  return join(".ai-team", "prompts");
+  return join(".codeclaw", "prompts");
 }

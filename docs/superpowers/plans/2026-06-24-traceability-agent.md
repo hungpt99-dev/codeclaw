@@ -6,7 +6,7 @@
 
 **Architecture:** Follow the existing agent pattern (`baAgent.ts`/`codeReviewerAgent.ts`): an input interface, an output interface, an inline fallback template, a `loadTemplate()` that reads from `templates/prompts/traceability-agent.md`, and a `runTraceabilityAgent()` function that tries AI mode first (with parser) then falls back to deterministic mode. The deterministic mode refactors and wraps the existing `traceabilityEngine.ts`.
 
-**Tech Stack:** TypeScript, Vitest, the existing `@aiteam/adapters` (`runAgent`/`renderPrompt`), the existing `@aiteam/shared` types (`TraceabilityMatrix`, `TraceabilityItem`, `CoverageStatus`).
+**Tech Stack:** TypeScript, Vitest, the existing `@codeclaw/adapters` (`runAgent`/`renderPrompt`), the existing `@codeclaw/shared` types (`TraceabilityMatrix`, `TraceabilityItem`, `CoverageStatus`).
 
 ---
 
@@ -81,7 +81,7 @@ codeFiles: changedFiles,
 - [ ] **Step 3: Run existing tests to confirm backward compatibility**
 
 ```bash
-pnpm --filter @aiteam/core test --traceabilityEngine
+pnpm --filter @codeclaw/core test --traceabilityEngine
 ```
 
 ---
@@ -95,7 +95,7 @@ pnpm --filter @aiteam/core test --traceabilityEngine
 - [ ] **Step 1: Create the parser**
 
 ```typescript
-import type { CoverageStatus } from "@aiteam/shared";
+import type { CoverageStatus } from "@codeclaw/shared";
 
 export interface TraceabilityAgentOutput {
   coverageAnalysis: string;
@@ -187,15 +187,15 @@ Following the exact same pattern as `codeReviewerAgent.ts` (dual-mode agent with
 ```typescript
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { runAgent, renderPrompt } from "@aiteam/adapters";
-import type { AiCliTool } from "@aiteam/adapters";
+import { runAgent, renderPrompt } from "@codeclaw/adapters";
+import type { AiCliTool } from "@codeclaw/adapters";
 import type { ArtifactPaths } from "../artifacts/artifactWriter.js";
 import {
   generateTraceability,
   traceabilityToMarkdown,
 } from "../traceability/traceabilityEngine.js";
 import { parseTraceabilityOutput } from "./parsers/traceabilityOutputParser.js";
-import type { TraceabilityMatrix, CoverageStatus } from "@aiteam/shared";
+import type { TraceabilityMatrix, CoverageStatus } from "@codeclaw/shared";
 
 export interface TraceabilityAgentInput {
   runId: string;
@@ -522,7 +522,7 @@ Same pattern: call `runTraceabilityAgent` instead of `generateTraceability`, wri
 
 ---
 
-### Task 8: Update CLI `aiteam trace` to support AI mode
+### Task 8: Update CLI `codeclaw trace` to support AI mode
 
 **Files:**
 
@@ -547,12 +547,12 @@ program
 - [ ] **Step 2: Update traceCommand to use agent when --ai is set**
 
 ```typescript
-import { runTraceabilityAgent, traceabilityToEnhancedMarkdown } from "@aiteam/core";
+import { runTraceabilityAgent, traceabilityToEnhancedMarkdown } from "@codeclaw/core";
 
 // In the --regenerate block, when --ai is specified:
 if (options.regenerate) {
   if (options.ai) {
-    const { getAiToolConfig } = await import("@aiteam/core");
+    const { getAiToolConfig } = await import("@codeclaw/core");
     const aiToolConfig = getAiToolConfig();
     const aiTool = aiToolConfig
       ? {
@@ -583,7 +583,7 @@ if (options.regenerate) {
 }
 ```
 
-- [ ] **Step 3: Export `runTraceabilityAgent` and `traceabilityToEnhancedMarkdown` from `@aiteam/core`**
+- [ ] **Step 3: Export `runTraceabilityAgent` and `traceabilityToEnhancedMarkdown` from `@codeclaw/core`**
 
 ```typescript
 // In packages/core/src/index.ts:
@@ -617,7 +617,7 @@ export type {
   TraceabilityAgentOutput,
 } from "./agents/traceabilityAgent.js";
 export { parseTraceabilityOutput } from "./agents/parsers/traceabilityOutputParser.js";
-export type { TraceabilityMatrix, TraceabilityItem, CoverageStatus } from "@aiteam/shared";
+export type { TraceabilityMatrix, TraceabilityItem, CoverageStatus } from "@codeclaw/shared";
 ```
 
 ---
@@ -633,7 +633,7 @@ export type { TraceabilityMatrix, TraceabilityItem, CoverageStatus } from "@aite
 ```typescript
 import { describe, it, expect } from "vitest";
 import { runTraceabilityAgent, traceabilityToEnhancedMarkdown } from "./traceabilityAgent.js";
-import type { TraceabilityMatrix } from "@aiteam/shared";
+import type { TraceabilityMatrix } from "@codeclaw/shared";
 
 const mockMatrix: TraceabilityMatrix = {
   runId: "test-run",
@@ -735,7 +735,7 @@ describe("traceabilityToEnhancedMarkdown", () => {
 - [ ] **Step 2: Run tests**
 
 ```bash
-pnpm --filter @aiteam/core test
+pnpm --filter @codeclaw/core test
 ```
 
 ---

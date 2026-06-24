@@ -34,7 +34,7 @@ The current export system (`packages/adapters/src/export/exportService.ts`) supp
 - Combined delivery package: single ZIP file containing all run artifacts with preserved directory structure
 - Combined Markdown file: all artifacts merged into one document with table of contents
 - Combined JSON export: all artifacts as structured JSON for programmatic consumption
-- Export command enhancement: `aiteam export --run <runId> --format package` or `--format zip`
+- Export command enhancement: `codeclaw export --run <runId> --format package` or `--format zip`
 - Delivery package includes: metadata file with run info, artifact index, traceability matrix, final report
 - Export from web UI with download button
 - Configurable export profile (which artifacts to include)
@@ -52,10 +52,10 @@ Users can produce a professional delivery package with a single command. The ZIP
 
 ## Expected Behavior
 
-1. `aiteam export --run <runId> --format zip` produces a ZIP file with all artifacts
-2. `aiteam export --run <runId> --format combined-md` produces a single Markdown file with TOC
-3. `aiteam export --run <runId> --format json` produces a structured JSON file
-4. `aiteam export --run <runId> --format all` produces all formats
+1. `codeclaw export --run <runId> --format zip` produces a ZIP file with all artifacts
+2. `codeclaw export --run <runId> --format combined-md` produces a single Markdown file with TOC
+3. `codeclaw export --run <runId> --format json` produces a structured JSON file
+4. `codeclaw export --run <runId> --format all` produces all formats
 5. ZIP preserves the `requirement/`, `design/`, `tasks/`, `tests/`, `report/` directory structure
 6. Combined Markdown includes: cover page, table of contents, all artifacts in logical order
 7. JSON export includes: metadata, artifacts with content, traceability matrix, status

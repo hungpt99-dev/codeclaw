@@ -1,11 +1,11 @@
-# Local AI Software Team — Product Idea Document
+# CodeClaw — Product Idea Document
 
-> Converted from: `Local AI Software Team.pdf`
+> Converted from: `CodeClaw.pdf`
 > Conversion note: Content preserved from PDF extraction. No summarization or rewriting intended.
 
 ## 1. Product Concept
 
-Local AI Software Team is a local-first product that acts like a complete software team. The user gives a rough requirement, and the system helps transform it into a complete software delivery package.
+CodeClaw is a local-first product that acts like a complete software team. The user gives a rough requirement, and the system helps transform it into a complete software delivery package.
 
 The product acts as:
 
@@ -23,7 +23,7 @@ The goal is not only to write code. The goal is to manage the full journey from 
 
 ## 2. One-line Pitch
 
-A local AI software team that turns rough requirements into clear specs, tasks, code, tests, reviews, and delivery reports using the user's existing AI coding tools.
+A CodeClaw that turns rough requirements into clear specs, tasks, code, tests, reviews, and delivery reports using the user's existing AI coding tools.
 
 ## 3. Core Vision
 
@@ -38,7 +38,7 @@ But real software work usually starts like this:
 
 These inputs are vague. They lack business rules, edge cases, acceptance criteria, technical scope, test cases, and delivery plan.
 
-Local AI Software Team solves this by acting like a real software team that receives the vague input, asks questions, makes assumptions, creates documents, breaks work into tasks, coordinates AI coding tools, verifies the result, and produces a delivery report.
+CodeClaw solves this by acting like a real software team that receives the vague input, asks questions, makes assumptions, creates documents, breaks work into tasks, coordinates AI coding tools, verifies the result, and produces a delivery report.
 
 ## 4. Product Positioning
 
@@ -109,7 +109,7 @@ Turning messy business intent into structured software work.
 
 ## 7. Product Solution
 
-Local AI Software Team takes a rough input and turns it into a structured workflow.
+CodeClaw takes a rough input and turns it into a structured workflow.
 
 Example input:
 
@@ -312,7 +312,7 @@ Turns vague input into clear requirement.
 
 Outputs: clarified requirement, user roles, business rules, assumptions, open questions, acceptance criteria.
 
-### 12.2 AI Team Room
+### 12.2 CodeClaw Room
 
 A workspace where each AI role reports progress.
 
@@ -578,7 +578,7 @@ Final output: requirement doc, technical design, task breakdown, test matrix, im
 
 Possible names:
 
-1. Local AI Team
+1. Local CodeClaw
 2. TeamForge AI
 3. SpecForge
 4. ReqPilot
@@ -598,7 +598,7 @@ Best options:
 
 ## 23. Final Product Statement
 
-Local AI Software Team is a local-first AI software team that helps developers turn rough requirements into clear software delivery outputs.
+CodeClaw is a local-first AI software team that helps developers turn rough requirements into clear software delivery outputs.
 
 It acts like a BA, PM, Architect, Developer, QA, Reviewer, and Reporter.
 
@@ -612,13 +612,13 @@ Its main value is turning vague business intent into structured, reviewable, tes
 
 ## 24. Short Final Pitch
 
-A local AI software team that turns rough requirements into specs, tasks, code, tests, reviews, and delivery reports using your existing AI coding tools.
+A CodeClaw that turns rough requirements into specs, tasks, code, tests, reviews, and delivery reports using your existing AI coding tools.
 
 ## 25. Long Final Pitch
 
 Most AI coding tools are useful when the developer already knows what to build. But real software projects often begin with vague requirements, missing business rules, unclear acceptance criteria, and no test plan.
 
-Local AI Software Team solves this by acting like a complete software team on the user's machine. It clarifies requirements, creates documentation, breaks work into tasks, prepares test plans, coordinates AI coding agents, reviews the result, and generates traceability reports.
+CodeClaw solves this by acting like a complete software team on the user's machine. It clarifies requirements, creates documentation, breaks work into tasks, prepares test plans, coordinates AI coding agents, reviews the result, and generates traceability reports.
 
 It is not another coding agent.
 

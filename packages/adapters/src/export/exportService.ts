@@ -39,7 +39,7 @@ export interface ExportResult {
 }
 
 function getRunDir(runId: string): string {
-  return join(process.cwd(), ".ai-team", "runs", runId);
+  return join(process.cwd(), ".codeclaw", "runs", runId);
 }
 
 export async function exportRunArtifacts(
@@ -171,7 +171,7 @@ async function exportZip(
     throw new Error(
       `ZIP export failed: ${error instanceof Error ? error.message : String(error)}\n` +
         "Ensure the 'zip' command is available on your system.\n" +
-        "Or try: aiteam export --format markdown",
+        "Or try: codeclaw export --format markdown",
     );
   }
 }
@@ -219,7 +219,7 @@ async function exportDocx(
   const html = await convertMdToHtml(combinedMd, htmlOptions);
   const docxOptions: DocxOptions = {
     title,
-    author: options.docAuthor ?? "AITeam",
+    author: options.docAuthor ?? "CodeClaw",
   };
 
   const buffer = await convertHtmlToDocx(html, docxOptions);

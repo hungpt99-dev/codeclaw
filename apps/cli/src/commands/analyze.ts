@@ -1,6 +1,6 @@
 import { access, writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import { analyzeRepository, analysisToMarkdown } from "@aiteam/core";
+import { analyzeRepository, analysisToMarkdown } from "@codeclaw/core";
 
 interface AnalyzeOptions {
   run?: string;
@@ -22,7 +22,7 @@ export async function analyzeCommand(options: AnalyzeOptions): Promise<void> {
   const projectRoot = process.cwd();
 
   if (options.run) {
-    const runDir = join(".ai-team", "runs", options.run);
+    const runDir = join(".codeclaw", "runs", options.run);
     if (!(await dirExists(runDir))) {
       console.error(`❌ Run not found: ${options.run}`);
       process.exit(1);

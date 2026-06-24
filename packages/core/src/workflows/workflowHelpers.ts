@@ -1,5 +1,5 @@
-import type { AiCliTool } from "@aiteam/adapters";
-import type { ProjectType } from "@aiteam/shared";
+import type { AiCliTool } from "@codeclaw/adapters";
+import type { ProjectType } from "@codeclaw/shared";
 
 export type PlannerSelection = "frontend" | "backend" | "both" | "auto";
 

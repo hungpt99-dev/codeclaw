@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import { getWorkflowEmitter, getEventHistory } from "@aiteam/core";
-import type { WorkflowProgressEvent } from "@aiteam/shared";
+import { getWorkflowEmitter, getEventHistory } from "@codeclaw/core";
+import type { WorkflowProgressEvent } from "@codeclaw/shared";
 
 export function registerProgressRoutes(app: FastifyInstance): void {
   app.get("/api/runs/:id/progress", async (request, reply) => {

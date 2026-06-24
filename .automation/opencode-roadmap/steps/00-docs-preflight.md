@@ -145,7 +145,7 @@ It must not implement product features.
 - CLI is the main engine.
 - Local Web UI is only a local dashboard.
 - Local Fastify server runs on localhost.
-- Storage is local under .ai-team/.
+- Storage is local under .codeclaw/.
 - No desktop app.
 - No cloud backend.
 - No login.

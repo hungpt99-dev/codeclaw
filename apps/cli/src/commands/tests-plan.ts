@@ -1,13 +1,13 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { configSchema } from "@aiteam/shared";
-import { getArtifactPaths, writeArtifact, runQaAgent } from "@aiteam/core";
+import { configSchema } from "@codeclaw/shared";
+import { getArtifactPaths, writeArtifact, runQaAgent } from "@codeclaw/core";
 import {
   openDatabase,
   initializeSchema,
   createRunRepository,
   createArtifactRepository,
-} from "@aiteam/storage";
+} from "@codeclaw/storage";
 
 interface TestsPlanOptions {
   run: string;
@@ -16,12 +16,12 @@ interface TestsPlanOptions {
 }
 
 export async function testsPlanCommand(options: TestsPlanOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -53,13 +53,13 @@ export async function testsPlanCommand(options: TestsPlanOptions): Promise<void>
   const taskBreakdownJson = await readReq(join(paths.tasksDir, "task-breakdown.json"));
 
   if (!acceptanceCriteria) {
-    console.log("❌ Acceptance criteria not found. Run 'aiteam spec' first.");
+    console.log("❌ Acceptance criteria not found. Run 'codeclaw spec' first.");
     db.close();
     process.exit(1);
   }
 
   if (!taskBreakdownJson) {
-    console.log("❌ Task breakdown not found. Run 'aiteam tasks' first.");
+    console.log("❌ Task breakdown not found. Run 'codeclaw tasks' first.");
     db.close();
     process.exit(1);
   }

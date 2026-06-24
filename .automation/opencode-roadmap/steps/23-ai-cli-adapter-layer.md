@@ -323,7 +323,7 @@ Update `apps/cli/src/commands/doctor.ts`:
 - Git snapshot saves current state before changes
 - `getChangedFiles()` returns correct list after changes
 - `generateDiff()` produces valid patch file
-- `aiteam doctor` shows AI CLI availability
+- `codeclaw doctor` shows AI CLI availability
 - Adapters are created via factory
 - All existing tests pass
 

@@ -5,7 +5,7 @@ import {
   initializeSchema,
   createRunRepository,
   createArtifactRepository,
-} from "@aiteam/storage";
+} from "@codeclaw/storage";
 import { execSync } from "node:child_process";
 
 interface StatusOptions {
@@ -14,15 +14,15 @@ interface StatusOptions {
 }
 
 export async function statusCommand(options: StatusOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
     if (options.json) {
-      console.log(JSON.stringify({ error: ".ai-team not found" }));
+      console.log(JSON.stringify({ error: ".codeclaw not found" }));
     } else {
-      console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+      console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     }
     process.exit(1);
   }
@@ -45,7 +45,7 @@ export async function statusCommand(options: StatusOptions): Promise<void> {
     if (options.json) {
       console.log(JSON.stringify({ error: "Cannot open database" }));
     } else {
-      console.log("❌ Cannot open database. Run 'aiteam init' first.");
+      console.log("❌ Cannot open database. Run 'codeclaw init' first.");
     }
     process.exit(1);
   }
@@ -136,7 +136,7 @@ export async function statusCommand(options: StatusOptions): Promise<void> {
     return;
   }
 
-  console.log("\n📊 aiteam Status\n");
+  console.log("\n📊 codeclaw Status\n");
   console.log(`  Project: ${projectName || "(not set)"}`);
   console.log(`  Type: ${projectType || "(not set)"}`);
   console.log(`  Git branch: ${gitBranch}${gitClean ? " (clean)" : " (dirty)"}`);

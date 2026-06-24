@@ -7,7 +7,7 @@
 
 **Product Name**
 
-Local AI Software Team
+CodeClaw
 
 Alternative names:
 
@@ -32,7 +32,7 @@ AI software delivery orchestrator.
 
 **Document Purpose**
 
-This PRD defines the product requirements for Local AI Software Team, a tool that helps developers turn rough software requirements into structured software delivery outputs, including clarified requirements, docs, tasks, test plans, implementation instructions, code patches, review reports, and traceability.
+This PRD defines the product requirements for CodeClaw, a tool that helps developers turn rough software requirements into structured software delivery outputs, including clarified requirements, docs, tasks, test plans, implementation instructions, code patches, review reports, and traceability.
 
 This document focuses on product behavior, user needs, core features, MVP scope, success criteria, and user workflows.
 
@@ -40,7 +40,7 @@ It does not focus on low-level technical implementation.
 
 ## 2. Product Summary
 
-Local AI Software Team is a local-first AI software team that runs on the user's machine.
+CodeClaw is a local-first AI software team that runs on the user's machine.
 
 The product helps users turn vague software requirements into structured software work.
 
@@ -86,7 +86,7 @@ The product acts like a software team made of AI roles:
 
 The long-term vision is:
 
-A local AI software team that receives a rough requirement and helps move it toward reviewed, testable, traceable software delivery.
+A CodeClaw that receives a rough requirement and helps move it toward reviewed, testable, traceable software delivery.
 
 The product should make the user feel like they are managing a small software team, not just prompting one coding assistant.
 
@@ -310,11 +310,11 @@ This is weak because Devin and similar products are broad and well-funded.
 
 **Better Positioning**
 
-A local AI software team above existing coding agents.
+A CodeClaw above existing coding agents.
 
 **Strong Positioning**
 
-Local AI Software Team turns rough requirements into specs, tasks, test plans, code instructions, review reports, and traceability using your existing AI coding tools.
+CodeClaw turns rough requirements into specs, tasks, test plans, code instructions, review reports, and traceability using your existing AI coding tools.
 
 **Short Pitch**
 
@@ -326,7 +326,7 @@ AI BA + PM + Architect + QA layer for Claude Code, Codex CLI, Gemini CLI, and Ai
 
 **Local-first Pitch**
 
-A local AI software team that keeps your code and project data on your machine.
+A CodeClaw that keeps your code and project data on your machine.
 
 ## 10. Core User Scenarios
 
@@ -1009,7 +1009,7 @@ No important output should be hidden inside logs only.
 
 ## 19. MVP Scope
 
-**MVP Name**: Local AI Software Team MVP
+**MVP Name**: CodeClaw MVP
 
 **MVP Goal**: Help users convert rough requirements into structured software delivery documents.
 
@@ -1322,7 +1322,7 @@ The MVP is acceptable when:
 
 ## 29. Final Product Requirement Summary
 
-Local AI Software Team should start as a simple but powerful local-first tool.
+CodeClaw should start as a simple but powerful local-first tool.
 
 The first version should focus on:
 
@@ -1340,4 +1340,4 @@ Vietnamese/English vague requirements to structured software delivery artifacts 
 
 The product is not just another coding agent.
 
-It is a local AI software team workflow that helps developers understand, plan, implement, verify, and report software work with more control and traceability.
+It is a CodeClaw workflow that helps developers understand, plan, implement, verify, and report software work with more control and traceability.

@@ -1,7 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { TestCommand, TestRunResult } from "@aiteam/adapters";
-import { runAgentPrompt } from "@aiteam/adapters";
+import type { TestCommand, TestRunResult } from "@codeclaw/adapters";
+import { runAgentPrompt } from "@codeclaw/adapters";
 import { getArtifactPaths, writeArtifact } from "../artifacts/artifactWriter.js";
 import { loadAndReview, persistReview } from "../review/reviewService.js";
 import type { ReviewOutput } from "../review/reviewService.js";
@@ -47,7 +47,7 @@ function analyzeTestFailures(testResult?: TestRunResult): ParsedTestFailure[] {
 }
 
 function makeIterationPaths(runId: string, iteration: number) {
-  const base = join(".ai-team", "runs", runId, "implementation", "fix-loop");
+  const base = join(".codeclaw", "runs", runId, "implementation", "fix-loop");
   const iter = String(iteration);
   return {
     fixPromptPath: join(base, `fix-prompt-${iter}.md`),
@@ -66,11 +66,11 @@ export async function runFixLoop(
   const startTime = Date.now();
   const iterations: FixLoopIteration[] = [];
   const { mkdir } = await import("node:fs/promises");
-  const { getChangedFiles, generateDiff } = await import("@aiteam/adapters");
-  const { runTests } = await import("@aiteam/adapters");
+  const { getChangedFiles, generateDiff } = await import("@codeclaw/adapters");
+  const { runTests } = await import("@codeclaw/adapters");
 
   const workingDir = process.cwd();
-  const fixLoopBase = join(".ai-team", "runs", runId, "implementation", "fix-loop");
+  const fixLoopBase = join(".codeclaw", "runs", runId, "implementation", "fix-loop");
   await mkdir(fixLoopBase, { recursive: true });
 
   for (let i = 1; i <= config.maxIterations; i++) {

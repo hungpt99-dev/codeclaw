@@ -5,8 +5,8 @@ import {
   initializeSchema,
   createRunRepository,
   createApprovalRepository,
-} from "@aiteam/storage";
-import type { ApprovalGate } from "@aiteam/shared";
+} from "@codeclaw/storage";
+import type { ApprovalGate } from "@codeclaw/shared";
 
 interface ApproveOptions {
   gate?: string;
@@ -14,12 +14,12 @@ interface ApproveOptions {
 }
 
 export async function approveCommand(runId: string, options: ApproveOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -100,7 +100,7 @@ export async function approveCommand(runId: string, options: ApproveOptions): Pr
   }
 
   console.log(`✅ Gate ${gate} approved${options.note ? `: ${options.note}` : ""}`);
-  console.log(`   Run: aiteam resume ${runId} to continue`);
+  console.log(`   Run: codeclaw resume ${runId} to continue`);
 
   db.close();
 }

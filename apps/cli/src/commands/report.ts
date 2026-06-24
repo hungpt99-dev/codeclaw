@@ -1,13 +1,13 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { configSchema } from "@aiteam/shared";
-import { getArtifactPaths, writeArtifact, runReporterAgent } from "@aiteam/core";
+import { configSchema } from "@codeclaw/shared";
+import { getArtifactPaths, writeArtifact, runReporterAgent } from "@codeclaw/core";
 import {
   openDatabase,
   initializeSchema,
   createRunRepository,
   createArtifactRepository,
-} from "@aiteam/storage";
+} from "@codeclaw/storage";
 
 interface ReportOptions {
   run: string;
@@ -17,12 +17,12 @@ interface ReportOptions {
 }
 
 export async function reportCommand(options: ReportOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 

@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { runAgent } from "@aiteam/adapters";
-import type { AiCliTool } from "@aiteam/adapters";
+import { runAgent } from "@codeclaw/adapters";
+import type { AiCliTool } from "@codeclaw/adapters";
 import { parseSecurityReviewerOutput } from "./parsers/securityReviewerOutputParser.js";
 import { generateDeterministicSecurityReview } from "../review/deterministicReview.js";
 import type { DeterministicReviewInput } from "../review/deterministicReview.js";

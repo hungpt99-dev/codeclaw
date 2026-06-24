@@ -119,12 +119,12 @@ Create:
 Important:
 Do not call real AI.
 Use deterministic placeholder generation based on raw requirement.
-Do not modify files outside .ai-team.
+Do not modify files outside .codeclaw.
 
 Artifact writer should create:
 
 ```
-.ai-team/runs/<runId>/
+.codeclaw/runs/<runId>/
   input.md
   requirement/
   design/

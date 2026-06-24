@@ -1,11 +1,11 @@
 import { join } from "node:path";
-import { createRunId, nowIso } from "@aiteam/shared";
+import { createRunId, nowIso } from "@codeclaw/shared";
 import type {
   ApprovalGate,
   AiAdapterName,
   SlackIntegrationConfig,
   TestCommandResult,
-} from "@aiteam/shared";
+} from "@codeclaw/shared";
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
 import type { ArtifactPaths } from "../artifacts/artifactWriter.js";
 import { runBaAgent } from "../agents/baAgent.js";
@@ -187,7 +187,7 @@ async function executeCodeGeneration(
 
     await writeFile(agentLogPath, logStream.join(""), "utf-8");
 
-    const { getChangedFiles, generateDiff } = await import("@aiteam/adapters");
+    const { getChangedFiles, generateDiff } = await import("@codeclaw/adapters");
     const changedFiles = await getChangedFiles(workingDir);
     await generateDiff(workingDir, diffPatchPath);
 
@@ -688,7 +688,7 @@ async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkfl
     if (input.testCommands.lint) cmds.push({ name: "lint", command: input.testCommands.lint });
 
     if (cmds.length > 0) {
-      const { runTests, writeTestResultArtifacts } = await import("@aiteam/adapters");
+      const { runTests, writeTestResultArtifacts } = await import("@codeclaw/adapters");
       const timeout = input.commandTimeoutSeconds ?? 300;
       const logDir = join(paths.runDir, "tests");
 
@@ -913,7 +913,7 @@ async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkfl
     };
     const slackText = buildReportReadyMessage(slackInput);
     try {
-      const { notifySlack } = await import("@aiteam/adapters");
+      const { notifySlack } = await import("@codeclaw/adapters");
       await notifySlack(input.slackConfig, "report_ready", slackText, true);
     } catch {
       // Slack notification is optional

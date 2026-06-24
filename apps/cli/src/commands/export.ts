@@ -5,9 +5,9 @@ import {
   initializeSchema,
   createArtifactRepository,
   createRunRepository,
-} from "@aiteam/storage";
-import { exportRunArtifacts } from "@aiteam/adapters";
-import type { ArtifactRecord, ExportFormat } from "@aiteam/adapters";
+} from "@codeclaw/storage";
+import { exportRunArtifacts } from "@codeclaw/adapters";
+import type { ArtifactRecord, ExportFormat } from "@codeclaw/adapters";
 
 interface ExportCliOptions {
   format?: string;
@@ -27,11 +27,11 @@ function bytesToSize(bytes: number): string {
 }
 
 export async function exportCommand(runId: string, options: ExportCliOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("Error: .ai-team not found. Run 'aiteam init' first.");
+    console.log("Error: .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -75,7 +75,7 @@ export async function exportCommand(runId: string, options: ExportCliOptions): P
 
   let outputPath = options.output;
   if (!outputPath) {
-    const defaultDir = join(process.cwd(), ".ai-team", "runs", runId, "export");
+    const defaultDir = join(process.cwd(), ".codeclaw", "runs", runId, "export");
     if (format === "markdown") {
       outputPath = join(defaultDir, "markdown");
     } else if (format === "combined-md") {

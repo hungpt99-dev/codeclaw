@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { readFile } from "node:fs/promises";
-import type { Config } from "@aiteam/shared";
+import type { Config } from "@codeclaw/shared";
 
 interface TestCliOptions {
   run: string;
@@ -21,11 +21,11 @@ export async function testCommand(options: TestCliOptions): Promise<void> {
 
   let config: Config;
   try {
-    const configPath = join(".ai-team", "config.json");
+    const configPath = join(".codeclaw", "config.json");
     const raw = await readFile(configPath, "utf-8");
     config = JSON.parse(raw) as Config;
   } catch {
-    console.error("Error: Project not initialized. Run: aiteam init");
+    console.error("Error: Project not initialized. Run: codeclaw init");
     process.exit(3);
   }
 
@@ -55,16 +55,16 @@ export async function testCommand(options: TestCliOptions): Promise<void> {
   }
 
   if (commands.length === 0) {
-    console.log("No test commands configured. Set commands in .ai-team/config.json.");
+    console.log("No test commands configured. Set commands in .codeclaw/config.json.");
     process.exit(0);
   }
 
   console.log(`Running tests for run: ${runId}\n`);
 
   const timeout = config.safety.commandTimeoutSeconds;
-  const testDir = join(".ai-team", "runs", runId, "tests");
+  const testDir = join(".codeclaw", "runs", runId, "tests");
 
-  const { runTests, writeTestResultArtifacts } = await import("@aiteam/adapters");
+  const { runTests, writeTestResultArtifacts } = await import("@codeclaw/adapters");
 
   const testRun = await runTests(
     commands.map((c) => ({

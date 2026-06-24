@@ -121,8 +121,8 @@ Create separate entry points:
 ### 2. Update `packages/shared/package.json` exports field
 
 Add conditional exports so that:
-- `@aiteam/shared` resolves to the web-safe barrel
-- `@aiteam/shared/node` resolves to the Node-only barrel
+- `@codeclaw/shared` resolves to the web-safe barrel
+- `@codeclaw/shared/node` resolves to the Node-only barrel
 
 ```json
 {
@@ -141,22 +141,22 @@ Add conditional exports so that:
 
 ### 3. Update Node-only consumers
 
-Update these packages that use Node-only utilities to import from `@aiteam/shared/node` instead of `@aiteam/shared`:
+Update these packages that use Node-only utilities to import from `@codeclaw/shared/node` instead of `@codeclaw/shared`:
 
 - `packages/core/src/artifacts/artifactWriter.ts` — uses `mkdir`, `writeFile` via `node:fs/promises` directly, not shared. Skip.
 - `packages/core/src/agents/*.ts` — only use renderPrompt, no Node deps. Skip.
 - `packages/core/src/index.ts` — only exports agent functions. Skip.
 - `packages/storage/src/db.ts` — uses better-sqlite3 directly. Skip.
 - `packages/memory/src/memoryPaths.ts` — uses `node:path` directly. Skip.
-- `apps/cli/src/commands/init.ts` — uses `ensureDir` from shared. Update import to `@aiteam/shared/node`.
+- `apps/cli/src/commands/init.ts` — uses `ensureDir` from shared. Update import to `@codeclaw/shared/node`.
 - `apps/cli/src/commands/run.ts` — does not use shared fs utilities. Skip.
 - `apps/cli/src/commands/doctor.ts` — does not use shared fs utilities. Skip.
 
 ### 4. Update `apps/local-web/src/lib/api.ts`
 
-Current imports from `@aiteam/shared`:
+Current imports from `@codeclaw/shared`:
 - Only uses types from shared (Run, Artifact, Setting, etc. are defined locally in `types.ts`)
-- Verify no import from shared barrel; if found, replace with local type or `@aiteam/shared`
+- Verify no import from shared barrel; if found, replace with local type or `@codeclaw/shared`
 
 ### 5. Update `packages/shared/src/index.ts`
 
@@ -173,7 +173,7 @@ export { ensureDir, fileExists } from "./utils/fs.js";
 
 ### 7. Update dependent imports
 
-Find all imports of `@aiteam/shared` that use `ensureDir` or `fileExists` and update them to `@aiteam/shared/node`.
+Find all imports of `@codeclaw/shared` that use `ensureDir` or `fileExists` and update them to `@codeclaw/shared/node`.
 
 Search:
 ```bash
@@ -200,8 +200,8 @@ Verify that `apps/local-web` builds without errors.
 - `pnpm test` passes
 - `pnpm typecheck` passes
 - `apps/local-web` no longer imports Node-only modules from shared
-- Web-safe apps import from `@aiteam/shared` (default barrel)
-- Node-only apps import from `@aiteam/shared/node` when they need fs utilities
+- Web-safe apps import from `@codeclaw/shared` (default barrel)
+- Node-only apps import from `@codeclaw/shared/node` when they need fs utilities
 - No breaking changes to imports that don't use Node-only functions
 
 ## Files to Modify
@@ -210,7 +210,7 @@ Verify that `apps/local-web` builds without errors.
 - `packages/shared/src/node.ts` (new)
 - `packages/shared/package.json`
 - `apps/cli/src/commands/init.ts`
-- Any other files importing `ensureDir` or `fileExists` from `@aiteam/shared`
+- Any other files importing `ensureDir` or `fileExists` from `@codeclaw/shared`
 
 ## Rules
 

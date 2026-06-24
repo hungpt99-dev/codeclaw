@@ -108,68 +108,68 @@ interface TestCliOptions {
 const program = new Command();
 
 program
-  .name("aiteam")
+  .name("codeclaw")
   .description(
-    "Local AI Software Team — generate structured software artifacts from a raw requirement",
+    "CodeClaw — a local-first AI software team — generate structured software artifacts from a raw requirement",
   )
   .version("0.0.0")
   .addHelpText(
     "after",
     `
 Examples:
-  aiteam init                          Initialize .ai-team in the current directory
-  aiteam doctor                        Check configuration
-  aiteam new "Add login page"          Create a new run without executing stages
-  aiteam run "Add login page"          Run a full workflow
-  aiteam spec --run <runId>            Generate requirement specification
-  aiteam scope --run <runId>           Generate scope definition
-  aiteam plan --run <runId>            Generate technical design
-  aiteam tasks --run <runId>           Generate task breakdown
-  aiteam tests --run <runId>           Generate test matrix (plan)
-  aiteam code --run <runId>            Generate implementation prompt
-  aiteam report --run <runId>          Generate final report
-  aiteam list                          Show recent runs
-  aiteam show <runId>                  Show run details
-  aiteam ui --open                     Start the local web UI
-  aiteam approve <runId> --gate PLAN   Approve a pending gate
-  aiteam reject <runId> --gate PLAN    Reject a pending gate
-  aiteam resume <runId>                Resume a paused workflow
-  aiteam cancel <runId>                Cancel a workflow run
-  aiteam memory status                 Show runtime memory status
-  aiteam config list                    Show all config
-  aiteam config get <key>              Get specific config key
-  aiteam config set <key> <value>      Set config key
-  aiteam config validate               Validate config.json
-  aiteam config path                   Show config file path
-  aiteam status                        Project status overview
-  aiteam status --run <runId>          Detailed status for a run
-  aiteam status --json                 JSON output
-  aiteam prompts list                  List prompt templates
-  aiteam prompts show <name>           Show template content
-  aiteam prompts edit <name>           Edit template in $EDITOR
-  aiteam prompts reset <name>          Reset template to default
-  aiteam prompts validate              Validate all templates
-  aiteam artifacts <runId>             List run artifacts
-  aiteam artifacts <runId> --type <t>  Filter artifacts by type
-  aiteam artifacts <runId> --json      JSON output
-  aiteam open ui                       Open browser UI
-  aiteam open run <runId>              Open run in browser
-  aiteam open report <runId>           Open final report
-  aiteam open diff <runId>             Open diff
-  aiteam open config                   Open config.json in editor
-  aiteam open logs <runId>             Open logs folder
-  aiteam clean --runs --older-than 30d Clean old runs
-  aiteam clean --all --older-than 90d  Clean everything
-  aiteam clean --dry-run               Preview without deleting
-  aiteam rollback <runId>              Rollback code changes
-  aiteam rollback <runId> --dry-run    Preview changes
+  codeclaw init                          Initialize .codeclaw in the current directory
+  codeclaw doctor                        Check configuration
+  codeclaw new "Add login page"          Create a new run without executing stages
+  codeclaw run "Add login page"          Run a full workflow
+  codeclaw spec --run <runId>            Generate requirement specification
+  codeclaw scope --run <runId>           Generate scope definition
+  codeclaw plan --run <runId>            Generate technical design
+  codeclaw tasks --run <runId>           Generate task breakdown
+  codeclaw tests --run <runId>           Generate test matrix (plan)
+  codeclaw code --run <runId>            Generate implementation prompt
+  codeclaw report --run <runId>          Generate final report
+  codeclaw list                          Show recent runs
+  codeclaw show <runId>                  Show run details
+  codeclaw ui --open                     Start the local web UI
+  codeclaw approve <runId> --gate PLAN   Approve a pending gate
+  codeclaw reject <runId> --gate PLAN    Reject a pending gate
+  codeclaw resume <runId>                Resume a paused workflow
+  codeclaw cancel <runId>                Cancel a workflow run
+  codeclaw memory status                 Show runtime memory status
+  codeclaw config list                    Show all config
+  codeclaw config get <key>              Get specific config key
+  codeclaw config set <key> <value>      Set config key
+  codeclaw config validate               Validate config.json
+  codeclaw config path                   Show config file path
+  codeclaw status                        Project status overview
+  codeclaw status --run <runId>          Detailed status for a run
+  codeclaw status --json                 JSON output
+  codeclaw prompts list                  List prompt templates
+  codeclaw prompts show <name>           Show template content
+  codeclaw prompts edit <name>           Edit template in $EDITOR
+  codeclaw prompts reset <name>          Reset template to default
+  codeclaw prompts validate              Validate all templates
+  codeclaw artifacts <runId>             List run artifacts
+  codeclaw artifacts <runId> --type <t>  Filter artifacts by type
+  codeclaw artifacts <runId> --json      JSON output
+  codeclaw open ui                       Open browser UI
+  codeclaw open run <runId>              Open run in browser
+  codeclaw open report <runId>           Open final report
+  codeclaw open diff <runId>             Open diff
+  codeclaw open config                   Open config.json in editor
+  codeclaw open logs <runId>             Open logs folder
+  codeclaw clean --runs --older-than 30d Clean old runs
+  codeclaw clean --all --older-than 90d  Clean everything
+  codeclaw clean --dry-run               Preview without deleting
+  codeclaw rollback <runId>              Rollback code changes
+  codeclaw rollback <runId> --dry-run    Preview changes
 `,
   );
 
 program
   .command("init")
-  .description("Initialize .ai-team in the current directory")
-  .option("--force", "Overwrite existing .ai-team directory")
+  .description("Initialize .codeclaw in the current directory")
+  .option("--force", "Overwrite existing .codeclaw directory")
   .option("--type <type>", "Project type (e.g. web, mobile, cli)")
   .option("--output-language <language>", "Default output language")
   .action(async (options: InitCliOptions) => {
@@ -178,7 +178,7 @@ program
 
 program
   .command("doctor")
-  .description("Check that .ai-team is properly configured")
+  .description("Check that .codeclaw is properly configured")
   .action(async () => {
     await doctorCommand();
   });

@@ -67,11 +67,11 @@ packages/core test:  ✓ src/agents/parsers/uxWriterOutputParser.test.ts (2 test
 packages/core test:  ❯ src/workflows/semiAutoWorkflow.test.ts (4 tests | 3 failed) 247ms
 packages/core test:    ✓ runSemiAutoWorkflow > returns pending gate when approval is required 88ms
 packages/core test:    × runSemiAutoWorkflow > proceeds with code execution when approval is not required 89ms
-packages/core test:      → ENOENT: no such file or directory, open '.ai-team/runs/run_20260624_074756_add_login_page/design/technical-design.md'
+packages/core test:      → ENOENT: no such file or directory, open '.codeclaw/runs/run_20260624_074756_add_login_page/design/technical-design.md'
 packages/core test:    × runSemiAutoWorkflow > generates all doc artifacts before code 48ms
-packages/core test:      → ENOENT: no such file or directory, open '.ai-team/runs/run_20260624_074756_test_feature/requirement/clarified-requirement.md'
+packages/core test:      → ENOENT: no such file or directory, open '.codeclaw/runs/run_20260624_074756_test_feature/requirement/clarified-requirement.md'
 packages/core test:    × runSemiAutoWorkflow > includes memoryUsed when memoryContext is provided 22ms
-packages/core test:      → ENOENT: no such file or directory, open '.ai-team/runs/run_20260624_074756_test/requirement/clarified-requirement.md'
+packages/core test:      → ENOENT: no such file or directory, open '.codeclaw/runs/run_20260624_074756_test/requirement/clarified-requirement.md'
 packages/core test:  ✓ src/agents/parsers/uiDesignerOutputParser.test.ts (2 tests) 3ms
 packages/core test:  ✓ src/integrations/prSummaryGenerator.test.ts (4 tests) 4ms
 packages/core test:  ✓ src/agents/parsers/codingPlanOutputParser.test.ts (3 tests) 4ms
@@ -91,7 +91,7 @@ packages/core test:  ✓ src/agents/parsers/securityReviewerOutputParser.test.ts
 packages/core test:  ✓ src/index.test.ts (32 tests) 820ms
 packages/core test: ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
 packages/core test:  FAIL  src/workflows/semiAutoWorkflow.test.ts > runSemiAutoWorkflow > proceeds with code execution when approval is not required
-packages/core test: Error: ENOENT: no such file or directory, open '.ai-team/runs/run_20260624_074756_add_login_page/design/technical-design.md'
+packages/core test: Error: ENOENT: no such file or directory, open '.codeclaw/runs/run_20260624_074756_add_login_page/design/technical-design.md'
 packages/core test:  ❯ writeArtifact src/artifacts/artifactWriter.ts:123:3
 packages/core test:     121| 
 packages/core test:     122| export async function writeArtifact(filePath: string, content: string)…
@@ -103,7 +103,7 @@ packages/core test:  ❯ Module.runSemiAutoWorkflow src/workflows/semiAutoWorkfl
 packages/core test:  ❯ src/workflows/semiAutoWorkflow.test.ts:111:20
 packages/core test: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
 packages/core test:  FAIL  src/workflows/semiAutoWorkflow.test.ts > runSemiAutoWorkflow > generates all doc artifacts before code
-packages/core test: Error: ENOENT: no such file or directory, open '.ai-team/runs/run_20260624_074756_test_feature/requirement/clarified-requirement.md'
+packages/core test: Error: ENOENT: no such file or directory, open '.codeclaw/runs/run_20260624_074756_test_feature/requirement/clarified-requirement.md'
 packages/core test:  ❯ writeArtifact src/artifacts/artifactWriter.ts:123:3
 packages/core test:     121| 
 packages/core test:     122| export async function writeArtifact(filePath: string, content: string)…
@@ -115,7 +115,7 @@ packages/core test:  ❯ Module.runSemiAutoWorkflow src/workflows/semiAutoWorkfl
 packages/core test:  ❯ src/workflows/semiAutoWorkflow.test.ts:124:20
 packages/core test: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
 packages/core test:  FAIL  src/workflows/semiAutoWorkflow.test.ts > runSemiAutoWorkflow > includes memoryUsed when memoryContext is provided
-packages/core test: Error: ENOENT: no such file or directory, open '.ai-team/runs/run_20260624_074756_test/requirement/clarified-requirement.md'
+packages/core test: Error: ENOENT: no such file or directory, open '.codeclaw/runs/run_20260624_074756_test/requirement/clarified-requirement.md'
 packages/core test:  ❯ writeArtifact src/artifacts/artifactWriter.ts:123:3
 packages/core test:     121| 
 packages/core test:     122| export async function writeArtifact(filePath: string, content: string)…
@@ -132,7 +132,7 @@ packages/core test:    Start at  14:47:54
 packages/core test:    Duration  2.26s (transform 1.31s, setup 0ms, collect 5.11s, tests 1.37s, environment 4ms, prepare 3.92s)
 packages/core test: Failed
 /Users/phamthanhhung/Desktop/MyProject/auto-code/packages/core:
-[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @aiteam/core@0.0.0 test: `vitest run`
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @codeclaw/core@0.0.0 test: `vitest run`
 Exit status 1
 [ELIFECYCLE] Test failed. See above for more details.
 [ELIFECYCLE] Command failed with exit code 1.

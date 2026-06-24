@@ -64,7 +64,7 @@ apps/cli lint:   77:53  error  Unnecessary optional chain on a non-nullish value
 apps/cli lint: ✖ 1 problem (1 error, 0 warnings)
 apps/cli lint: Failed
 /Users/phamthanhhung/Desktop/MyProject/auto-code/apps/cli:
-[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @aiteam/cli@0.0.0 lint: `eslint src --ext .ts`
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @codeclaw/cli@0.0.0 lint: `eslint src --ext .ts`
 Exit status 1
 [ELIFECYCLE] Command failed with exit code 1.
 [ELIFECYCLE] Command failed with exit code 1.

@@ -222,7 +222,7 @@ export function Integrations(): ReactElement {
 
       <IntegrationCard
         title="Jira"
-        description="Jira integration using API tokens. Configure in .ai-team/config.json."
+        description="Jira integration using API tokens. Configure in .codeclaw/config.json."
       >
         <div className="flex items-center justify-between">
           <StatusIndicator
@@ -264,7 +264,7 @@ export function Integrations(): ReactElement {
             )}
             <p>
               <span className="font-medium">Token:</span> {jiraStatus.hasToken ? "Set" : "Not set"}{" "}
-              (env: AITEAM_JIRA_TOKEN)
+              (env: CODECLAW_JIRA_TOKEN)
             </p>
             <p>
               <span className="font-medium">Status:</span> {jiraStatus.overall}
@@ -283,7 +283,7 @@ export function Integrations(): ReactElement {
 
       <IntegrationCard
         title="Slack"
-        description="Slack integration using a bot token. Token stored in AITEAM_SLACK_TOKEN environment variable."
+        description="Slack integration using a bot token. Token stored in CODECLAW_SLACK_TOKEN environment variable."
       >
         <div className="flex items-center justify-between">
           <StatusIndicator
@@ -320,7 +320,7 @@ export function Integrations(): ReactElement {
             )}
             <p>
               <span className="font-medium">Token:</span> {slackStatus.hasToken ? "Set" : "Not set"}{" "}
-              (env: AITEAM_SLACK_TOKEN)
+              (env: CODECLAW_SLACK_TOKEN)
             </p>
             <p>
               <span className="font-medium">Status:</span> {slackStatus.overall}

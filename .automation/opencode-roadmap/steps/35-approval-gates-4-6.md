@@ -78,4 +78,4 @@ In web UI, each gate shows:
 - Gate 6 requires confirmation before rollback
 - All gates use same approval infrastructure from Step 20
 - Web UI shows appropriate content per gate type
-- CLI `aiteam approve --gate` works for all gate types
+- CLI `codeclaw approve --gate` works for all gate types

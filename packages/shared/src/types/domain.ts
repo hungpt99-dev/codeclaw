@@ -237,7 +237,7 @@ export interface SlackIntegrationConfig {
   )[];
 }
 
-export interface AiTeamConfig {
+export interface CodeClawConfig {
   version: string;
   project: {
     name: string;

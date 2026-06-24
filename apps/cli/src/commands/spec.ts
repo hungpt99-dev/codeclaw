@@ -1,13 +1,13 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { configSchema } from "@aiteam/shared";
-import { getArtifactPaths, writeArtifact, runBaAgent } from "@aiteam/core";
+import { configSchema } from "@codeclaw/shared";
+import { getArtifactPaths, writeArtifact, runBaAgent } from "@codeclaw/core";
 import {
   openDatabase,
   initializeSchema,
   createRunRepository,
   createArtifactRepository,
-} from "@aiteam/storage";
+} from "@codeclaw/storage";
 
 interface SpecOptions {
   run: string;
@@ -16,12 +16,12 @@ interface SpecOptions {
 }
 
 export async function specCommand(options: SpecOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -47,7 +47,7 @@ export async function specCommand(options: SpecOptions): Promise<void> {
     try {
       requirement = await readFile(join(paths.requirementDir, "clarified-requirement.md"), "utf-8");
     } catch {
-      console.log("❌ No requirement input found. Run 'aiteam new' or 'aiteam run' first.");
+      console.log("❌ No requirement input found. Run 'codeclaw new' or 'codeclaw run' first.");
       db.close();
       process.exit(1);
     }

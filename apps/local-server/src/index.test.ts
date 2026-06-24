@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { mkdir, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
-import { createApp } from "@aiteam/server";
+import { createApp } from "@codeclaw/server";
 import type { FastifyInstance } from "fastify";
 
-const TEST_DIR = join(".ai-team", "test-server");
+const TEST_DIR = join(".codeclaw", "test-server");
 const DB_PATH = join(TEST_DIR, "test.sqlite");
 const PROMPTS_DIR = join(TEST_DIR, "prompts");
 

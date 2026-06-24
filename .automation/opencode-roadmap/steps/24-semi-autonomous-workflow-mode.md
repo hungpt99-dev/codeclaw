@@ -204,7 +204,7 @@ Before running AI CLI:
 2. If true, create CODE_GENERATION approval with status PENDING
 3. Show to user in CLI: what agent will run, what files may be affected, timeout
 4. In web UI: show approval modal with prompt preview, agent info
-5. Wait for approval via `aiteam approve` or web UI
+5. Wait for approval via `codeclaw approve` or web UI
 6. On approval, proceed with code execution
 
 ### 5. Add protected file detection
@@ -249,7 +249,7 @@ safety: {
 Update `apps/cli/src/commands/run.ts`:
 
 ```bash
-aiteam run "..." --mode semi-auto --agent claude
+codeclaw run "..." --mode semi-auto --agent claude
 ```
 
 Options:
@@ -313,7 +313,7 @@ AI CLI config in config.json (defaults):
 
 ### 12. Update doctor to check selected agent
 
-When running `aiteam doctor`:
+When running `codeclaw doctor`:
 - If run has a selected agent, check that agent is available
 - If default developer agent is set in config, check availability
 
@@ -328,7 +328,7 @@ When running `aiteam doctor`:
 
 ## Acceptance Criteria
 
-- `aiteam run "..." --mode semi-auto --agent claude` works end-to-end
+- `codeclaw run "..." --mode semi-auto --agent claude` works end-to-end
 - Implementation prompt is generated from all prior artifacts
 - User must approve code generation before AI CLI runs (unless --approve)
 - Git snapshot is saved before AI CLI runs

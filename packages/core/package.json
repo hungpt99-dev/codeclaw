@@ -1,5 +1,5 @@
 {
-  "name": "@aiteam/core",
+  "name": "@codeclaw/core",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,7 +18,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@aiteam/adapters": "workspace:*",
-    "@aiteam/shared": "workspace:*"
+    "@codeclaw/adapters": "workspace:*",
+    "@codeclaw/shared": "workspace:*"
   }
 }

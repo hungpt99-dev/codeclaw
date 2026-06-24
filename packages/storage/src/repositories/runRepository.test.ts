@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import type Database from "better-sqlite3";
 import { createTestDb } from "../test-helpers.js";
 import { createRunRepository } from "./runRepository.js";
-import { RunStatusValues } from "@aiteam/shared";
+import { RunStatusValues } from "@codeclaw/shared";
 
 describe("RunRepository", () => {
   let db: Database.Database;

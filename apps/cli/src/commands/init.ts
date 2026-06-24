@@ -1,10 +1,10 @@
 import { mkdir, writeFile, access, cp } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { defaultConfig } from "@aiteam/shared";
-import { openDatabase, initializeSchema } from "@aiteam/storage";
-import { initializeRuntimeMemory } from "@aiteam/memory";
-import { analyzeRepository } from "@aiteam/core";
+import { defaultConfig } from "@codeclaw/shared";
+import { openDatabase, initializeSchema } from "@codeclaw/storage";
+import { initializeRuntimeMemory } from "@codeclaw/memory";
+import { analyzeRepository } from "@codeclaw/core";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -27,13 +27,13 @@ async function dirExists(path: string): Promise<boolean> {
 }
 
 export async function initCommand(options: InitOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   if (await dirExists(aiTeamDir)) {
     if (options.force) {
-      console.log("⚡ .ai-team already exists, overwriting due to --force");
+      console.log("⚡ .codeclaw already exists, overwriting due to --force");
     } else {
-      console.log("❌ .ai-team already exists. Use --force to overwrite.");
+      console.log("❌ .codeclaw already exists. Use --force to overwrite.");
       process.exit(1);
     }
   }
@@ -50,12 +50,12 @@ export async function initCommand(options: InitOptions): Promise<void> {
   await mkdir(aiTeamDir, { recursive: true });
 
   await writeFile(join(aiTeamDir, "config.json"), JSON.stringify(config, null, 2), "utf-8");
-  console.log("✅ Created .ai-team/config.json");
+  console.log("✅ Created .codeclaw/config.json");
 
   const db = openDatabase(join(aiTeamDir, "database.sqlite"));
   initializeSchema(db);
   db.close();
-  console.log("✅ Created .ai-team/database.sqlite");
+  console.log("✅ Created .codeclaw/database.sqlite");
 
   const promptsDir = join(aiTeamDir, "prompts");
   await mkdir(promptsDir, { recursive: true });
@@ -78,17 +78,17 @@ export async function initCommand(options: InitOptions): Promise<void> {
       console.log(`⚠️  Could not copy template: ${file}`);
     }
   }
-  console.log("✅ Created .ai-team/prompts/");
+  console.log("✅ Created .codeclaw/prompts/");
 
   await mkdir(join(aiTeamDir, "runs"), { recursive: true });
-  console.log("✅ Created .ai-team/runs/");
+  console.log("✅ Created .codeclaw/runs/");
 
   const memoryResult = await initializeRuntimeMemory({
     projectRoot: process.cwd(),
     force: options.force,
   });
   console.log(
-    `✅ Created .ai-team/memory/ (${String(memoryResult.filesCreated.length)} files created, ${String(memoryResult.filesSkipped.length)} skipped)`,
+    `✅ Created .codeclaw/memory/ (${String(memoryResult.filesCreated.length)} files created, ${String(memoryResult.filesSkipped.length)} skipped)`,
   );
 
   const initAnalysis = await analyzeRepository(process.cwd());
@@ -110,5 +110,5 @@ export async function initCommand(options: InitOptions): Promise<void> {
     console.log("\n📋 No specific project type detected.");
   }
 
-  console.log("\n🎉 aiteam initialized successfully!");
+  console.log("\n🎉 codeclaw initialized successfully!");
 }

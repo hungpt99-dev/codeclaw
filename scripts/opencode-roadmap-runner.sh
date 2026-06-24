@@ -4,7 +4,7 @@ set -Eeuo pipefail
 # =============================================================================
 # OpenCode Roadmap Runner
 # =============================================================================
-# Automatically runs OpenCode step by step through the Local AI Software Team
+# Automatically runs OpenCode step by step through the CodeClaw roadmap
 # roadmap (50 steps, 00-docs-preflight through 50-git-diff-review-enhancement-in-web-ui).
 # Resumes from last completed step stored in state file, or starts fresh.
 # =============================================================================
@@ -172,7 +172,7 @@ log_step()  { echo -e "${CYAN}[STEP]${NC}  $(date '+%H:%M:%S') $*"; }
 print_banner() {
   echo ""
   echo -e "${CYAN}╔══════════════════════════════════════════════════════════════╗${NC}"
-  echo -e "${CYAN}║${NC}       ${GREEN}Local AI Software Team — OpenCode Roadmap Runner${NC}       ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}       ${GREEN}CodeClaw — OpenCode Roadmap Runner${NC}       ${CYAN}║${NC}"
   echo -e "${CYAN}╚══════════════════════════════════════════════════════════════╝${NC}"
   echo ""
 }

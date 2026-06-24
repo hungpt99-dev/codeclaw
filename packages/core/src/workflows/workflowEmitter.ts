@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import type { WorkflowProgressEvent, WorkflowProgressEventType } from "@aiteam/shared";
+import type { WorkflowProgressEvent, WorkflowProgressEventType } from "@codeclaw/shared";
 
 const emitter = new EventEmitter();
 emitter.setMaxListeners(200);

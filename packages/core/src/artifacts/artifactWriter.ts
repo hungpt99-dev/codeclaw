@@ -49,7 +49,7 @@ export interface ArtifactPaths {
 }
 
 export function getArtifactPaths(runId: string): ArtifactPaths {
-  const runDir = join(".ai-team", "runs", runId);
+  const runDir = join(".codeclaw", "runs", runId);
   return {
     runDir,
     inputFile: join(runDir, "input.md"),

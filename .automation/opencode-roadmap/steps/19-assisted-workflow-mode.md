@@ -197,7 +197,7 @@ You are a Developer agent. Your role is to generate a comprehensive implementati
 [What files will be created or modified]
 ```
 
-Also copy this template during `aiteam init` by updating `apps/cli/src/commands/init.ts` to include `developer-agent.md` in the template copy list.
+Also copy this template during `codeclaw init` by updating `apps/cli/src/commands/init.ts` to include `developer-agent.md` in the template copy list.
 
 ### 2. Create Developer Agent implementation
 
@@ -280,8 +280,8 @@ The tab should only appear when implementation prompt artifacts exist.
 ### 8. Add run mode persistence
 
 The mode ("docs-only" or "assisted") must be persisted in the runs table and shown in:
-- `aiteam list` output
-- `aiteam show` output
+- `codeclaw list` output
+- `codeclaw show` output
 - Web UI Run Detail header
 - Web UI Runs table
 
@@ -301,7 +301,7 @@ Update `apps/local-web/src/pages/NewRequirement.tsx`:
 
 ## Acceptance Criteria
 
-- `aiteam run "..." --mode assisted` generates implementation-prompt.md
+- `codeclaw run "..." --mode assisted` generates implementation-prompt.md
 - Implementation prompt contains requirement, design, tasks, tests, constraints in a structured format
 - Web UI shows "Implementation" tab with prompt content and copy button
 - Web UI mode dropdown works with "docs-only" and "assisted"

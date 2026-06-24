@@ -10,7 +10,7 @@ export interface SlackMessageInput {
 
 export function buildWorkflowStartedMessage(input: SlackMessageInput): string {
   return [
-    `*🚀 AITeam Workflow Started*`,
+    `*🚀 CodeClaw Workflow Started*`,
     ``,
     `*Project:* ${input.runTitle}`,
     `*Status:* ${input.status}`,
@@ -24,7 +24,7 @@ export function buildWorkflowStartedMessage(input: SlackMessageInput): string {
 
 export function buildDocsGeneratedMessage(input: SlackMessageInput): string {
   return [
-    `*📄 AITeam Documentation Generated*`,
+    `*📄 CodeClaw Documentation Generated*`,
     ``,
     `*Requirement:* ${input.runTitle}`,
     `*Status:* ${input.status}`,
@@ -46,7 +46,7 @@ export function buildDocsGeneratedMessage(input: SlackMessageInput): string {
 
 export function buildCodeGeneratedMessage(input: SlackMessageInput): string {
   const lines: string[] = [
-    `*💻 AITeam Code Generated*`,
+    `*💻 CodeClaw Code Generated*`,
     ``,
     `*Requirement:* ${input.runTitle}`,
     `*Status:* ${input.status}`,
@@ -76,7 +76,7 @@ export function buildTestResultMessage(input: SlackMessageInput): string {
   const title = input.status === "TEST_PASSED" ? "Tests Passed" : "Tests Failed";
 
   const lines: string[] = [
-    `*${icon} AITeam ${title}*`,
+    `*${icon} CodeClaw ${title}*`,
     ``,
     `*Requirement:* ${input.runTitle}`,
     `*Status:* ${input.status}`,
@@ -99,7 +99,7 @@ export function buildTestResultMessage(input: SlackMessageInput): string {
 
 export function buildReportReadyMessage(input: SlackMessageInput): string {
   const lines: string[] = [
-    `*📋 AITeam Delivery Report Ready*`,
+    `*📋 CodeClaw Delivery Report Ready*`,
     ``,
     `*Requirement:* ${input.runTitle}`,
     `*Status:* ${input.status}`,

@@ -4,7 +4,7 @@ export type {
   ArtifactType,
   Run,
   Artifact,
-  AiTeamConfig,
+  CodeClawConfig,
   AiCliTool,
   AgentRole as AgentRoleName,
   AiCliToolConfig,

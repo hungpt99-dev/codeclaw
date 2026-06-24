@@ -1,6 +1,6 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { RepositoryAnalysis } from "@aiteam/shared";
+import type { RepositoryAnalysis } from "@codeclaw/shared";
 
 async function fileExists(path: string): Promise<boolean> {
   try {

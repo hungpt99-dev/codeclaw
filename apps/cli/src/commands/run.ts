@@ -1,23 +1,23 @@
 import { access, readFile } from "node:fs/promises";
 import { join, basename, extname } from "node:path";
-import { createRunId, nowIso, configSchema } from "@aiteam/shared";
-import type { Config, RunMode, RunStatus } from "@aiteam/shared";
+import { createRunId, nowIso, configSchema } from "@codeclaw/shared";
+import type { Config, RunMode, RunStatus } from "@codeclaw/shared";
 import {
   runDocsOnlyWorkflow,
   runAssistedWorkflow,
   runSemiAutoWorkflow,
   runWorkflowWithGates,
   defaultSafetyPolicy,
-} from "@aiteam/core";
+} from "@codeclaw/core";
 import {
   openDatabase,
   initializeSchema,
   createRunRepository,
   createArtifactRepository,
   createApprovalRepository,
-} from "@aiteam/storage";
-import type { ArtifactType, AiAdapterName, ApprovalGate } from "@aiteam/shared";
-import { getMemoryStatus, addRunMemory } from "@aiteam/memory";
+} from "@codeclaw/storage";
+import type { ArtifactType, AiAdapterName, ApprovalGate } from "@codeclaw/shared";
+import { getMemoryStatus, addRunMemory } from "@codeclaw/memory";
 
 interface RunOptions {
   title?: string;
@@ -58,19 +58,19 @@ function inferFormat(filePath: string): string {
 }
 
 async function loadConfig(): Promise<Config> {
-  const configPath = join(process.cwd(), ".ai-team", "config.json");
+  const configPath = join(process.cwd(), ".codeclaw", "config.json");
   const raw = await readFile(configPath, "utf-8");
   const parsed: unknown = JSON.parse(raw);
   return configSchema.parse(parsed);
 }
 
 export async function runCommand(requirement: string, options: RunOptions): Promise<void> {
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
 
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -151,10 +151,10 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
       console.log(`\n⏸️ ${result.pendingGate.summary}`);
       console.log(`   Gate: ${gate}`);
       console.log(`   Artifacts created: ${String(result.artifacts.length)}`);
-      console.log(`\n   To approve:  aiteam approve ${runId} --gate ${gate}`);
-      console.log(`   To reject:   aiteam reject ${runId} --gate ${gate}`);
-      console.log(`   To resume:   aiteam resume ${runId}`);
-      console.log(`   Or open UI:  aiteam ui`);
+      console.log(`\n   To approve:  codeclaw approve ${runId} --gate ${gate}`);
+      console.log(`   To reject:   codeclaw reject ${runId} --gate ${gate}`);
+      console.log(`   To resume:   codeclaw resume ${runId}`);
+      console.log(`   Or open UI:  codeclaw ui`);
       console.log("");
     } else {
       console.log(`\n🚀 Run completed: ${runId}`);
@@ -263,10 +263,10 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
     console.log(`\n⏸️ ${result.pendingGate.summary}`);
     console.log(`   Gate: ${gate}`);
     console.log(`   Artifacts created: ${String(result.artifacts.length)}`);
-    console.log(`\n   To approve:  aiteam approve ${runId} --gate ${gate}`);
-    console.log(`   To reject:   aiteam reject ${runId} --gate ${gate}`);
-    console.log(`   To resume:   aiteam resume ${runId}`);
-    console.log(`   Or open UI:  aiteam ui`);
+    console.log(`\n   To approve:  codeclaw approve ${runId} --gate ${gate}`);
+    console.log(`   To reject:   codeclaw reject ${runId} --gate ${gate}`);
+    console.log(`   To resume:   codeclaw resume ${runId}`);
+    console.log(`   Or open UI:  codeclaw ui`);
     console.log("");
   } else if (options.json) {
     console.log(

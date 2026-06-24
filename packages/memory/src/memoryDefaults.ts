@@ -1,4 +1,4 @@
-import type { MemoryScope, MemoryFormat } from "@aiteam/shared";
+import type { MemoryScope, MemoryFormat } from "@codeclaw/shared";
 
 export const DEFAULT_MEMORY_FILES: Record<
   string,
@@ -11,7 +11,7 @@ export const DEFAULT_MEMORY_FILES: Record<
     tags: ["memory", "overview"],
     content: `# Runtime Memory
 
-This directory contains runtime memory for the Local AI Software Team.
+This directory contains runtime memory for the CodeClaw.
 
 ## Structure
 

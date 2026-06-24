@@ -1,4 +1,4 @@
-import type { AiAdapterName, AiTaskInput, AiTaskResult } from "@aiteam/shared";
+import type { AiAdapterName, AiTaskInput, AiTaskResult } from "@codeclaw/shared";
 
 export interface AiCliAdapter {
   name: AiAdapterName;

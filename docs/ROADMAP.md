@@ -5,9 +5,9 @@
 
 ## 1. Roadmap Overview
 
-**Product Name**: Local AI Software Team
+**Product Name**: CodeClaw
 
-**Product Direction**: Local AI Software Team is a local-first AI software delivery tool that helps developers turn rough requirements into structured software delivery outputs.
+**Product Direction**: CodeClaw is a local-first AI software delivery tool that helps developers turn rough requirements into structured software delivery outputs.
 
 The product starts simple:
 
@@ -77,7 +77,7 @@ The roadmap is divided into:
 6. Beta 1: Local Web UI Maturity
 7. Beta 2: GitHub Integration
 8. Beta 3: Jira and Slack Integration
-9. V1.0: Stable Local AI Software Team
+9. V1.0: Stable CodeClaw
 10. V1.x: Team Workflow
 11. V2.0: Enterprise and Advanced Agent Orchestration
 
@@ -102,16 +102,16 @@ Creator only.
 **CLI foundation**: Commands:
 
 ```bash
-aiteam init
-aiteam ui
-aiteam doctor
-aiteam config
+codeclaw init
+codeclaw ui
+codeclaw doctor
+codeclaw config
 ```
 
 **Local project initialization**: Create:
 
 ```
-.ai-team/
+.codeclaw/
   config.json
   database.sqlite
   prompts/
@@ -158,12 +158,12 @@ The product can initialize a project and show a local dashboard.
 Phase 0 is complete when:
 
 1. User can install CLI.
-2. User can run aiteam init.
-3. .ai-team folder is created.
-4. User can run aiteam ui.
+2. User can run codeclaw init.
+3. .codeclaw folder is created.
+4. User can run codeclaw ui.
 5. Local web UI opens.
 6. User can edit settings.
-7. User can run aiteam doctor.
+7. User can run codeclaw doctor.
 8. The system can detect basic project type.
 
 ### 3.6 Out of Scope
@@ -208,16 +208,16 @@ Raw requirement → BA Agent → PO Agent → Architect Agent → PM Agent → Q
 ### 4.5 Required CLI Commands
 
 ```bash
-aiteam new
-aiteam run --mode docs-only
-aiteam spec
-aiteam scope
-aiteam plan
-aiteam tasks
-aiteam tests
-aiteam report
-aiteam list
-aiteam show
+codeclaw new
+codeclaw run --mode docs-only
+codeclaw spec
+codeclaw scope
+codeclaw plan
+codeclaw tasks
+codeclaw tests
+codeclaw report
+codeclaw list
+codeclaw show
 ```
 
 ### 4.6 Required Local Web UI
@@ -414,8 +414,8 @@ Generic agent
 ### 5.6 New CLI Commands
 
 ```bash
-aiteam code --prompt-only
-aiteam prompts
+codeclaw code --prompt-only
+codeclaw prompts
 ```
 
 ### 5.7 New UI Features
@@ -518,9 +518,9 @@ implementation-notes.md
 ### 6.6 Required CLI Commands
 
 ```bash
-aiteam code --run <runId> --agent codex
-aiteam approve <runId> --gate code
-aiteam rollback <runId> --dry-run
+codeclaw code --run <runId> --agent codex
+codeclaw approve <runId> --gate code
+codeclaw rollback <runId> --dry-run
 ```
 
 ### 6.7 Required UI Features
@@ -644,10 +644,10 @@ Requirement → Acceptance Criteria → Task → Code Files → Test Cases → T
 ### 7.5 Required CLI Commands
 
 ```bash
-aiteam test
-aiteam review
-aiteam trace
-aiteam report
+codeclaw test
+codeclaw review
+codeclaw trace
+codeclaw report
 ```
 
 ### 7.6 Required UI Features
@@ -693,7 +693,7 @@ Improve the local web UI into a polished control center.
 
 ### 8.2 Main Promise
 
-Users can manage the whole local AI software team workflow visually from the browser.
+Users can manage the whole CodeClaw workflow visually from the browser.
 
 ### 8.3 Required Improvements
 
@@ -829,9 +829,9 @@ create PR
 ### 9.5 Required CLI Commands
 
 ```bash
-aiteam github status
-aiteam github pr create --run <runId>
-aiteam github actions --run <runId>
+codeclaw github status
+codeclaw github pr create --run <runId>
+codeclaw github actions --run <runId>
 ```
 
 ### 9.6 UI Features
@@ -948,12 +948,12 @@ Future options: ngrok, Cloudflare Tunnel, Tailscale Funnel, future cloud backend
 ### 10.5 Required CLI Commands
 
 ```bash
-aiteam jira export --run <runId>
-aiteam jira test
-aiteam jira create --run <runId>
+codeclaw jira export --run <runId>
+codeclaw jira test
+codeclaw jira create --run <runId>
 
-aiteam slack test
-aiteam slack post --run <runId>
+codeclaw slack test
+codeclaw slack post --run <runId>
 ```
 
 ### 10.6 UI Features
@@ -990,7 +990,7 @@ advanced permission mapping
 
 ---
 
-## 11. Phase 8: V1.0 — Stable Local AI Software Team
+## 11. Phase 8: V1.0 — Stable CodeClaw
 
 ### 11.1 Goal
 
@@ -998,7 +998,7 @@ Release a stable version for individual developers and small teams.
 
 ### 11.2 Main Promise
 
-A reliable local AI software team for turning rough requirements into docs, tasks, code prompts, optional code changes, tests, reviews, traceability, and final reports.
+A reliable CodeClaw for turning rough requirements into docs, tasks, code prompts, optional code changes, tests, reviews, traceability, and final reports.
 
 ### 11.3 V1.0 Feature Set
 
@@ -1107,7 +1107,7 @@ documentation templates
 project templates
 ```
 
-**Team policy file**: Example: `.ai-team/policy.json`
+**Team policy file**: Example: `.codeclaw/policy.json`
 
 Policy can define:
 
@@ -1580,9 +1580,9 @@ local storage reliable
 
 ```
 npm install works
-aiteam init works
-aiteam ui works
-aiteam doctor works
+codeclaw init works
+codeclaw ui works
+codeclaw doctor works
 error messages are clear
 logs are accessible
 ```
@@ -1643,4 +1643,4 @@ The strongest version of this product is not "AI writes code."
 
 The strongest version is:
 
-A local AI software team that brings structure, safety, and traceability to AI-assisted software delivery.
+A CodeClaw that brings structure, safety, and traceability to AI-assisted software delivery.

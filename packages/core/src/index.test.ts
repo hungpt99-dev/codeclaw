@@ -19,7 +19,7 @@ const TEST_RUN_ID = "run_20250101_000000_test_requirement";
 
 async function cleanupTestDirs(): Promise<void> {
   try {
-    await rm(join(".ai-team", "runs"), { recursive: true, force: true });
+    await rm(join(".codeclaw", "runs"), { recursive: true, force: true });
   } catch {
     // ignore if doesn't exist
   }
@@ -72,14 +72,14 @@ describe("artifactWriter", () => {
 
   it("getArtifactPaths returns correct paths", () => {
     const paths = getArtifactPaths(TEST_RUN_ID);
-    expect(paths.runDir).toBe(join(".ai-team", "runs", TEST_RUN_ID));
-    expect(paths.inputFile).toBe(join(".ai-team", "runs", TEST_RUN_ID, "input.md"));
-    expect(paths.requirementDir).toBe(join(".ai-team", "runs", TEST_RUN_ID, "requirement"));
-    expect(paths.designDir).toBe(join(".ai-team", "runs", TEST_RUN_ID, "design"));
-    expect(paths.tasksDir).toBe(join(".ai-team", "runs", TEST_RUN_ID, "tasks"));
-    expect(paths.testsDir).toBe(join(".ai-team", "runs", TEST_RUN_ID, "tests"));
-    expect(paths.reportDir).toBe(join(".ai-team", "runs", TEST_RUN_ID, "report"));
-    expect(paths.logsDir).toBe(join(".ai-team", "runs", TEST_RUN_ID, "logs"));
+    expect(paths.runDir).toBe(join(".codeclaw", "runs", TEST_RUN_ID));
+    expect(paths.inputFile).toBe(join(".codeclaw", "runs", TEST_RUN_ID, "input.md"));
+    expect(paths.requirementDir).toBe(join(".codeclaw", "runs", TEST_RUN_ID, "requirement"));
+    expect(paths.designDir).toBe(join(".codeclaw", "runs", TEST_RUN_ID, "design"));
+    expect(paths.tasksDir).toBe(join(".codeclaw", "runs", TEST_RUN_ID, "tasks"));
+    expect(paths.testsDir).toBe(join(".codeclaw", "runs", TEST_RUN_ID, "tests"));
+    expect(paths.reportDir).toBe(join(".codeclaw", "runs", TEST_RUN_ID, "report"));
+    expect(paths.logsDir).toBe(join(".codeclaw", "runs", TEST_RUN_ID, "logs"));
   });
 
   it("createArtifactDirs creates all directories", async () => {
@@ -135,33 +135,33 @@ describe("docsOnlyWorkflow", () => {
     const result = await runDocsOnlyWorkflow(defaultInput);
 
     const expectedPaths = [
-      join(".ai-team", "runs", result.runId, "input.md"),
-      join(".ai-team", "runs", result.runId, "requirement", "clarified-requirement.md"),
-      join(".ai-team", "runs", result.runId, "requirement", "business-rules.md"),
-      join(".ai-team", "runs", result.runId, "requirement", "acceptance-criteria.md"),
-      join(".ai-team", "runs", result.runId, "requirement", "open-questions.md"),
-      join(".ai-team", "runs", result.runId, "requirement", "assumptions.md"),
-      join(".ai-team", "runs", result.runId, "scope", "product-goal.md"),
-      join(".ai-team", "runs", result.runId, "scope", "mvp-scope.md"),
-      join(".ai-team", "runs", result.runId, "scope", "out-of-scope.md"),
-      join(".ai-team", "runs", result.runId, "scope", "success-criteria.md"),
-      join(".ai-team", "runs", result.runId, "design", "technical-design.md"),
-      join(".ai-team", "runs", result.runId, "design", "api-design.md"),
-      join(".ai-team", "runs", result.runId, "design", "db-design.md"),
-      join(".ai-team", "runs", result.runId, "tasks", "task-breakdown.md"),
-      join(".ai-team", "runs", result.runId, "tasks", "task-breakdown.json"),
-      join(".ai-team", "runs", result.runId, "tasks", "jira-ready-tasks.md"),
-      join(".ai-team", "runs", result.runId, "tests", "test-matrix.md"),
-      join(".ai-team", "runs", result.runId, "tests", "test-matrix.json"),
-      join(".ai-team", "runs", result.runId, "report", "traceability.md"),
-      join(".ai-team", "runs", result.runId, "report", "traceability.json"),
-      join(".ai-team", "runs", result.runId, "report", "final-report.md"),
-      join(".ai-team", "runs", result.runId, "ux", "user-journey.md"),
-      join(".ai-team", "runs", result.runId, "ux", "ux-design.md"),
-      join(".ai-team", "runs", result.runId, "ux", "component-breakdown.md"),
-      join(".ai-team", "runs", result.runId, "ux", "ux-copy.md"),
-      join(".ai-team", "runs", result.runId, "design", "frontend-design.md"),
-      join(".ai-team", "runs", result.runId, "design", "backend-design.md"),
+      join(".codeclaw", "runs", result.runId, "input.md"),
+      join(".codeclaw", "runs", result.runId, "requirement", "clarified-requirement.md"),
+      join(".codeclaw", "runs", result.runId, "requirement", "business-rules.md"),
+      join(".codeclaw", "runs", result.runId, "requirement", "acceptance-criteria.md"),
+      join(".codeclaw", "runs", result.runId, "requirement", "open-questions.md"),
+      join(".codeclaw", "runs", result.runId, "requirement", "assumptions.md"),
+      join(".codeclaw", "runs", result.runId, "scope", "product-goal.md"),
+      join(".codeclaw", "runs", result.runId, "scope", "mvp-scope.md"),
+      join(".codeclaw", "runs", result.runId, "scope", "out-of-scope.md"),
+      join(".codeclaw", "runs", result.runId, "scope", "success-criteria.md"),
+      join(".codeclaw", "runs", result.runId, "design", "technical-design.md"),
+      join(".codeclaw", "runs", result.runId, "design", "api-design.md"),
+      join(".codeclaw", "runs", result.runId, "design", "db-design.md"),
+      join(".codeclaw", "runs", result.runId, "tasks", "task-breakdown.md"),
+      join(".codeclaw", "runs", result.runId, "tasks", "task-breakdown.json"),
+      join(".codeclaw", "runs", result.runId, "tasks", "jira-ready-tasks.md"),
+      join(".codeclaw", "runs", result.runId, "tests", "test-matrix.md"),
+      join(".codeclaw", "runs", result.runId, "tests", "test-matrix.json"),
+      join(".codeclaw", "runs", result.runId, "report", "traceability.md"),
+      join(".codeclaw", "runs", result.runId, "report", "traceability.json"),
+      join(".codeclaw", "runs", result.runId, "report", "final-report.md"),
+      join(".codeclaw", "runs", result.runId, "ux", "user-journey.md"),
+      join(".codeclaw", "runs", result.runId, "ux", "ux-design.md"),
+      join(".codeclaw", "runs", result.runId, "ux", "component-breakdown.md"),
+      join(".codeclaw", "runs", result.runId, "ux", "ux-copy.md"),
+      join(".codeclaw", "runs", result.runId, "design", "frontend-design.md"),
+      join(".codeclaw", "runs", result.runId, "design", "backend-design.md"),
     ];
 
     for (const expectedPath of expectedPaths) {
@@ -182,7 +182,7 @@ describe("docsOnlyWorkflow", () => {
     const result = await runDocsOnlyWorkflow(defaultInput);
 
     const inputContent = await readFile(
-      join(".ai-team", "runs", result.runId, "input.md"),
+      join(".codeclaw", "runs", result.runId, "input.md"),
       "utf-8",
     );
     expect(inputContent).toContain("Build a login page");
@@ -192,7 +192,7 @@ describe("docsOnlyWorkflow", () => {
     const result = await runDocsOnlyWorkflow(defaultInput);
 
     const jsonContent = await readFile(
-      join(".ai-team", "runs", result.runId, "tasks", "task-breakdown.json"),
+      join(".codeclaw", "runs", result.runId, "tasks", "task-breakdown.json"),
       "utf-8",
     );
     const parsed: Record<string, unknown> = JSON.parse(jsonContent) as Record<string, unknown>;
@@ -206,7 +206,7 @@ describe("docsOnlyWorkflow", () => {
     const result = await runDocsOnlyWorkflow(defaultInput);
 
     const jsonContent = await readFile(
-      join(".ai-team", "runs", result.runId, "tests", "test-matrix.json"),
+      join(".codeclaw", "runs", result.runId, "tests", "test-matrix.json"),
       "utf-8",
     );
     const parsed: Record<string, unknown> = JSON.parse(jsonContent) as Record<string, unknown>;
@@ -374,7 +374,7 @@ describe("agents", () => {
 describe("assistedWorkflow", () => {
   afterEach(async () => {
     try {
-      await rm(join(".ai-team", "runs"), { recursive: true, force: true });
+      await rm(join(".codeclaw", "runs"), { recursive: true, force: true });
     } catch {
       // ignore
     }
@@ -421,21 +421,21 @@ describe("assistedWorkflow", () => {
     const result = await runAssistedWorkflow(defaultInput);
 
     const expectedPaths = [
-      ".ai-team/runs/" + result.runId + "/input.md",
-      ".ai-team/runs/" + result.runId + "/requirement/clarified-requirement.md",
-      ".ai-team/runs/" + result.runId + "/requirement/business-rules.md",
-      ".ai-team/runs/" + result.runId + "/requirement/acceptance-criteria.md",
-      ".ai-team/runs/" + result.runId + "/requirement/open-questions.md",
-      ".ai-team/runs/" + result.runId + "/requirement/assumptions.md",
-      ".ai-team/runs/" + result.runId + "/design/technical-design.md",
-      ".ai-team/runs/" + result.runId + "/design/api-design.md",
-      ".ai-team/runs/" + result.runId + "/design/db-design.md",
-      ".ai-team/runs/" + result.runId + "/tasks/task-breakdown.md",
-      ".ai-team/runs/" + result.runId + "/tasks/task-breakdown.json",
-      ".ai-team/runs/" + result.runId + "/tests/test-matrix.md",
-      ".ai-team/runs/" + result.runId + "/tests/test-matrix.json",
-      ".ai-team/runs/" + result.runId + "/implementation/implementation-prompt.md",
-      ".ai-team/runs/" + result.runId + "/report/final-report.md",
+      ".codeclaw/runs/" + result.runId + "/input.md",
+      ".codeclaw/runs/" + result.runId + "/requirement/clarified-requirement.md",
+      ".codeclaw/runs/" + result.runId + "/requirement/business-rules.md",
+      ".codeclaw/runs/" + result.runId + "/requirement/acceptance-criteria.md",
+      ".codeclaw/runs/" + result.runId + "/requirement/open-questions.md",
+      ".codeclaw/runs/" + result.runId + "/requirement/assumptions.md",
+      ".codeclaw/runs/" + result.runId + "/design/technical-design.md",
+      ".codeclaw/runs/" + result.runId + "/design/api-design.md",
+      ".codeclaw/runs/" + result.runId + "/design/db-design.md",
+      ".codeclaw/runs/" + result.runId + "/tasks/task-breakdown.md",
+      ".codeclaw/runs/" + result.runId + "/tasks/task-breakdown.json",
+      ".codeclaw/runs/" + result.runId + "/tests/test-matrix.md",
+      ".codeclaw/runs/" + result.runId + "/tests/test-matrix.json",
+      ".codeclaw/runs/" + result.runId + "/implementation/implementation-prompt.md",
+      ".codeclaw/runs/" + result.runId + "/report/final-report.md",
     ];
 
     for (const expectedPath of expectedPaths) {

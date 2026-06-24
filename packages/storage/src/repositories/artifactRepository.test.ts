@@ -3,7 +3,7 @@ import type Database from "better-sqlite3";
 import { createTestDb } from "../test-helpers.js";
 import { createRunRepository } from "./runRepository.js";
 import { createArtifactRepository } from "./artifactRepository.js";
-import { ArtifactTypeValues } from "@aiteam/shared";
+import { ArtifactTypeValues } from "@codeclaw/shared";
 
 describe("ArtifactRepository", () => {
   let db: Database.Database;

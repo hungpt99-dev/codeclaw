@@ -45,7 +45,7 @@ export function Sidebar(): ReactElement {
   return (
     <aside className="w-64 bg-gray-900 text-white min-h-screen flex flex-col">
       <div className="p-5 border-b border-gray-800">
-        <h1 className="text-lg font-bold tracking-tight">AI Team</h1>
+        <h1 className="text-lg font-bold tracking-tight">CodeClaw</h1>
         <p className="text-xs text-gray-500 mt-0.5">Local Web</p>
       </div>
       <nav className="flex-1 p-3 space-y-1">

@@ -1,6 +1,6 @@
-# Step 30: Review Engine — `aiteam review`
+# Step 30: Review Engine — `codeclaw review`
 
-Implement Step 30: Review Engine — `aiteam review`.
+Implement Step 30: Review Engine — `codeclaw review`.
 
 ## Background
 
@@ -114,15 +114,15 @@ When no AI CLI is available, generate a structured review based on available dat
 - Test quality: pass/fail ratio, test count
 - Security: check if any changed files match sensitive patterns
 
-### 4. Create CLI command: aiteam review
+### 4. Create CLI command: codeclaw review
 
 Create `apps/cli/src/commands/review.ts`:
 
 ```bash
-aiteam review --run <runId>
-aiteam review --run <runId> --security
-aiteam review --run <runId> --coverage
-aiteam review --run <runId> --all
+codeclaw review --run <runId>
+codeclaw review --run <runId> --security
+codeclaw review --run <runId> --coverage
+codeclaw review --run <runId> --all
 ```
 
 Options:
@@ -186,7 +186,7 @@ Update `packages/server/src/routes/runs.routes.ts`:
 
 ## Acceptance Criteria
 
-- `aiteam review --run <runId>` generates review-report.md, security-review.md, requirement-coverage.md
+- `codeclaw review --run <runId>` generates review-report.md, security-review.md, requirement-coverage.md
 - Review with AI CLI produces contextual analysis
 - Deterministic fallback produces structured review without AI CLI
 - Web UI shows Review tab with all sections

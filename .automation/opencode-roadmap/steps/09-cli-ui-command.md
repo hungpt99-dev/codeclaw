@@ -2,7 +2,7 @@
 
 Implement Step 09: CLI UI Command.
 
-Make `aiteam ui` start the local Fastify server.
+Make `codeclaw ui` start the local Fastify server.
 
 Defaults:
 
@@ -18,20 +18,20 @@ Options:
 Output:
 
 ```
-Local AI Software Team UI is running.
+CodeClaw UI is running.
 URL: http://localhost:4317
 ```
 
 Behavior:
 
-1. Validate .ai-team exists.
+1. Validate .codeclaw exists.
 2. Start local server.
 3. Print URL.
 4. Keep process running.
 5. If --open is passed, open browser if possible.
 
 Acceptance criteria:
-aiteam ui starts local server.
+codeclaw ui starts local server.
 GET /api/health works.
 port option works.
 clear error if port is already used.

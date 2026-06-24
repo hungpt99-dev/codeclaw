@@ -39,7 +39,7 @@ The current traceability system (`packages/core/src/traceability/traceabilityEng
 - Gap detection: which requirements lack tasks, tests, or code files
 - After-code traceability: map changed code files to requirements
 - Traceability summary included in final report
-- Independent trigger: `aiteam trace --run <runId>` with optional AI enhancement
+- Independent trigger: `codeclaw trace --run <runId>` with optional AI enhancement
 - Prompt template for AI-enhanced traceability
 
 ### Out of Scope
@@ -60,7 +60,7 @@ Traceability becomes more useful than a mechanical ID-to-ID mapping. The agent e
 4. If AI mode enabled, agent enriches output with coverage analysis and recommendations
 5. If deterministic mode, agent produces mechanical matrix (existing behavior)
 6. Traceability is included in final report and export
-7. User can run `aiteam trace --run <runId>` independently
+7. User can run `codeclaw trace --run <runId>` independently
 
 ## Suggested Files / Modules
 
@@ -68,7 +68,7 @@ Traceability becomes more useful than a mechanical ID-to-ID mapping. The agent e
 - `packages/core/src/agents/parsers/traceabilityOutputParser.ts`
 - `templates/prompts/traceability-agent.md`
 - Refactor `traceabilityEngine.ts` to be called by agent
-- Update `aiteam trace` CLI command to support AI mode
+- Update `codeclaw trace` CLI command to support AI mode
 
 ## Implementation Plan
 
@@ -76,7 +76,7 @@ Traceability becomes more useful than a mechanical ID-to-ID mapping. The agent e
 2. Create traceability agent prompt template
 3. Create output parser for AI-enhanced traceability
 4. Refactor existing traceability engine as deterministic fallback
-5. Add AI enhancement mode to `aiteam trace` CLI
+5. Add AI enhancement mode to `codeclaw trace` CLI
 6. Update traceability section in final report
 7. Add tests
 

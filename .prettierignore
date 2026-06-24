@@ -2,7 +2,7 @@ node_modules
 dist
 build
 coverage
-.ai-team
+.codeclaw
 .automation
 pnpm-lock.yaml
 docs/codegraph/*.svg

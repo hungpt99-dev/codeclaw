@@ -38,25 +38,25 @@ pnpm quality
 Quality log:
 
 ```
-apps/cli test: stdout | src/index.test.ts > listCommand > fails when .ai-team does not exist
+apps/cli test: stdout | src/index.test.ts > listCommand > fails when .codeclaw does not exist
 apps/cli test: ⚠️  Could not copy template: architect-agent.md
-apps/cli test: stdout | src/index.test.ts > listCommand > fails when .ai-team does not exist
+apps/cli test: stdout | src/index.test.ts > listCommand > fails when .codeclaw does not exist
 apps/cli test: ⚠️  Could not copy template: pm-agent.md
-apps/cli test: stdout | src/index.test.ts > listCommand > fails when .ai-team does not exist
+apps/cli test: stdout | src/index.test.ts > listCommand > fails when .codeclaw does not exist
 apps/cli test: ⚠️  Could not copy template: qa-agent.md
-apps/cli test: stdout | src/index.test.ts > listCommand > fails when .ai-team does not exist
+apps/cli test: stdout | src/index.test.ts > listCommand > fails when .codeclaw does not exist
 apps/cli test: ⚠️  Could not copy template: reporter-agent.md
-apps/cli test: ✅ Created .ai-team/prompts/
-apps/cli test: stdout | src/index.test.ts > listCommand > fails when .ai-team does not exist
-apps/cli test: ✅ Created .ai-team/runs/
-apps/cli test: stdout | src/index.test.ts > listCommand > fails when .ai-team does not exist
-apps/cli test: ✅ Created .ai-team/memory/ (14 files created, 0 skipped)
-apps/cli test: 🎉 aiteam initialized successfully!
-apps/cli test: stdout | src/index.test.ts > listCommand > fails when .ai-team does not exist
-apps/cli test: ❌ .ai-team not found. Run 'aiteam init' first.
+apps/cli test: ✅ Created .codeclaw/prompts/
+apps/cli test: stdout | src/index.test.ts > listCommand > fails when .codeclaw does not exist
+apps/cli test: ✅ Created .codeclaw/runs/
+apps/cli test: stdout | src/index.test.ts > listCommand > fails when .codeclaw does not exist
+apps/cli test: ✅ Created .codeclaw/memory/ (14 files created, 0 skipped)
+apps/cli test: 🎉 codeclaw initialized successfully!
+apps/cli test: stdout | src/index.test.ts > listCommand > fails when .codeclaw does not exist
+apps/cli test: ❌ .codeclaw not found. Run 'codeclaw init' first.
 apps/cli test: stdout | src/index.test.ts > showCommand > fails when run does not exist
-apps/cli test: ✅ Created .ai-team/config.json
-apps/cli test: ✅ Created .ai-team/database.sqlite
+apps/cli test: ✅ Created .codeclaw/config.json
+apps/cli test: ✅ Created .codeclaw/database.sqlite
 apps/cli test: stdout | src/index.test.ts > showCommand > fails when run does not exist
 apps/cli test: ⚠️  Could not copy template: ba-agent.md
 apps/cli test: stdout | src/index.test.ts > showCommand > fails when run does not exist
@@ -67,17 +67,17 @@ apps/cli test: stdout | src/index.test.ts > showCommand > fails when run does no
 apps/cli test: ⚠️  Could not copy template: qa-agent.md
 apps/cli test: stdout | src/index.test.ts > showCommand > fails when run does not exist
 apps/cli test: ⚠️  Could not copy template: reporter-agent.md
-apps/cli test: ✅ Created .ai-team/prompts/
+apps/cli test: ✅ Created .codeclaw/prompts/
 apps/cli test: stdout | src/index.test.ts > showCommand > fails when run does not exist
-apps/cli test: ✅ Created .ai-team/runs/
+apps/cli test: ✅ Created .codeclaw/runs/
 apps/cli test: stdout | src/index.test.ts > showCommand > fails when run does not exist
-apps/cli test: ✅ Created .ai-team/memory/ (14 files created, 0 skipped)
-apps/cli test: 🎉 aiteam initialized successfully!
+apps/cli test: ✅ Created .codeclaw/memory/ (14 files created, 0 skipped)
+apps/cli test: 🎉 codeclaw initialized successfully!
 apps/cli test: stdout | src/index.test.ts > showCommand > fails when run does not exist
 apps/cli test: ❌ Run not found: nonexistent-run
 apps/cli test: stdout | src/index.test.ts > showCommand > shows run details after executing a workflow
-apps/cli test: ✅ Created .ai-team/config.json
-apps/cli test: ✅ Created .ai-team/database.sqlite
+apps/cli test: ✅ Created .codeclaw/config.json
+apps/cli test: ✅ Created .codeclaw/database.sqlite
 apps/cli test: stdout | src/index.test.ts > showCommand > shows run details after executing a workflow
 apps/cli test: ⚠️  Could not copy template: ba-agent.md
 apps/cli test: stdout | src/index.test.ts > showCommand > shows run details after executing a workflow
@@ -88,33 +88,33 @@ apps/cli test: stdout | src/index.test.ts > showCommand > shows run details afte
 apps/cli test: ⚠️  Could not copy template: qa-agent.md
 apps/cli test: stdout | src/index.test.ts > showCommand > shows run details after executing a workflow
 apps/cli test: ⚠️  Could not copy template: reporter-agent.md
-apps/cli test: ✅ Created .ai-team/prompts/
+apps/cli test: ✅ Created .codeclaw/prompts/
 apps/cli test: stdout | src/index.test.ts > showCommand > shows run details after executing a workflow
-apps/cli test: ✅ Created .ai-team/runs/
+apps/cli test: ✅ Created .codeclaw/runs/
 apps/cli test: stdout | src/index.test.ts > showCommand > shows run details after executing a workflow
-apps/cli test: ✅ Created .ai-team/memory/ (14 files created, 0 skipped)
-apps/cli test: 🎉 aiteam initialized successfully!
-apps/cli test: stdout | src/index.test.ts > showCommand > fails when .ai-team does not exist
-apps/cli test: ✅ Created .ai-team/config.json
-apps/cli test: ✅ Created .ai-team/database.sqlite
-apps/cli test: stdout | src/index.test.ts > showCommand > fails when .ai-team does not exist
+apps/cli test: ✅ Created .codeclaw/memory/ (14 files created, 0 skipped)
+apps/cli test: 🎉 codeclaw initialized successfully!
+apps/cli test: stdout | src/index.test.ts > showCommand > fails when .codeclaw does not exist
+apps/cli test: ✅ Created .codeclaw/config.json
+apps/cli test: ✅ Created .codeclaw/database.sqlite
+apps/cli test: stdout | src/index.test.ts > showCommand > fails when .codeclaw does not exist
 apps/cli test: ⚠️  Could not copy template: ba-agent.md
-apps/cli test: stdout | src/index.test.ts > showCommand > fails when .ai-team does not exist
+apps/cli test: stdout | src/index.test.ts > showCommand > fails when .codeclaw does not exist
 apps/cli test: ⚠️  Could not copy template: architect-agent.md
-apps/cli test: stdout | src/index.test.ts > showCommand > fails when .ai-team does not exist
+apps/cli test: stdout | src/index.test.ts > showCommand > fails when .codeclaw does not exist
 apps/cli test: ⚠️  Could not copy template: pm-agent.md
-apps/cli test: stdout | src/index.test.ts > showCommand > fails when .ai-team does not exist
+apps/cli test: stdout | src/index.test.ts > showCommand > fails when .codeclaw does not exist
 apps/cli test: ⚠️  Could not copy template: qa-agent.md
-apps/cli test: stdout | src/index.test.ts > showCommand > fails when .ai-team does not exist
+apps/cli test: stdout | src/index.test.ts > showCommand > fails when .codeclaw does not exist
 apps/cli test: ⚠️  Could not copy template: reporter-agent.md
-apps/cli test: ✅ Created .ai-team/prompts/
-apps/cli test: stdout | src/index.test.ts > showCommand > fails when .ai-team does not exist
-apps/cli test: ✅ Created .ai-team/runs/
-apps/cli test: stdout | src/index.test.ts > showCommand > fails when .ai-team does not exist
-apps/cli test: ✅ Created .ai-team/memory/ (14 files created, 0 skipped)
-apps/cli test: 🎉 aiteam initialized successfully!
-apps/cli test: stdout | src/index.test.ts > showCommand > fails when .ai-team does not exist
-apps/cli test: ❌ .ai-team not found. Run 'aiteam init' first.
+apps/cli test: ✅ Created .codeclaw/prompts/
+apps/cli test: stdout | src/index.test.ts > showCommand > fails when .codeclaw does not exist
+apps/cli test: ✅ Created .codeclaw/runs/
+apps/cli test: stdout | src/index.test.ts > showCommand > fails when .codeclaw does not exist
+apps/cli test: ✅ Created .codeclaw/memory/ (14 files created, 0 skipped)
+apps/cli test: 🎉 codeclaw initialized successfully!
+apps/cli test: stdout | src/index.test.ts > showCommand > fails when .codeclaw does not exist
+apps/cli test: ❌ .codeclaw not found. Run 'codeclaw init' first.
 apps/cli test:  ✓ src/index.test.ts (19 tests) 504ms
 apps/cli test:  Test Files  1 passed (1)
 apps/cli test:       Tests  19 passed (19)

@@ -1,5 +1,5 @@
-import { nowIso } from "@aiteam/shared";
-import type { ApprovalGate, ApprovalStatus } from "@aiteam/shared";
+import { nowIso } from "@codeclaw/shared";
+import type { ApprovalGate, ApprovalStatus } from "@codeclaw/shared";
 import type { DbConnection } from "../db.js";
 
 interface ApprovalRow {

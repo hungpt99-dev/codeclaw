@@ -8,7 +8,7 @@ import { getGitStatus, getChangedFiles, generateDiff, getDiffStats } from "./git
 let tmpDir: string;
 
 beforeAll(async () => {
-  tmpDir = await mkdtemp(join(tmpdir(), "aiteam-git-test-"));
+  tmpDir = await mkdtemp(join(tmpdir(), "codeclaw-git-test-"));
   await execa("git", ["init"], { cwd: tmpDir });
   await execa("git", ["config", "user.email", "test@test.com"], { cwd: tmpDir });
   await execa("git", ["config", "user.name", "Test"], { cwd: tmpDir });

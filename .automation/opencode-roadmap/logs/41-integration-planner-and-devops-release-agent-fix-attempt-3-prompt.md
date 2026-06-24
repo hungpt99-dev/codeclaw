@@ -132,7 +132,7 @@ packages/core test:    Start at  12:21:43
 packages/core test:    Duration  1.93s (transform 1.31s, setup 0ms, collect 3.35s, tests 476ms, environment 50ms, prepare 2.71s)
 packages/core test: Failed
 /Users/phamthanhhung/Desktop/MyProject/auto-code/packages/core:
-[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @aiteam/core@0.0.0 test: `vitest run`
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @codeclaw/core@0.0.0 test: `vitest run`
 Exit status 1
 [ELIFECYCLE] Test failed. See above for more details.
 [ELIFECYCLE] Command failed with exit code 1.

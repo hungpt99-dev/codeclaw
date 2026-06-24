@@ -1,6 +1,6 @@
 import { access } from "node:fs/promises";
 import { join } from "node:path";
-import { createApp, getDefaultDbPath, getDefaultPromptsDir } from "@aiteam/server";
+import { createApp, getDefaultDbPath, getDefaultPromptsDir } from "@codeclaw/server";
 
 interface UiOptions {
   host?: string;
@@ -12,11 +12,11 @@ export async function uiCommand(options: UiOptions): Promise<void> {
   const host = options.host ?? "127.0.0.1";
   const port = parseInt(options.port ?? "4317", 10);
 
-  const aiTeamDir = join(process.cwd(), ".ai-team");
+  const aiTeamDir = join(process.cwd(), ".codeclaw");
   try {
     await access(aiTeamDir);
   } catch {
-    console.log("❌ .ai-team not found. Run 'aiteam init' first.");
+    console.log("❌ .codeclaw not found. Run 'codeclaw init' first.");
     process.exit(1);
   }
 
@@ -27,7 +27,7 @@ export async function uiCommand(options: UiOptions): Promise<void> {
 
   try {
     await app.listen({ port, host });
-    console.log(`\n✅ Local AI Software Team UI is running.`);
+    console.log(`\n✅ CodeClaw UI is running.`);
     console.log(`   URL: http://${host}:${String(port)}`);
     console.log("");
 

@@ -3,7 +3,7 @@ import { mkdir, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { analyzeRepository, analysisToMarkdown } from "./repoAnalyzer.js";
 
-const TEST_DIR = join(".ai-team", "__test_repo_analyzer__");
+const TEST_DIR = join(".codeclaw", "__test_repo_analyzer__");
 
 async function createMockProject(files: Record<string, string>, dirs: string[]): Promise<string> {
   await rm(TEST_DIR, { recursive: true, force: true }).catch(() => undefined);

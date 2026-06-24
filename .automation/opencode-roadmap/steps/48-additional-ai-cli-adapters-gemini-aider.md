@@ -23,7 +23,7 @@ The adapter system currently only supports Claude Code and Codex CLI. The archit
 - No `geminiAdapter.ts` or `aiderAdapter.ts` exists
 - `packages/adapters/src/ai/adapterFactory.ts` — returns null for unknown adapters
 - Config schema references all four tool names but only two have implementations
-- `aiteam doctor` checks all four tools but only two have working adapters
+- `codeclaw doctor` checks all four tools but only two have working adapters
 
 ## Scope
 

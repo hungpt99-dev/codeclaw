@@ -1,6 +1,6 @@
 import { join } from "node:path";
-import { createRunId, nowIso } from "@aiteam/shared";
-import type { ApprovalGate, ApprovalStatus } from "@aiteam/shared";
+import { createRunId, nowIso } from "@codeclaw/shared";
+import type { ApprovalGate, ApprovalStatus } from "@codeclaw/shared";
 import { createArtifactDirs, writeArtifact } from "../artifacts/artifactWriter.js";
 import { runBaAgent } from "../agents/baAgent.js";
 import { runPoAgent } from "../agents/poAgent.js";

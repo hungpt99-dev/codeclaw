@@ -1,5 +1,5 @@
 {
-  "name": "@aiteam/server",
+  "name": "@codeclaw/server",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,10 +18,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@aiteam/adapters": "workspace:*",
-    "@aiteam/core": "workspace:*",
-    "@aiteam/shared": "workspace:*",
-    "@aiteam/storage": "workspace:*",
+    "@codeclaw/adapters": "workspace:*",
+    "@codeclaw/core": "workspace:*",
+    "@codeclaw/shared": "workspace:*",
+    "@codeclaw/storage": "workspace:*",
     "fastify": "^5.4.0"
   }
 }
