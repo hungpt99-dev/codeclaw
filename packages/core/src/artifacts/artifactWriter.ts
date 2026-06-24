@@ -39,6 +39,11 @@ export interface ArtifactPaths {
   integrationPlanPath: string;
   releasePlanPath: string;
   changelogPath: string;
+  docsDir: string;
+  apiReferencePath: string;
+  setupGuidePath: string;
+  technicalReferencePath: string;
+  operationsGuidePath: string;
 }
 
 export function getArtifactPaths(runId: string): ArtifactPaths {
@@ -81,6 +86,11 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
     integrationPlanPath: join(runDir, "integration", "integration-plan.md"),
     releasePlanPath: join(runDir, "release", "release-plan.md"),
     changelogPath: join(runDir, "release", "changelog.md"),
+    docsDir: join(runDir, "docs"),
+    apiReferencePath: join(runDir, "docs", "api-reference.md"),
+    setupGuidePath: join(runDir, "docs", "setup-guide.md"),
+    technicalReferencePath: join(runDir, "docs", "technical-reference.md"),
+    operationsGuidePath: join(runDir, "docs", "operations-guide.md"),
   };
 }
 
@@ -100,6 +110,7 @@ export async function createArtifactDirs(runId: string): Promise<ArtifactPaths> 
   await mkdir(paths.uxDir, { recursive: true });
   await mkdir(join(paths.runDir, "integration"), { recursive: true });
   await mkdir(join(paths.runDir, "release"), { recursive: true });
+  await mkdir(paths.docsDir, { recursive: true });
   return paths;
 }
 

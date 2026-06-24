@@ -43,6 +43,11 @@ export type {
   DevopsReleaseAgentInput,
   DevopsReleaseAgentOutput,
 } from "./agents/devopsReleaseAgent.js";
+export { runTechnicalDocumentationAgent } from "./agents/technicalDocumentationAgent.js";
+export type {
+  TechnicalDocumentationAgentInput,
+  TechnicalDocumentationAgentOutput,
+} from "./agents/technicalDocumentationAgent.js";
 export { runDocsOnlyWorkflow } from "./workflows/docsOnlyWorkflow.js";
 export type {
   DocsOnlyWorkflowInput,

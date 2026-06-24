@@ -15,6 +15,7 @@ import { runUserJourneyAgent } from "../agents/userJourneyAgent.js";
 import { runUiDesignerAgent } from "../agents/uiDesignerAgent.js";
 import { runUxWriterAgent } from "../agents/uxWriterAgent.js";
 import { runReporterAgent } from "../agents/reporterAgent.js";
+import { runTechnicalDocumentationAgent } from "../agents/technicalDocumentationAgent.js";
 import { analyzeRepository, analysisToMarkdown } from "../repoAnalyzer/repoAnalyzer.js";
 import { getAiToolConfig, resolvePlannerSelection } from "./workflowHelpers.js";
 import type { AiToolConfig, PlannerSelection } from "./workflowHelpers.js";
@@ -42,6 +43,7 @@ export interface DocsOnlyWorkflowInput {
   plannerSelection?: PlannerSelection;
   generateIntegrationPlan?: boolean;
   generateReleasePlan?: boolean;
+  generateDocumentation?: boolean;
 }
 
 export interface DocsOnlyWorkflowOutput {
@@ -122,6 +124,11 @@ export async function runDocsOnlyWorkflow(
   const reporterTool: AiToolConfig | undefined =
     input.agentMapping && input.cliConfigs
       ? getAiToolConfig("REPORTER", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const techDocTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs && (input.generateDocumentation ?? false)
+      ? getAiToolConfig("TECHNICAL_DOC", input.agentMapping, input.cliConfigs)
       : undefined;
 
   const integrationPlannerTool: AiToolConfig | undefined =
@@ -474,6 +481,37 @@ export async function runDocsOnlyWorkflow(
   artifacts.push(paths.traceabilityJson);
 
   const traceabilitySection = traceabilityToMarkdown(traceability);
+
+  if (input.generateDocumentation ?? false) {
+    const techDocOutput = await runTechnicalDocumentationAgent(
+      {
+        requirement: input.requirement,
+        clarifiedRequirement: baOutput.clarifiedRequirement,
+        acceptanceCriteria: baOutput.acceptanceCriteria,
+        technicalDesign: combinedDesign,
+        apiDesign: architectOutput.apiDesign,
+        dbDesign: architectOutput.dbDesign,
+        taskBreakdownMd: pmOutput.taskBreakdownMd,
+        testMatrixMd: qaOutput.testMatrixMd,
+        traceabilitySection,
+        integrationPlanSection: integrationPlanOutput?.integrationPlan,
+        releasePlanSection: devopsReleaseOutput?.releasePlan,
+      },
+      { templateDir, aiTool: techDocTool },
+    );
+
+    await writeArtifact(paths.apiReferencePath, techDocOutput.apiReference);
+    artifacts.push(paths.apiReferencePath);
+
+    await writeArtifact(paths.setupGuidePath, techDocOutput.setupGuide);
+    artifacts.push(paths.setupGuidePath);
+
+    await writeArtifact(paths.technicalReferencePath, techDocOutput.technicalReference);
+    artifacts.push(paths.technicalReferencePath);
+
+    await writeArtifact(paths.operationsGuidePath, techDocOutput.operationsGuide);
+    artifacts.push(paths.operationsGuidePath);
+  }
 
   const reporterOutput = await runReporterAgent(
     {

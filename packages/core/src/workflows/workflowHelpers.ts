@@ -19,7 +19,8 @@ type AgentRoleKey =
   | "FRONTEND_PLANNER"
   | "BACKEND_PLANNER"
   | "INTEGRATION_PLANNER"
-  | "DEVOPS_RELEASE";
+  | "DEVOPS_RELEASE"
+  | "TECHNICAL_DOC";
 
 const AGENT_TO_CONFIG_KEY: Record<string, string> = {
   BA: "defaultBa",
@@ -36,6 +37,7 @@ const AGENT_TO_CONFIG_KEY: Record<string, string> = {
   BACKEND_PLANNER: "defaultBackendPlanner",
   INTEGRATION_PLANNER: "defaultIntegrationPlanner",
   DEVOPS_RELEASE: "defaultDevopsRelease",
+  TECHNICAL_DOC: "defaultTechnicalDoc",
 };
 
 export interface AiToolConfig {

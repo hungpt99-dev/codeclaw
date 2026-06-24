@@ -18,6 +18,7 @@ import { runPmAgent } from "../agents/pmAgent.js";
 import { runQaAgent } from "../agents/qaAgent.js";
 import { runDeveloperAgent } from "../agents/developerAgent.js";
 import { runReporterAgent } from "../agents/reporterAgent.js";
+import { runTechnicalDocumentationAgent } from "../agents/technicalDocumentationAgent.js";
 import { analyzeRepository, analysisToMarkdown } from "../repoAnalyzer/repoAnalyzer.js";
 import { getAiToolConfig, resolvePlannerSelection } from "./workflowHelpers.js";
 import type { AiToolConfig, PlannerSelection } from "./workflowHelpers.js";
@@ -65,6 +66,7 @@ export interface SemiAutoWorkflowInput {
   plannerSelection?: PlannerSelection;
   generateIntegrationPlan?: boolean;
   generateReleasePlan?: boolean;
+  generateDocumentation?: boolean;
 }
 
 export interface SemiAutoWorkflowOutput {
@@ -269,6 +271,11 @@ export async function runSemiAutoWorkflow(
   const devopsReleaseTool: AiToolConfig | undefined =
     input.agentMapping && input.cliConfigs && (input.generateReleasePlan ?? false)
       ? getAiToolConfig("DEVOPS_RELEASE", input.agentMapping, input.cliConfigs)
+      : undefined;
+
+  const techDocTool: AiToolConfig | undefined =
+    input.agentMapping && input.cliConfigs && (input.generateDocumentation ?? false)
+      ? getAiToolConfig("TECHNICAL_DOC", input.agentMapping, input.cliConfigs)
       : undefined;
 
   await writeArtifact(paths.inputFile, `# Raw Requirement\n\n${input.requirement}\n`);
@@ -582,6 +589,7 @@ export async function runSemiAutoWorkflow(
     devopsReleaseTool,
     integrationPlanOutput,
     templateDir,
+    techDocTool,
   });
 }
 
@@ -604,6 +612,7 @@ interface PostCodeContext {
   devopsReleaseTool: AiToolConfig | undefined;
   integrationPlanOutput: Awaited<ReturnType<typeof runIntegrationPlannerAgent>> | undefined;
   templateDir: string | undefined;
+  techDocTool: AiToolConfig | undefined;
 }
 
 async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkflowOutput> {
@@ -624,6 +633,7 @@ async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkfl
     devTool,
     reporterTool,
     templateDir,
+    techDocTool,
   } = ctx;
   const artifacts: string[] = [];
   artifacts.push(paths.agentLogPath);
@@ -790,6 +800,37 @@ async function runPostCodePipeline(ctx: PostCodeContext): Promise<SemiAutoWorkfl
 
   const traceabilitySection = traceabilityToMarkdown(traceability);
 
+  if (input.generateDocumentation ?? false) {
+    const techDocOutput = await runTechnicalDocumentationAgent(
+      {
+        requirement: input.requirement,
+        clarifiedRequirement,
+        acceptanceCriteria,
+        technicalDesign,
+        apiDesign,
+        dbDesign,
+        taskBreakdownMd,
+        testMatrixMd,
+        traceabilitySection,
+        integrationPlanSection: ctx.integrationPlanOutput?.integrationPlan,
+        releasePlanSection: devopsReleaseOutput?.releasePlan,
+      },
+      { templateDir, aiTool: techDocTool },
+    );
+
+    await writeArtifact(paths.apiReferencePath, techDocOutput.apiReference);
+    artifacts.push(paths.apiReferencePath);
+
+    await writeArtifact(paths.setupGuidePath, techDocOutput.setupGuide);
+    artifacts.push(paths.setupGuidePath);
+
+    await writeArtifact(paths.technicalReferencePath, techDocOutput.technicalReference);
+    artifacts.push(paths.technicalReferencePath);
+
+    await writeArtifact(paths.operationsGuidePath, techDocOutput.operationsGuide);
+    artifacts.push(paths.operationsGuidePath);
+  }
+
   const reporterOutput = await runReporterAgent(
     {
       requirement: input.requirement,
@@ -926,6 +967,10 @@ export async function continueAfterRiskyFileApproval(
         : undefined,
     integrationPlanOutput: undefined,
     templateDir: input.templateDir,
+    techDocTool:
+      input.agentMapping && input.cliConfigs && (input.generateDocumentation ?? false)
+        ? getAiToolConfig("TECHNICAL_DOC", input.agentMapping, input.cliConfigs)
+        : undefined,
   });
 }
 

@@ -47,6 +47,11 @@ const mockPaths = {
   integrationPlanPath: "/test/.ai-team/runs/run_123/integration/integration-plan.md",
   releasePlanPath: "/test/.ai-team/runs/run_123/release/release-plan.md",
   changelogPath: "/test/.ai-team/runs/run_123/release/changelog.md",
+  docsDir: "/test/.ai-team/runs/run_123/docs",
+  apiReferencePath: "/test/.ai-team/runs/run_123/docs/api-reference.md",
+  setupGuidePath: "/test/.ai-team/runs/run_123/docs/setup-guide.md",
+  technicalReferencePath: "/test/.ai-team/runs/run_123/docs/technical-reference.md",
+  operationsGuidePath: "/test/.ai-team/runs/run_123/docs/operations-guide.md",
 };
 
 const mockRun = {

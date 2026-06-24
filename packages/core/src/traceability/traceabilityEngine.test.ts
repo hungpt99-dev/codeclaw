@@ -47,6 +47,11 @@ const mockPaths = {
   integrationPlanPath: "/fake/runs/run-1/integration/integration-plan.md",
   releasePlanPath: "/fake/runs/run-1/release/release-plan.md",
   changelogPath: "/fake/runs/run-1/release/changelog.md",
+  docsDir: "/fake/runs/run-1/docs",
+  apiReferencePath: "/fake/runs/run-1/docs/api-reference.md",
+  setupGuidePath: "/fake/runs/run-1/docs/setup-guide.md",
+  technicalReferencePath: "/fake/runs/run-1/docs/technical-reference.md",
+  operationsGuidePath: "/fake/runs/run-1/docs/operations-guide.md",
 };
 
 describe("traceabilityEngine", () => {
