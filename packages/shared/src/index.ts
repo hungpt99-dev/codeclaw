@@ -49,8 +49,19 @@ export type {
   TestCommandResult,
 } from "./types/domain.js";
 
+export type { ProjectContext } from "./types/projectContext.js";
+
 export type { WorkflowProgressEvent, WorkflowProgressEventType } from "./types/progress.js";
 export { WorkflowProgressEventTypeValues } from "./types/progress.js";
+
+export type { DoctorCheckStatus, DoctorCheck, DoctorStatus } from "./types/doctor.js";
+
+export type {
+  WorkflowStepDefinition,
+  WorkflowTemplate,
+  DashboardSummary,
+  WorkflowStepKind,
+} from "./types/workflow.js";
 export { MemoryScope, MemoryFormat, AgentRole } from "./types/memory.js";
 export type {
   MemoryScope as MemoryScopeType,

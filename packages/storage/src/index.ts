@@ -22,3 +22,16 @@ export type {
 } from "./repositories/traceabilityRepository.js";
 export { createStepExecutionRepository } from "./repositories/stepExecutionRepository.js";
 export type { CreateStepExecutionInput } from "./repositories/stepExecutionRepository.js";
+export { createWorkflowTemplateRepository } from "./repositories/workflowTemplateRepository.js";
+export type {
+  WorkflowTemplateRecord,
+  CreateWorkflowTemplateInput,
+} from "./repositories/workflowTemplateRepository.js";
+export { runMigrations } from "./migrations.js";
+export {
+  getOrCreateStorage,
+  getStorageForProject,
+  closeStorage,
+  closeAllStorage,
+} from "./dbFactory.js";
+export type { StorageInstance } from "./dbFactory.js";

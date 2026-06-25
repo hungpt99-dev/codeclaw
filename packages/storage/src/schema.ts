@@ -91,4 +91,15 @@ CREATE TABLE IF NOT EXISTS traceability_items (
   created_at TEXT NOT NULL,
   FOREIGN KEY (run_id) REFERENCES runs(id)
 );
+
+CREATE TABLE IF NOT EXISTS workflow_templates (
+  id TEXT PRIMARY KEY,
+  project_id TEXT,
+  name TEXT NOT NULL,
+  description TEXT,
+  steps TEXT NOT NULL,
+  is_default INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 `;

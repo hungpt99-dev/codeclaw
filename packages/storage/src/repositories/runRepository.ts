@@ -11,6 +11,9 @@ interface RunRow {
   status: string;
   created_at: string;
   updated_at: string;
+  project_id: string | null;
+  workflow_template_id: string | null;
+  workflow_mode: string | null;
 }
 
 export interface RunRecord {
@@ -22,6 +25,9 @@ export interface RunRecord {
   status: RunStatus;
   createdAt: string;
   updatedAt: string;
+  projectId: string | undefined;
+  workflowTemplateId: string | undefined;
+  workflowMode: string | undefined;
 }
 
 function rowToRecord(row: RunRow): RunRecord {
@@ -34,6 +40,9 @@ function rowToRecord(row: RunRow): RunRecord {
     status: row.status as RunStatus,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    projectId: row.project_id ?? undefined,
+    workflowTemplateId: row.workflow_template_id ?? undefined,
+    workflowMode: row.workflow_mode ?? undefined,
   };
 }
 
@@ -43,13 +52,16 @@ export interface CreateRunInput {
   rawRequirement: string;
   mode: RunMode;
   outputLanguage: string;
+  projectId?: string;
+  workflowTemplateId?: string;
+  workflowMode?: string;
 }
 
 export function createRunRepository(db: DbConnection) {
   const create = (input: CreateRunInput): RunRecord => {
     const now = nowIso();
     db.prepare(
-      "INSERT INTO runs (id, title, raw_requirement, mode, output_language, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO runs (id, title, raw_requirement, mode, output_language, status, created_at, updated_at, project_id, workflow_template_id, workflow_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     ).run(
       input.id,
       input.title,
@@ -59,6 +71,9 @@ export function createRunRepository(db: DbConnection) {
       "CREATED",
       now,
       now,
+      input.projectId ?? null,
+      input.workflowTemplateId ?? null,
+      input.workflowMode ?? null,
     );
     const record = findById(input.id);
     if (!record) {
@@ -78,6 +93,20 @@ export function createRunRepository(db: DbConnection) {
     return rows.map(rowToRecord);
   };
 
+  const findByProjectId = (projectId: string): RunRecord[] => {
+    const rows = db
+      .prepare("SELECT * FROM runs WHERE project_id = ? ORDER BY created_at DESC")
+      .all(projectId) as RunRow[];
+    return rows.map(rowToRecord);
+  };
+
+  const findAllWithProject = (projectId?: string): RunRecord[] => {
+    if (projectId) {
+      return findByProjectId(projectId);
+    }
+    return findAll();
+  };
+
   const findRecent = (limit: number): RunRecord[] => {
     const rows = db
       .prepare("SELECT * FROM runs ORDER BY created_at DESC LIMIT ?")
@@ -91,5 +120,13 @@ export function createRunRepository(db: DbConnection) {
     return findById(id);
   };
 
-  return { create, findById, findAll, findRecent, updateStatus };
+  return {
+    create,
+    findById,
+    findAll,
+    findByProjectId,
+    findAllWithProject,
+    findRecent,
+    updateStatus,
+  };
 }
