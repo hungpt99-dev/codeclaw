@@ -511,11 +511,22 @@ projectProgram
   .option("--project <nameOrId>", "Target project name or ID")
   .option("--dry-run", "Show what would be migrated without making changes")
   .option("--yes", "Skip confirmation prompt")
-  .option("--from-legacy-db <path>", "Path to legacy database (default: cwd/.codeclaw/database.sqlite)")
+  .option(
+    "--from-legacy-db <path>",
+    "Path to legacy database (default: cwd/.codeclaw/database.sqlite)",
+  )
   .option("--only-run <runId>", "Migrate only a specific run")
-  .action(async (options: { project?: string; dryRun?: boolean; yes?: boolean; fromLegacyDb?: string; onlyRun?: string }) => {
-    await migrateRunsCommand(options);
-  });
+  .action(
+    async (options: {
+      project?: string;
+      dryRun?: boolean;
+      yes?: boolean;
+      fromLegacyDb?: string;
+      onlyRun?: string;
+    }) => {
+      await migrateRunsCommand(options);
+    },
+  );
 
 const githubProgram = program.command("github").description("GitHub integration (optional)");
 

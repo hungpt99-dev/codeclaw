@@ -16,13 +16,24 @@ export function registerWorkflowRoutes(app: FastifyInstance, db: DbConnection): 
   });
 
   app.post("/api/workflows", async (request, reply) => {
-    const body = request.body as {
-      projectId?: string;
-      name: string;
-      description?: string;
-      steps: { id: string; name: string; agentName?: string; enabled: boolean; requiresApproval?: boolean; producesArtifacts?: boolean; description?: string; order: number }[];
-      isDefault?: boolean;
-    } | undefined;
+    const body = request.body as
+      | {
+          projectId?: string;
+          name: string;
+          description?: string;
+          steps: {
+            id: string;
+            name: string;
+            agentName?: string;
+            enabled: boolean;
+            requiresApproval?: boolean;
+            producesArtifacts?: boolean;
+            description?: string;
+            order: number;
+          }[];
+          isDefault?: boolean;
+        }
+      | undefined;
 
     if (!body?.name || !body?.steps) {
       return reply.status(400).send({ error: "name and steps are required" });
@@ -58,12 +69,23 @@ export function registerWorkflowRoutes(app: FastifyInstance, db: DbConnection): 
 
   app.put("/api/workflows/:id", async (request, _reply) => {
     const params = request.params as { id: string };
-    const body = request.body as {
-      name?: string;
-      description?: string;
-      steps?: { id: string; name: string; agentName?: string; enabled: boolean; requiresApproval?: boolean; producesArtifacts?: boolean; description?: string; order: number }[];
-      isDefault?: boolean;
-    } | undefined;
+    const body = request.body as
+      | {
+          name?: string;
+          description?: string;
+          steps?: {
+            id: string;
+            name: string;
+            agentName?: string;
+            enabled: boolean;
+            requiresApproval?: boolean;
+            producesArtifacts?: boolean;
+            description?: string;
+            order: number;
+          }[];
+          isDefault?: boolean;
+        }
+      | undefined;
 
     const existing = repo.findById(params.id);
     if (!existing) {

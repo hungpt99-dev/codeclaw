@@ -19,8 +19,12 @@ const ProjectContext = createContext<ProjectContextValue>({
   projectList: [],
   loading: true,
   error: null,
-  switchProject: async (_nameOrId: string): Promise<void> => { /* noop */ },
-  refreshProjects: async (): Promise<void> => { /* noop */ },
+  switchProject: async (_nameOrId: string): Promise<void> => {
+    /* noop */
+  },
+  refreshProjects: async (): Promise<void> => {
+    /* noop */
+  },
 });
 
 export function ProjectProvider({ children }: { children: ReactNode }): ReactElement {

@@ -137,7 +137,6 @@ export async function executeRun(input: RunExecutionInput): Promise<RunExecution
 
   const mode = input.workflowMode ?? "docs-only";
 
-   
   runRepo.create({
     id: runId,
     title,
@@ -175,7 +174,6 @@ export async function executeRun(input: RunExecutionInput): Promise<RunExecution
     dataDir,
   };
 
-   
   let result: any;
 
   try {
@@ -207,7 +205,6 @@ export async function executeRun(input: RunExecutionInput): Promise<RunExecution
         };
       }
 
-       
       const template: WorkflowTemplate = {
         workflowTemplateId: templateRecord.id,
         projectId: templateRecord.projectId ?? undefined,
@@ -252,9 +249,7 @@ export async function executeRun(input: RunExecutionInput): Promise<RunExecution
         workflowInput as unknown as Parameters<typeof runAssistedWorkflow>[0],
       );
     } else {
-      result = await runDocsOnlyWorkflow(
-        workflowInput,
-      );
+      result = await runDocsOnlyWorkflow(workflowInput);
     }
 
     for (let i = 0; i < result.artifacts.length; i++) {
@@ -274,13 +269,11 @@ export async function executeRun(input: RunExecutionInput): Promise<RunExecution
 
     runRepo.updateStatus(runId, result.status);
 
-     
     if (result.pendingGate) {
       approvalRepo.create({
-         
         id: `${runId}_approval_${result.pendingGate.gate.toLowerCase()}`,
         runId,
-         
+
         gate: result.pendingGate.gate,
         status: "PENDING",
       });

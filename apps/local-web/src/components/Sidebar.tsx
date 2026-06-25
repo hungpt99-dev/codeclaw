@@ -51,8 +51,19 @@ export function Sidebar(): ReactElement {
 
   useEffect(() => {
     fetch("/api/health")
-      .then((r) => r.json().then(() => { setHealthOk(true); }).catch(() => { setHealthOk(false); }))
-      .catch(() => { setHealthOk(false); });
+      .then((r) =>
+        r
+          .json()
+          .then(() => {
+            setHealthOk(true);
+          })
+          .catch(() => {
+            setHealthOk(false);
+          }),
+      )
+      .catch(() => {
+        setHealthOk(false);
+      });
   }, []);
 
   const safeProjectName =
@@ -69,7 +80,9 @@ export function Sidebar(): ReactElement {
       <div className="px-3 pt-3 pb-1 relative">
         <button
           type="button"
-          onClick={() => { setShowProjectDropdown(!showProjectDropdown); }}
+          onClick={() => {
+            setShowProjectDropdown(!showProjectDropdown);
+          }}
           className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm bg-gray-800 hover:bg-gray-700 transition-colors text-left"
         >
           <div className="min-w-0 flex-1">
@@ -84,7 +97,14 @@ export function Sidebar(): ReactElement {
             strokeWidth={2}
           >
             {loading ? (
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
             ) : (
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             )}

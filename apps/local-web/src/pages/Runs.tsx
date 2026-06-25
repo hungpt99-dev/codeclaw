@@ -141,7 +141,9 @@ export function Runs(): ReactElement {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Runs</h1>
         <p className="text-gray-500 mt-1">
-          {activeProject ? `Runs for project: ${activeProject.name}` : "All execution runs ordered by creation date."}
+          {activeProject
+            ? `Runs for project: ${activeProject.name}`
+            : "All execution runs ordered by creation date."}
         </p>
       </div>
 

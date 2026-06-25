@@ -23,28 +23,28 @@ export function registerDoctorRoutes(app: FastifyInstance, db: DbConnection): vo
   app.get("/api/doctor", async (request, _reply) => {
     const query = request.query as { projectId?: string };
     const projectRoot = query.projectId ? undefined : process.cwd();
-    const codeclawPath = query.projectId
-      ? null
-      : join(process.cwd(), ".codeclaw");
+    const codeclawPath = query.projectId ? null : join(process.cwd(), ".codeclaw");
 
     let projectPathExists = false;
     let codeclawDirExists = false;
     try {
       await access(projectRoot ?? "/nonexistent");
       projectPathExists = true;
-    } catch { /* expected */ }
+    } catch {
+      /* expected */
+    }
     try {
       await access(codeclawPath ?? "/nonexistent");
       codeclawDirExists = true;
-    } catch { /* expected */ }
+    } catch {
+      /* expected */
+    }
 
     const projectChecks: DoctorCheck[] = [];
     projectChecks.push({
       name: "Project Directory",
       status: projectPathExists ? "ok" : "error",
-      message: projectPathExists
-        ? "Project directory exists"
-        : "Project directory does not exist",
+      message: projectPathExists ? "Project directory exists" : "Project directory does not exist",
       recommendation: projectPathExists ? undefined : "Ensure the project path is accessible",
     });
     projectChecks.push({
@@ -78,12 +78,12 @@ export function registerDoctorRoutes(app: FastifyInstance, db: DbConnection): vo
     if (databaseAccessible) {
       const runRepo = createRunRepository(db);
       const runs = runRepo.findAll();
-    storageChecks.push({
-      name: "Run Storage",
-      status: "ok",
-      message: `${runs.length} run(s) stored`,
-      recommendation: undefined,
-    });
+      storageChecks.push({
+        name: "Run Storage",
+        status: "ok",
+        message: `${runs.length} run(s) stored`,
+        recommendation: undefined,
+      });
     }
 
     let config: { agentBackend?: { provider?: string; model?: string; apiKeyEnv?: string } } = {};
@@ -125,9 +125,7 @@ export function registerDoctorRoutes(app: FastifyInstance, db: DbConnection): vo
         status: envValue && envValue.length > 0 ? "ok" : "warning",
         message: `Env var: ${apiKeyEnv}`,
         recommendation:
-          envValue && envValue.length > 0
-            ? undefined
-            : `Set ${apiKeyEnv} environment variable`,
+          envValue && envValue.length > 0 ? undefined : `Set ${apiKeyEnv} environment variable`,
       });
     }
 
@@ -138,7 +136,13 @@ export function registerDoctorRoutes(app: FastifyInstance, db: DbConnection): vo
       { name: "Aider", key: "aider", command: "aider" },
       { name: "OpenCode", key: "opencode", command: "opencode" },
     ];
-    const adapterItems: { name: string; key: string; available: boolean; enabled: boolean; command: string }[] = [];
+    const adapterItems: {
+      name: string;
+      key: string;
+      available: boolean;
+      enabled: boolean;
+      command: string;
+    }[] = [];
     const adapterChecks: DoctorCheck[] = [];
     for (const ad of adapterNames) {
       const available = await checkCliAvailable(ad.command);
@@ -155,12 +159,14 @@ export function registerDoctorRoutes(app: FastifyInstance, db: DbConnection): vo
     adapterChecks.push({
       name: "Coding Adapters",
       status: availableAdapters.length > 0 ? "ok" : "warning",
-      message: availableAdapters.length > 0
-        ? `${availableAdapters.length} adapter(s) available: ${availableAdapters.map((a) => a.name).join(", ")}`
-        : "No coding adapters available",
-      recommendation: availableAdapters.length > 0
-        ? undefined
-        : "Install at least one AI coding CLI (Claude Code, Codex CLI, Gemini CLI, or Aider)",
+      message:
+        availableAdapters.length > 0
+          ? `${availableAdapters.length} adapter(s) available: ${availableAdapters.map((a) => a.name).join(", ")}`
+          : "No coding adapters available",
+      recommendation:
+        availableAdapters.length > 0
+          ? undefined
+          : "Install at least one AI coding CLI (Claude Code, Codex CLI, Gemini CLI, or Aider)",
     });
     if (missingAdapters.length > 0) {
       adapterChecks.push({
@@ -228,7 +234,9 @@ export function registerDoctorRoutes(app: FastifyInstance, db: DbConnection): vo
       recommendations.push("Run 'codeclaw init' to initialize .codeclaw directory");
     }
     if (!providerConfigured) {
-      recommendations.push("Configure an AI provider (or use deterministic fallback for docs-only mode)");
+      recommendations.push(
+        "Configure an AI provider (or use deterministic fallback for docs-only mode)",
+      );
     }
     if (missingAdapters.length === adapterItems.length) {
       recommendations.push("Install at least one AI coding CLI tool for code execution modes");

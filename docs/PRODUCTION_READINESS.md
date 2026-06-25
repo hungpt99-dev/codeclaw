@@ -10,23 +10,23 @@ CodeClaw is a functional local-first AI software team tool. The core architectur
 
 ## 2. What Was Checked
 
-| Area                       | Status                                                                          |
-| -------------------------- | ------------------------------------------------------------------------------- |
-| Product naming consistency | ✅ Clean — no stale AITeam names in source                                      |
-| README accuracy            | ✅ Updated — reflects current capabilities                                      |
-| Documentation consistency  | ⚠️ PDF-converted docs (CLI_SPEC, WORKFLOW, PRD, ROADMAP) are stale PDF extracts |
-| CLI commands               | ✅ All commands functional, help text clear                                     |
-| Config and environment     | ✅ No secrets in config, env vars documented                                    |
-| Security                   | ✅ Secret redaction exists, env-only secrets, approval gates                    |
-| Build/test/lint/typecheck  | ✅ All passing (442 tests)                                                      |
-| Package/monorepo structure | ✅ Clean workspace references, no circular deps                                 |
-| Source code refactors      | ⚠️ Minor knip findings (2 unused exported types, 1 unlisted binary)             |
-| Workflow implementation    | ✅ Full workflow chain with step tracking                                       |
-| Web UI                     | ⚠️ Basic but functional — lacks live progress, diff viewer, approval UI         |
-| Server/API                 | ✅ Fastify routes functional                                                    |
-| Storage/migrations         | ✅ SQLite schema with IF NOT EXISTS, backward-compatible                        |
-| Release/distribution       | ⚠️ Missing npm publish config, version set to 0.0.0, no CHANGELOG               |
-| Roadmap alignment          | ✅ Steps 1-51 cover all planned work                                            |
+| Area                       | Status                                                                                                                                                                                             |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Product naming consistency | ✅ Clean — no stale AITeam names in source                                                                                                                                                         |
+| README accuracy            | ✅ Updated — reflects current capabilities                                                                                                                                                         |
+| Documentation consistency  | ⚠️ PDF-converted docs (CLI_SPEC, WORKFLOW, PRD, ROADMAP) are stale PDF extracts                                                                                                                    |
+| CLI commands               | ✅ All commands functional, help text clear                                                                                                                                                        |
+| Config and environment     | ✅ No secrets in config, env vars documented                                                                                                                                                       |
+| Security                   | ✅ Secret redaction exists, env-only secrets, approval gates                                                                                                                                       |
+| Build/test/lint/typecheck  | ✅ All passing (442 tests)                                                                                                                                                                         |
+| Package/monorepo structure | ✅ Clean workspace references, no circular deps                                                                                                                                                    |
+| Source code refactors      | ⚠️ Minor knip findings (2 unused exported types, 1 unlisted binary)                                                                                                                                |
+| Workflow implementation    | ✅ Full workflow chain with step tracking                                                                                                                                                          |
+| Web UI                     | ⚠️ Improved — project-scoped runs/dashboard/artifacts, per-project data dirs, Doctor page, live progress reconnection, server-backed workflow templates, cross-tab sync, custom workflow execution |
+| Server/API                 | ✅ Fastify routes functional                                                                                                                                                                       |
+| Storage/migrations         | ✅ SQLite schema with IF NOT EXISTS, backward-compatible                                                                                                                                           |
+| Release/distribution       | ⚠️ Missing npm publish config, version set to 0.0.0, no CHANGELOG                                                                                                                                  |
+| Roadmap alignment          | ✅ Steps 1-51 cover all planned work                                                                                                                                                               |
 
 ## 3. What Was Fixed
 
@@ -41,15 +41,15 @@ CodeClaw is a functional local-first AI software team tool. The core architectur
 
 ## 4. What Remains Risky
 
-| Risk                              | Severity | Notes                                                                                                                          |
-| --------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| No npm publish configuration      | Medium   | Package version is `0.0.0`, no `files` field, no publish scripts                                                               |
-| No CHANGELOG or release notes     | Medium   | Users have no release history                                                                                                  |
-| PDF-converted docs are stale      | Low      | `CLI_COMMAND_SPEC.md`, `WORKFLOW_DESIGN.md`, `PRD.md`, `ROADMAP.md` are PDF extracts that may not match current implementation |
-| Web UI lacks live progress        | Low      | Step 46 planned but not implemented                                                                                            |
-| No multi-project support          | Medium   | Single `.codeclaw` directory per working directory is a known limitation                                                       |
-| Not all agents use AgentBackend   | Low      | Only BA and Architect use AgentBackend; 15+ agents still use CLI tools or deterministic templates                              |
-| Missing Ollama/local LLM provider | Low      | Step 47 planned but only OpenAI-compatible implemented                                                                         |
+| Risk                              | Severity | Notes                                                                                                                                                         |
+| --------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No npm publish configuration      | Medium   | Package version is `0.0.0`, no `files` field, no publish scripts                                                                                              |
+| No CHANGELOG or release notes     | Medium   | Users have no release history                                                                                                                                 |
+| PDF-converted docs are stale      | Low      | `CLI_COMMAND_SPEC.md`, `WORKFLOW_DESIGN.md`, `PRD.md`, `ROADMAP.md` are PDF extracts that may not match current implementation                                |
+| Legacy runs without project_id    | Low      | Existing runs remain accessible; migration adds project_id for new runs but legacy runs stay unassigned                                                       |
+| Custom workflow step kinds        | Low      | Most agent kinds supported; `api_data`, `clarification`, `implementation_prompt`, `coding_execution`, `review`, and `custom` still need deeper implementation |
+| Not all agents use AgentBackend   | Low      | Only BA and Architect use AgentBackend; 15+ agents still use CLI tools or deterministic templates                                                             |
+| Missing Ollama/local LLM provider | Low      | Step 47 planned but only OpenAI-compatible implemented                                                                                                        |
 
 ## 5. Production Blockers
 
@@ -136,7 +136,7 @@ Missing before first release:
 
 ### Medium-Term
 
-9. Implement multi-project/workspace support (roadmap step to be created)
+9. Implement remaining custom workflow step kinds (api_data, clarification, implementation_prompt, coding_execution, review)
 10. Implement Ollama/local LLM provider (step 47)
-11. Implement live workflow progress in web UI (step 46)
+11. Add per-project database isolation (separate SQLite file per registered project)
 12. Add step-level execution tracking to remaining agents in assisted/semi-auto workflows

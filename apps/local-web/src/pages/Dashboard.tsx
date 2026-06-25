@@ -20,8 +20,12 @@ export function Dashboard(): ReactElement {
   useEffect(() => {
     api
       .health()
-      .then(() => { setHealthOk(true); })
-      .catch(() => { setHealthOk(false); });
+      .then(() => {
+        setHealthOk(true);
+      })
+      .catch(() => {
+        setHealthOk(false);
+      });
 
     api
       .getProviderConfig()
@@ -35,10 +39,7 @@ export function Dashboard(): ReactElement {
 
     const projectId = activeProject?.id;
 
-    Promise.all([
-      api.listRuns(projectId),
-      api.getDashboardSummary(projectId),
-    ])
+    Promise.all([api.listRuns(projectId), api.getDashboardSummary(projectId)])
       .then(([runsData, summaryData]) => {
         setRuns(runsData);
         setSummary(summaryData);
@@ -84,7 +85,9 @@ export function Dashboard(): ReactElement {
       {/* Project Summary */}
       <div className="rounded-lg border bg-white p-4">
         <p className="text-sm text-gray-500">Current Project</p>
-        <p className="text-lg font-semibold text-gray-900 mt-0.5">{activeProject?.name ?? "auto-code"}</p>
+        <p className="text-lg font-semibold text-gray-900 mt-0.5">
+          {activeProject?.name ?? "auto-code"}
+        </p>
       </div>
 
       {/* Loading State */}

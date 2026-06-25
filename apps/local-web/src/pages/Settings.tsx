@@ -495,10 +495,13 @@ export function Settings(): ReactElement {
 
       {/* ─── System Readiness ─── */}
       <Section title="System Readiness">
-        <p className="text-sm text-gray-500 mb-3">Check if CodeClaw is ready to run for the selected project.</p>
+        <p className="text-sm text-gray-500 mb-3">
+          Check if CodeClaw is ready to run for the selected project.
+        </p>
         <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
           <p className="text-sm text-blue-800">
-            Run the Doctor check for a full system readiness report including project status, provider config, adapter availability, and security.
+            Run the Doctor check for a full system readiness report including project status,
+            provider config, adapter availability, and security.
           </p>
           <Link
             to="/doctor"

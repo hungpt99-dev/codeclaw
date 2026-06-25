@@ -18,7 +18,8 @@ export function NewRequirement(): ReactElement {
   const { activeProject } = useProject();
 
   useEffect(() => {
-    api.listWorkflowTemplates(activeProject?.id)
+    api
+      .listWorkflowTemplates(activeProject?.id)
       .then((templates) => {
         setWorkflowTemplates(templates);
         const defaultTpl = templates.find((t) => t.isDefault);
@@ -67,7 +68,9 @@ export function NewRequirement(): ReactElement {
         </p>
       </div>
       <form
-        onSubmit={(e) => { void handleSubmit(e); }}
+        onSubmit={(e) => {
+          void handleSubmit(e);
+        }}
         className="space-y-4"
       >
         <div>
@@ -78,7 +81,9 @@ export function NewRequirement(): ReactElement {
             id="requirement"
             rows={8}
             value={rawRequirement}
-            onChange={(e) => { setRawRequirement(e.target.value); }}
+            onChange={(e) => {
+              setRawRequirement(e.target.value);
+            }}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             placeholder="Describe what needs to be built..."
           />
@@ -92,7 +97,9 @@ export function NewRequirement(): ReactElement {
             <select
               id="template"
               value={selectedTemplateId}
-              onChange={(e) => { setSelectedTemplateId(e.target.value); }}
+              onChange={(e) => {
+                setSelectedTemplateId(e.target.value);
+              }}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               {workflowTemplates.map((tpl) => (
@@ -111,11 +118,15 @@ export function NewRequirement(): ReactElement {
           <select
             id="outputLanguage"
             value={outputLanguage}
-            onChange={(e) => { setOutputLanguage(e.target.value); }}
+            onChange={(e) => {
+              setOutputLanguage(e.target.value);
+            }}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             {OUTPUT_LANGUAGES.map((lang) => (
-              <option key={lang} value={lang}>{lang}</option>
+              <option key={lang} value={lang}>
+                {lang}
+              </option>
             ))}
           </select>
         </div>
@@ -126,7 +137,9 @@ export function NewRequirement(): ReactElement {
           <select
             id="mode"
             value={mode}
-            onChange={(e) => { setMode(e.target.value); }}
+            onChange={(e) => {
+              setMode(e.target.value);
+            }}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="docs-only">Docs-only</option>
@@ -145,8 +158,19 @@ export function NewRequirement(): ReactElement {
         >
           {submitting && (
             <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
             </svg>
           )}
           {submitting ? "Starting..." : "Start Workflow"}

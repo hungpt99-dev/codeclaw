@@ -2,7 +2,11 @@ import { mkdir, writeFile, access, cp } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defaultConfig } from "@codeclaw/shared";
-import { openDatabase, initializeSchema, createWorkflowTemplateRepository } from "@codeclaw/storage";
+import {
+  openDatabase,
+  initializeSchema,
+  createWorkflowTemplateRepository,
+} from "@codeclaw/storage";
 import { initializeRuntimeMemory } from "@codeclaw/memory";
 import { analyzeRepository, DEFAULT_WORKFLOW_TEMPLATES } from "@codeclaw/core";
 
@@ -55,7 +59,7 @@ export async function initCommand(options: InitOptions): Promise<void> {
   const dbPath = join(aiTeamDir, "database.sqlite");
   const db = openDatabase(dbPath);
   initializeSchema(db);
-  
+
   // Seed default workflow templates into this project's database
   const templateRepo = createWorkflowTemplateRepository(db);
   const existing = templateRepo.findAll();
@@ -74,7 +78,7 @@ export async function initCommand(options: InitOptions): Promise<void> {
     }
     console.log("✅ Seeded default workflow templates");
   }
-  
+
   db.close();
   console.log("✅ Created .codeclaw/database.sqlite");
 

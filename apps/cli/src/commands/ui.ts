@@ -69,12 +69,18 @@ export async function uiCommand(options: UiOptions): Promise<void> {
       await app.close();
       process.exit(0);
     };
-    process.on("SIGINT", () => { void shutdown(); });
-    process.on("SIGTERM", () => { void shutdown(); });
+    process.on("SIGINT", () => {
+      void shutdown();
+    });
+    process.on("SIGTERM", () => {
+      void shutdown();
+    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes("EADDRINUSE")) {
-      console.log(`❌ Port ${String(port)} is already in use. Try: codeclaw ui --port ${String(port + 1)}`);
+      console.log(
+        `❌ Port ${String(port)} is already in use. Try: codeclaw ui --port ${String(port + 1)}`,
+      );
     } else {
       console.log("❌ Failed to start server:", message);
     }

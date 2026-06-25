@@ -128,12 +128,16 @@ codeclaw ui --open
 
 This starts a Fastify server (default `http://127.0.0.1:4317`) serving the React web app. The UI provides:
 
-- **Dashboard** — overview of recent runs and system status
+- **Dashboard** — overview of recent runs and system status (project-scoped)
 - **New Requirement** — submit a raw requirement for processing
-- **Runs** — browse all execution runs and their artifacts
-- **Run Detail** — inspect artifacts grouped by category (Requirement, Design, Tasks, Tests, Report)
-- **Settings** — configure project-level settings
+- **Runs** — browse all execution runs for the selected project (project-scoped)
+- **Run Detail** — inspect artifacts with live progress reconnection UI
+- **Workflows** — manage server-backed workflow templates (create, edit, duplicate, validate, delete)
+- **Projects** — register and switch between multiple projects
+- **Doctor** — full system readiness diagnostics (project status, provider, adapters, native runner, security)
+- **Settings** — configure project-level settings with Doctor link
 - **Prompt Templates** — view and edit agent prompt templates
+- **Integrations** — configure GitHub, Jira, Slack integrations
 
 ## Artifacts
 
@@ -230,9 +234,12 @@ pnpm quality
 - **No cloud backend** — everything runs locally with SQLite storage
 - **No authentication** — no login, no user management
 - **External integrations are optional** — Jira, Slack, and GitHub integrations exist but are disabled by default
-- **Single project by default** — one `.codeclaw` directory per project; use `codeclaw project` to register and switch between multiple projects
+- **Per-project `.codeclaw` directories** — each project uses its own data directory; global registry stores only safe metadata
+- **Project-scoped runs** — runs are stored with `project_id` and filtered at DB level
+- **Server-backed workflow templates** — templates are persistent in storage, seeded on first startup, and project-scoped
+- **Custom workflow execution** — workflow engine supports custom templates with enabled/disabled steps
 - **Web diff viewer** — available in the web UI run detail page
-- **No live workflow progress in web UI** — progress events are emitted but not streamed to UI (planned)
+- **Live workflow progress in web UI** — progress events with reconnection UI
 
 ## Roadmap Highlights
 

@@ -95,7 +95,9 @@ export const api = {
 
   async getArtifact(runId: string, artifactId: string, projectId?: string): Promise<Artifact> {
     const params = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
-    const data = await request<{ artifact: Artifact }>(`/runs/${runId}/artifacts/${artifactId}${params}`);
+    const data = await request<{ artifact: Artifact }>(
+      `/runs/${runId}/artifacts/${artifactId}${params}`,
+    );
     return data.artifact;
   },
 
@@ -371,9 +373,12 @@ export const api = {
         if (reconnectAttempts < maxReconnectAttempts) {
           reconnectAttempts += 1;
           onReconnecting?.();
-          reconnectTimeout = setTimeout(() => {
-            connect();
-          }, Math.min(1000 * 2 ** reconnectAttempts, 30000));
+          reconnectTimeout = setTimeout(
+            () => {
+              connect();
+            },
+            Math.min(1000 * 2 ** reconnectAttempts, 30000),
+          );
         } else {
           onError?.();
         }
@@ -422,7 +427,16 @@ export const api = {
     projectId?: string;
     name: string;
     description?: string;
-    steps: ({ id: string; name: string; agentName?: string; enabled: boolean; requiresApproval?: boolean; producesArtifacts?: boolean; description?: string; order?: number } & Record<string, unknown>)[];
+    steps: ({
+      id: string;
+      name: string;
+      agentName?: string;
+      enabled: boolean;
+      requiresApproval?: boolean;
+      producesArtifacts?: boolean;
+      description?: string;
+      order?: number;
+    } & Record<string, unknown>)[];
     isDefault?: boolean;
   }): Promise<WorkflowTemplate> {
     const data = await request<{ template: WorkflowTemplate }>("/workflows", {
@@ -440,7 +454,21 @@ export const api = {
 
   async updateWorkflowTemplate(
     id: string,
-    template: { name?: string; description?: string; steps?: { id: string; name: string; agentName?: string; enabled: boolean; requiresApproval?: boolean; producesArtifacts?: boolean; description?: string; order: number }[]; isDefault?: boolean },
+    template: {
+      name?: string;
+      description?: string;
+      steps?: {
+        id: string;
+        name: string;
+        agentName?: string;
+        enabled: boolean;
+        requiresApproval?: boolean;
+        producesArtifacts?: boolean;
+        description?: string;
+        order: number;
+      }[];
+      isDefault?: boolean;
+    },
   ): Promise<WorkflowTemplate> {
     const data = await request<{ template: WorkflowTemplate }>(`/workflows/${id}`, {
       method: "PUT",
@@ -455,11 +483,15 @@ export const api = {
   },
 
   async duplicateWorkflowTemplate(id: string): Promise<WorkflowTemplate> {
-    const data = await request<{ template: WorkflowTemplate }>(`/workflows/${id}/duplicate`, { method: "POST" });
+    const data = await request<{ template: WorkflowTemplate }>(`/workflows/${id}/duplicate`, {
+      method: "POST",
+    });
     return data.template;
   },
 
-  async validateWorkflowTemplate(id: string): Promise<{ valid: boolean; errors: string[]; warnings: string[] }> {
+  async validateWorkflowTemplate(
+    id: string,
+  ): Promise<{ valid: boolean; errors: string[]; warnings: string[] }> {
     return request(`/workflows/${id}/validate`, { method: "POST" });
   },
 

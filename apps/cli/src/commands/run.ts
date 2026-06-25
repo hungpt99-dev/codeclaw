@@ -1,5 +1,12 @@
 import { executeRun, setRunExecutionStorage } from "@codeclaw/core";
-import { openDatabase, initializeSchema, createRunRepository, createArtifactRepository, createApprovalRepository, createWorkflowTemplateRepository } from "@codeclaw/storage";
+import {
+  openDatabase,
+  initializeSchema,
+  createRunRepository,
+  createArtifactRepository,
+  createApprovalRepository,
+  createWorkflowTemplateRepository,
+} from "@codeclaw/storage";
 
 interface RunOptions {
   title?: string;
@@ -20,7 +27,8 @@ export async function runCommand(requirement: string, options: RunOptions): Prom
     createRunRepository: (d: unknown) => createRunRepository(d as any) as any,
     createArtifactRepository: (d: unknown) => createArtifactRepository(d as any) as any,
     createApprovalRepository: (d: unknown) => createApprovalRepository(d as any) as any,
-    createWorkflowTemplateRepository: (d: unknown) => createWorkflowTemplateRepository(d as any) as any,
+    createWorkflowTemplateRepository: (d: unknown) =>
+      createWorkflowTemplateRepository(d as any) as any,
   } as any);
   const result = await executeRun({
     projectId: options.project,

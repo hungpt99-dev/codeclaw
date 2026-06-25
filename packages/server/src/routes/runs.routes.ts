@@ -20,10 +20,7 @@ import type {
 } from "@codeclaw/shared";
 import { createRunId } from "@codeclaw/shared";
 import { createRunRequestSchema } from "@codeclaw/shared";
-import {
-  getArtifactPaths,
-  runTestsForRun,
-} from "@codeclaw/core";
+import { getArtifactPaths, runTestsForRun } from "@codeclaw/core";
 
 export function registerRunsRoutes(
   app: FastifyInstance,
@@ -70,7 +67,7 @@ export function registerRunsRoutes(
     return { run };
   });
 
-    app.post("/api/runs", async (request, reply) => {
+  app.post("/api/runs", async (request, reply) => {
     const result = createRunRequestSchema.safeParse(request.body);
     if (!result.success) {
       return reply.status(400).send({ error: "Requirement is required" });
@@ -84,8 +81,8 @@ export function registerRunsRoutes(
     const outputLanguage = result.data.outputLanguage;
     const mode = result.data.mode;
     const body = request.body as Record<string, unknown> | undefined;
-    const projectId = (body?.projectId as string | undefined);
-    const workflowTemplateId = (body?.workflowTemplateId as string | undefined);
+    const projectId = body?.projectId as string | undefined;
+    const workflowTemplateId = body?.workflowTemplateId as string | undefined;
 
     // Create run record synchronously
     const runId = createRunId(rawRequirement);
@@ -124,7 +121,9 @@ export function registerRunsRoutes(
             agent: body?.agent as string | undefined,
             dataDirOverride: dataDir ?? codeclawDir,
           } as unknown as Parameters<typeof executeRun>[0]);
-        } catch { /* background workflow execution */ }
+        } catch {
+          /* background workflow execution */
+        }
       })();
     }, 0);
 

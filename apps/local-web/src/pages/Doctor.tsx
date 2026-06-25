@@ -7,15 +7,31 @@ import type { ReactElement } from "react";
 
 function StatusIcon({ status }: { status: string }): ReactElement {
   if (status === "ok") {
-    return <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-700 text-xs font-bold">&#10003;</span>;
+    return (
+      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-700 text-xs font-bold">
+        &#10003;
+      </span>
+    );
   }
   if (status === "warning" || status === "info") {
-    return <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold">!</span>;
+    return (
+      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold">
+        !
+      </span>
+    );
   }
   if (status === "error") {
-    return <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-700 text-xs font-bold">&#10007;</span>;
+    return (
+      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 text-red-700 text-xs font-bold">
+        &#10007;
+      </span>
+    );
   }
-  return <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-gray-500 text-xs font-bold">?</span>;
+  return (
+    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-gray-500 text-xs font-bold">
+      ?
+    </span>
+  );
 }
 
 function CheckList({ checks }: { checks: DoctorCheck[] }): ReactElement {
@@ -47,13 +63,21 @@ function SectionCard({
   children: React.ReactNode;
 }): ReactElement {
   const borderColor =
-    status === "ok" ? "border-green-200" :
-    status === "warning" || status === "info" ? "border-yellow-200" :
-    status === "error" ? "border-red-200" : "border-gray-200";
+    status === "ok"
+      ? "border-green-200"
+      : status === "warning" || status === "info"
+        ? "border-yellow-200"
+        : status === "error"
+          ? "border-red-200"
+          : "border-gray-200";
   const bgColor =
-    status === "ok" ? "bg-green-50" :
-    status === "warning" || status === "info" ? "bg-yellow-50" :
-    status === "error" ? "bg-red-50" : "bg-white";
+    status === "ok"
+      ? "bg-green-50"
+      : status === "warning" || status === "info"
+        ? "bg-yellow-50"
+        : status === "error"
+          ? "bg-red-50"
+          : "bg-white";
 
   return (
     <div className={`rounded-lg border ${borderColor} ${bgColor} p-4`}>
@@ -76,8 +100,12 @@ export function Doctor(): ReactElement {
     api
       .getDoctorStatus(activeProject?.id)
       .then(setStatus)
-      .catch((err: unknown) => { setError(err instanceof Error ? err.message : "Failed to load doctor status"); })
-      .finally(() => { setLoading(false); });
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : "Failed to load doctor status");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [activeProject?.id]);
 
   if (loading) {
@@ -90,8 +118,19 @@ export function Doctor(): ReactElement {
         <div className="rounded-lg border bg-white p-6 flex items-center justify-center">
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
             </svg>
             Running diagnostics...
           </div>
@@ -117,8 +156,12 @@ export function Doctor(): ReactElement {
               api
                 .getDoctorStatus(activeProject?.id)
                 .then(setStatus)
-                .catch((err: unknown) => { setError(err instanceof Error ? err.message : "Failed"); })
-                .finally(() => { setLoading(false); });
+                .catch((err: unknown) => {
+                  setError(err instanceof Error ? err.message : "Failed");
+                })
+                .finally(() => {
+                  setLoading(false);
+                });
             }}
             className="mt-3 text-sm text-blue-600 hover:text-blue-500"
           >
@@ -139,16 +182,18 @@ export function Doctor(): ReactElement {
       {/* Overall Status */}
       <div className="rounded-lg border bg-white p-4">
         <div className="flex items-center gap-3">
-          <StatusIcon status={
-            status.project.status === "ok" && status.storage.status === "ok" ? "ok" :
-            status.project.status === "error" || status.storage.status === "error" ? "error" : "warning"
-          } />
+          <StatusIcon
+            status={
+              status.project.status === "ok" && status.storage.status === "ok"
+                ? "ok"
+                : status.project.status === "error" || status.storage.status === "error"
+                  ? "error"
+                  : "warning"
+            }
+          />
           <div>
             <p className="text-sm font-semibold text-gray-900">
-              {activeProject
-                ? `Project: ${activeProject.name}`
-                : "No project selected"
-              }
+              {activeProject ? `Project: ${activeProject.name}` : "No project selected"}
             </p>
             {activeProject && (
               <p className="text-xs text-gray-500 font-mono">{activeProject.rootPath}</p>
@@ -176,8 +221,13 @@ export function Doctor(): ReactElement {
       <SectionCard title="Coding Adapters" status={status.adapters.status}>
         <div className="mb-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
           {status.adapters.items.map((item) => (
-            <div key={item.key} className="flex items-center gap-2 text-sm bg-white rounded px-3 py-2 border">
-              <span className={`w-2 h-2 rounded-full ${item.available ? "bg-green-500" : "bg-red-400"}`} />
+            <div
+              key={item.key}
+              className="flex items-center gap-2 text-sm bg-white rounded px-3 py-2 border"
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${item.available ? "bg-green-500" : "bg-red-400"}`}
+              />
               <span className="text-gray-900">{item.name}</span>
               <span className="text-xs text-gray-400">({item.command})</span>
             </div>
@@ -195,10 +245,15 @@ export function Doctor(): ReactElement {
       <SectionCard title="Security" status={status.security.status}>
         {status.security.envVarNames.length > 0 && (
           <div className="mb-3">
-            <p className="text-xs text-gray-500 mb-1">Environment variables detected (values not shown):</p>
+            <p className="text-xs text-gray-500 mb-1">
+              Environment variables detected (values not shown):
+            </p>
             <div className="flex flex-wrap gap-1">
               {status.security.envVarNames.map((env) => (
-                <span key={env} className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-mono text-gray-600">
+                <span
+                  key={env}
+                  className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-mono text-gray-600"
+                >
                   {env}
                 </span>
               ))}

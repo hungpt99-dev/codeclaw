@@ -104,6 +104,8 @@ Dashboard
 New Requirement
 Runs
 Projects
+Workflows
+Doctor
 Settings
 Prompt Templates
 Integrations
@@ -138,7 +140,7 @@ CodeClaw
 
 The local web UI should use a simple app shell.
 
-**Left Sidebar**: Contains: product name, current project, navigation items, local status indicator.
+**Left Sidebar**: Contains: product name, current project selector (with cross-tab sync via BroadcastChannel), navigation items including Doctor, local status indicator.
 
 Example:
 

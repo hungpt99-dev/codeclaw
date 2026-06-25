@@ -16,7 +16,9 @@ function WorkflowStepEditor({
       <input
         type="checkbox"
         checked={step.enabled}
-        onChange={(e) => { onChange({ ...step, enabled: e.target.checked }); }}
+        onChange={(e) => {
+          onChange({ ...step, enabled: e.target.checked });
+        }}
         className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
       />
       <div className="flex-1 min-w-0">
@@ -33,7 +35,9 @@ function WorkflowStepEditor({
           <input
             type="checkbox"
             checked={step.requiresApproval ?? false}
-            onChange={(e) => { onChange({ ...step, requiresApproval: e.target.checked }); }}
+            onChange={(e) => {
+              onChange({ ...step, requiresApproval: e.target.checked });
+            }}
             className="h-3 w-3 rounded border-gray-300 text-yellow-600 focus:ring-yellow-500"
           />
           Require approval
@@ -52,7 +56,11 @@ export function Workflows(): ReactElement {
   const [editName, setEditName] = useState("");
   const [editSteps, setEditSteps] = useState<WorkflowStepDefinition[]>([]);
   const [duplicateLoading, setDuplicateLoading] = useState(false);
-  const [validateResult, setValidateResult] = useState<{ valid: boolean; errors: string[]; warnings: string[] } | null>(null);
+  const [validateResult, setValidateResult] = useState<{
+    valid: boolean;
+    errors: string[];
+    warnings: string[];
+  } | null>(null);
   const [saving, setSaving] = useState(false);
   const { activeProject } = useProject();
 
@@ -128,10 +136,38 @@ export function Workflows(): ReactElement {
 
   const handleCreateCustom = async (): Promise<void> => {
     const defaultSteps: WorkflowStepDefinition[] = [
-      { id: "ba", name: "BA Analysis", agentName: "BA", enabled: true, producesArtifacts: true, order: 0 },
-      { id: "architect", name: "Architecture Design", agentName: "Architect", enabled: true, producesArtifacts: true, order: 1 },
-      { id: "pm", name: "Task Breakdown", agentName: "PM", enabled: true, producesArtifacts: true, order: 2 },
-      { id: "qa", name: "Test Planning", agentName: "QA", enabled: true, producesArtifacts: true, order: 3 },
+      {
+        id: "ba",
+        name: "BA Analysis",
+        agentName: "BA",
+        enabled: true,
+        producesArtifacts: true,
+        order: 0,
+      },
+      {
+        id: "architect",
+        name: "Architecture Design",
+        agentName: "Architect",
+        enabled: true,
+        producesArtifacts: true,
+        order: 1,
+      },
+      {
+        id: "pm",
+        name: "Task Breakdown",
+        agentName: "PM",
+        enabled: true,
+        producesArtifacts: true,
+        order: 2,
+      },
+      {
+        id: "qa",
+        name: "Test Planning",
+        agentName: "QA",
+        enabled: true,
+        producesArtifacts: true,
+        order: 3,
+      },
     ];
     try {
       const created = await api.createWorkflowTemplate({
@@ -167,7 +203,9 @@ export function Workflows(): ReactElement {
     if (!window.confirm(`Delete "${selectedTemplate.name}"?`)) return;
     try {
       await api.deleteWorkflowTemplate(selectedTemplate.workflowTemplateId);
-      setTemplates((prev) => prev.filter((t) => t.workflowTemplateId !== selectedTemplate.workflowTemplateId));
+      setTemplates((prev) =>
+        prev.filter((t) => t.workflowTemplateId !== selectedTemplate.workflowTemplateId),
+      );
       setSelectedTemplate(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete");
@@ -180,7 +218,11 @@ export function Workflows(): ReactElement {
       const result = await api.validateWorkflowTemplate(selectedTemplate.workflowTemplateId);
       setValidateResult(result);
     } catch (err) {
-      setValidateResult({ valid: false, errors: [(err instanceof Error ? err.message : "Validation failed")], warnings: [] });
+      setValidateResult({
+        valid: false,
+        errors: [err instanceof Error ? err.message : "Validation failed"],
+        warnings: [],
+      });
     }
   };
 
@@ -195,8 +237,19 @@ export function Workflows(): ReactElement {
         <div className="rounded-lg border bg-white p-6 flex items-center justify-center">
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
             </svg>
             Loading workflows...
           </div>
@@ -240,8 +293,18 @@ export function Workflows(): ReactElement {
 
       {templates.length === 0 ? (
         <div className="rounded-lg border bg-white p-6 text-center py-12">
-          <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+          <svg
+            className="mx-auto h-12 w-12 text-gray-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+            />
           </svg>
           <p className="mt-4 text-sm font-medium text-gray-900">No workflow templates</p>
           <p className="mt-1 text-sm text-gray-500">Create a custom workflow to get started.</p>
@@ -262,7 +325,9 @@ export function Workflows(): ReactElement {
                 <button
                   key={t.workflowTemplateId}
                   type="button"
-                  onClick={() => { handleSelect(t); }}
+                  onClick={() => {
+                    handleSelect(t);
+                  }}
                   className={`w-full text-left rounded-lg border p-3 transition-colors ${
                     selectedTemplate?.workflowTemplateId === t.workflowTemplateId
                       ? "border-blue-500 bg-blue-50"
@@ -278,7 +343,15 @@ export function Workflows(): ReactElement {
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {t.steps.length} steps · {t.steps.filter((s) => (s as WorkflowStepDefinition & { requiresApproval?: boolean }).requiresApproval).length} approvals
+                    {t.steps.length} steps ·{" "}
+                    {
+                      t.steps.filter(
+                        (s) =>
+                          (s as WorkflowStepDefinition & { requiresApproval?: boolean })
+                            .requiresApproval,
+                      ).length
+                    }{" "}
+                    approvals
                   </p>
                 </button>
               ))}
@@ -288,8 +361,18 @@ export function Workflows(): ReactElement {
           <div className="lg:col-span-2">
             {!selectedTemplate ? (
               <div className="rounded-lg border bg-white p-6 text-center py-12">
-                <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-300"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                  />
                 </svg>
                 <p className="mt-4 text-sm font-medium text-gray-900">Select a workflow template</p>
                 <p className="mt-1 text-sm text-gray-500">
@@ -303,7 +386,9 @@ export function Workflows(): ReactElement {
                     <input
                       type="text"
                       value={editName}
-                      onChange={(e) => { setEditName(e.target.value); }}
+                      onChange={(e) => {
+                        setEditName(e.target.value);
+                      }}
                       className="text-lg font-bold text-gray-900 border-b-2 border-blue-500 focus:outline-none bg-transparent"
                     />
                   ) : (
@@ -312,11 +397,19 @@ export function Workflows(): ReactElement {
                   <div className="flex items-center gap-2">
                     {!editMode ? (
                       <>
-                        <button type="button" onClick={handleEdit} className="text-sm text-blue-600 hover:text-blue-500 transition-colors">
+                        <button
+                          type="button"
+                          onClick={handleEdit}
+                          className="text-sm text-blue-600 hover:text-blue-500 transition-colors"
+                        >
                           Edit
                         </button>
                         {!selectedTemplate.isDefault && (
-                          <button type="button" onClick={() => void handleDelete()} className="text-sm text-red-500 hover:text-red-400 transition-colors">
+                          <button
+                            type="button"
+                            onClick={() => void handleDelete()}
+                            className="text-sm text-red-500 hover:text-red-400 transition-colors"
+                          >
                             Delete
                           </button>
                         )}
@@ -338,7 +431,13 @@ export function Workflows(): ReactElement {
                       </>
                     ) : (
                       <>
-                        <button type="button" onClick={() => { setEditMode(false); }} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditMode(false);
+                          }}
+                          className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                        >
                           Cancel
                         </button>
                         <button
@@ -361,18 +460,26 @@ export function Workflows(): ReactElement {
                 )}
 
                 {validateResult && (
-                  <div className={`px-4 py-3 border-b ${validateResult.valid ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}`}>
-                    <p className={`text-sm font-medium ${validateResult.valid ? "text-green-700" : "text-red-700"}`}>
+                  <div
+                    className={`px-4 py-3 border-b ${validateResult.valid ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}`}
+                  >
+                    <p
+                      className={`text-sm font-medium ${validateResult.valid ? "text-green-700" : "text-red-700"}`}
+                    >
                       {validateResult.valid ? "Workflow is valid" : "Workflow has errors"}
                     </p>
                     {validateResult.errors.length > 0 && (
                       <ul className="list-disc list-inside text-sm text-red-600 mt-1">
-                        {validateResult.errors.map((e, i) => <li key={i}>{e}</li>)}
+                        {validateResult.errors.map((e, i) => (
+                          <li key={i}>{e}</li>
+                        ))}
                       </ul>
                     )}
                     {validateResult.warnings.length > 0 && (
                       <ul className="list-disc list-inside text-sm text-yellow-600 mt-1">
-                        {validateResult.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                        {validateResult.warnings.map((w, i) => (
+                          <li key={i}>{w}</li>
+                        ))}
                       </ul>
                     )}
                   </div>
@@ -395,13 +502,24 @@ export function Workflows(): ReactElement {
                       <div key={step.id} className="flex items-center gap-2">
                         <span className="text-xs text-gray-400 w-5 text-right">{i + 1}.</span>
                         {editMode ? (
-                          <WorkflowStepEditor step={step} onChange={(s) => { handleStepChange(i, s); }} />
+                          <WorkflowStepEditor
+                            step={step}
+                            onChange={(s) => {
+                              handleStepChange(i, s);
+                            }}
+                          />
                         ) : (
-                          <div className={`flex-1 flex items-center gap-3 py-2 px-3 rounded-lg ${!step.enabled ? "opacity-50" : ""}`}>
-                            <div className={`w-2 h-2 rounded-full ${step.enabled ? "bg-green-500" : "bg-gray-300"}`} />
+                          <div
+                            className={`flex-1 flex items-center gap-3 py-2 px-3 rounded-lg ${!step.enabled ? "opacity-50" : ""}`}
+                          >
+                            <div
+                              className={`w-2 h-2 rounded-full ${step.enabled ? "bg-green-500" : "bg-gray-300"}`}
+                            />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm text-gray-900">{step.name}</p>
-                              {step.agentName && <p className="text-xs text-gray-500">{step.agentName}</p>}
+                              {step.agentName && (
+                                <p className="text-xs text-gray-500">{step.agentName}</p>
+                              )}
                             </div>
                             {step.requiresApproval && (
                               <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">
@@ -424,8 +542,18 @@ export function Workflows(): ReactElement {
                               {step.name}
                             </span>
                             {i < enabledSteps.length - 1 && (
-                              <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                              <svg
+                                className="w-4 h-4 text-gray-300"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M9 5l7 7-7 7"
+                                />
                               </svg>
                             )}
                           </span>
@@ -450,11 +578,46 @@ function getDefaultTemplates() {
       description: "Generate documentation artifacts without code execution",
       isDefault: true,
       steps: [
-        { id: "ba", name: "BA Analysis", agentName: "BA", enabled: true, producesArtifacts: true, order: 0 },
-        { id: "architect", name: "Architecture Design", agentName: "Architect", enabled: true, producesArtifacts: true, order: 1 },
-        { id: "pm", name: "Task Breakdown", agentName: "PM", enabled: true, producesArtifacts: true, order: 2 },
-        { id: "qa", name: "Test Planning", agentName: "QA", enabled: true, producesArtifacts: true, order: 3 },
-        { id: "reporter", name: "Final Report", agentName: "Reporter", enabled: true, producesArtifacts: true, order: 4 },
+        {
+          id: "ba",
+          name: "BA Analysis",
+          agentName: "BA",
+          enabled: true,
+          producesArtifacts: true,
+          order: 0,
+        },
+        {
+          id: "architect",
+          name: "Architecture Design",
+          agentName: "Architect",
+          enabled: true,
+          producesArtifacts: true,
+          order: 1,
+        },
+        {
+          id: "pm",
+          name: "Task Breakdown",
+          agentName: "PM",
+          enabled: true,
+          producesArtifacts: true,
+          order: 2,
+        },
+        {
+          id: "qa",
+          name: "Test Planning",
+          agentName: "QA",
+          enabled: true,
+          producesArtifacts: true,
+          order: 3,
+        },
+        {
+          id: "reporter",
+          name: "Final Report",
+          agentName: "Reporter",
+          enabled: true,
+          producesArtifacts: true,
+          order: 4,
+        },
       ],
     },
     {
@@ -462,13 +625,63 @@ function getDefaultTemplates() {
       description: "Full assisted workflow with UX research, design, and coding plan",
       isDefault: false,
       steps: [
-        { id: "ba", name: "BA Analysis", agentName: "BA", enabled: true, producesArtifacts: true, order: 0 },
-        { id: "architect", name: "Architecture Design", agentName: "Architect", enabled: true, producesArtifacts: true, order: 1 },
-        { id: "ux", name: "UX Research", agentName: "UX Researcher", enabled: true, producesArtifacts: true, order: 2 },
-        { id: "pm", name: "Task Breakdown", agentName: "PM", enabled: true, producesArtifacts: true, order: 3 },
-        { id: "qa", name: "Test Planning", agentName: "QA", enabled: true, producesArtifacts: true, order: 4 },
-        { id: "developer", name: "Implementation", agentName: "Developer", enabled: true, requiresApproval: true, producesArtifacts: true, order: 5 },
-        { id: "reporter", name: "Final Report", agentName: "Reporter", enabled: true, producesArtifacts: true, order: 6 },
+        {
+          id: "ba",
+          name: "BA Analysis",
+          agentName: "BA",
+          enabled: true,
+          producesArtifacts: true,
+          order: 0,
+        },
+        {
+          id: "architect",
+          name: "Architecture Design",
+          agentName: "Architect",
+          enabled: true,
+          producesArtifacts: true,
+          order: 1,
+        },
+        {
+          id: "ux",
+          name: "UX Research",
+          agentName: "UX Researcher",
+          enabled: true,
+          producesArtifacts: true,
+          order: 2,
+        },
+        {
+          id: "pm",
+          name: "Task Breakdown",
+          agentName: "PM",
+          enabled: true,
+          producesArtifacts: true,
+          order: 3,
+        },
+        {
+          id: "qa",
+          name: "Test Planning",
+          agentName: "QA",
+          enabled: true,
+          producesArtifacts: true,
+          order: 4,
+        },
+        {
+          id: "developer",
+          name: "Implementation",
+          agentName: "Developer",
+          enabled: true,
+          requiresApproval: true,
+          producesArtifacts: true,
+          order: 5,
+        },
+        {
+          id: "reporter",
+          name: "Final Report",
+          agentName: "Reporter",
+          enabled: true,
+          producesArtifacts: true,
+          order: 6,
+        },
       ],
     },
     {
@@ -476,13 +689,63 @@ function getDefaultTemplates() {
       description: "Full workflow including code generation, testing, and review",
       isDefault: false,
       steps: [
-        { id: "ba", name: "BA Analysis", agentName: "BA", enabled: true, producesArtifacts: true, order: 0 },
-        { id: "architect", name: "Architecture Design", agentName: "Architect", enabled: true, producesArtifacts: true, order: 1 },
-        { id: "pm", name: "Task Breakdown", agentName: "PM", enabled: true, producesArtifacts: true, order: 2 },
-        { id: "qa", name: "Test Planning", agentName: "QA", enabled: true, producesArtifacts: true, order: 3 },
-        { id: "developer", name: "Code Generation", agentName: "Developer", enabled: true, requiresApproval: true, producesArtifacts: true, order: 4 },
-        { id: "reviewer", name: "Code Review", agentName: "Reviewer", enabled: true, producesArtifacts: true, order: 5 },
-        { id: "reporter", name: "Final Report", agentName: "Reporter", enabled: true, producesArtifacts: true, order: 6 },
+        {
+          id: "ba",
+          name: "BA Analysis",
+          agentName: "BA",
+          enabled: true,
+          producesArtifacts: true,
+          order: 0,
+        },
+        {
+          id: "architect",
+          name: "Architecture Design",
+          agentName: "Architect",
+          enabled: true,
+          producesArtifacts: true,
+          order: 1,
+        },
+        {
+          id: "pm",
+          name: "Task Breakdown",
+          agentName: "PM",
+          enabled: true,
+          producesArtifacts: true,
+          order: 2,
+        },
+        {
+          id: "qa",
+          name: "Test Planning",
+          agentName: "QA",
+          enabled: true,
+          producesArtifacts: true,
+          order: 3,
+        },
+        {
+          id: "developer",
+          name: "Code Generation",
+          agentName: "Developer",
+          enabled: true,
+          requiresApproval: true,
+          producesArtifacts: true,
+          order: 4,
+        },
+        {
+          id: "reviewer",
+          name: "Code Review",
+          agentName: "Reviewer",
+          enabled: true,
+          producesArtifacts: true,
+          order: 5,
+        },
+        {
+          id: "reporter",
+          name: "Final Report",
+          agentName: "Reporter",
+          enabled: true,
+          producesArtifacts: true,
+          order: 6,
+        },
       ],
     },
   ];

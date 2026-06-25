@@ -1,6 +1,14 @@
 import { access, readFile } from "node:fs/promises";
 import { resolve, join } from "node:path";
-import { openDatabase, initializeSchema, createRunRepository, createStepExecutionRepository, createArtifactRepository, createApprovalRepository, createWorkflowTemplateRepository } from "@codeclaw/storage";
+import {
+  openDatabase,
+  initializeSchema,
+  createRunRepository,
+  createStepExecutionRepository,
+  createArtifactRepository,
+  createApprovalRepository,
+  createWorkflowTemplateRepository,
+} from "@codeclaw/storage";
 import {
   addProject,
   listProjects,

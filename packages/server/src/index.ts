@@ -3,7 +3,14 @@ import { join } from "node:path";
 import { dirname } from "node:path";
 import Fastify from "fastify";
 import type { FastifyInstance } from "fastify";
-import { openDatabase, initializeSchema, createWorkflowTemplateRepository, createRunRepository, createArtifactRepository, createApprovalRepository } from "@codeclaw/storage";
+import {
+  openDatabase,
+  initializeSchema,
+  createWorkflowTemplateRepository,
+  createRunRepository,
+  createArtifactRepository,
+  createApprovalRepository,
+} from "@codeclaw/storage";
 import { DEFAULT_WORKFLOW_TEMPLATES, setRunExecutionStorage } from "@codeclaw/core";
 import { registerHealthRoutes } from "./routes/health.routes.js";
 import { registerSettingsRoutes } from "./routes/settings.routes.js";
@@ -46,7 +53,8 @@ export function createApp(options: AppOptions): FastifyInstance {
     createRunRepository: (d: unknown) => createRunRepository(d as any) as any,
     createArtifactRepository: (d: unknown) => createArtifactRepository(d as any) as any,
     createApprovalRepository: (d: unknown) => createApprovalRepository(d as any) as any,
-    createWorkflowTemplateRepository: (d: unknown) => createWorkflowTemplateRepository(d as any) as any,
+    createWorkflowTemplateRepository: (d: unknown) =>
+      createWorkflowTemplateRepository(d as any) as any,
   } as any);
 
   // Seed default workflow templates if none exist
@@ -67,7 +75,10 @@ export function createApp(options: AppOptions): FastifyInstance {
   return app;
 }
 
-function seedDefaultWorkflowTemplates(db: import("@codeclaw/storage").DbConnection, _dataDir: string): void {
+function seedDefaultWorkflowTemplates(
+  db: import("@codeclaw/storage").DbConnection,
+  _dataDir: string,
+): void {
   const repo = createWorkflowTemplateRepository(db);
   const existing = repo.findAll();
   if (existing.length === 0) {
