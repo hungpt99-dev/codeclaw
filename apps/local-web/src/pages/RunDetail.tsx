@@ -118,6 +118,9 @@ export function RunDetail(): ReactElement {
 
   const [progressEvents, setProgressEvents] = useState<WorkflowProgressEvent[]>([]);
   const [progressConnected, setProgressConnected] = useState(false);
+  const [progressReconnecting, setProgressReconnecting] = useState(false);
+  const [progressError, setProgressError] = useState<string | null>(null);
+  const [lastProgressTime, setLastProgressTime] = useState<Date | null>(null);
   const progressCleanupRef = useRef<(() => void) | null>(null);
 
   const [steps, setSteps] = useState<StepRun[]>([]);
@@ -203,6 +206,9 @@ export function RunDetail(): ReactElement {
       id,
       (event) => {
         setProgressEvents((prev) => [...prev, event]);
+        setLastProgressTime(new Date());
+        setProgressReconnecting(false);
+        setProgressError(null);
         if (event.type === "WORKFLOW_COMPLETED" || event.type === "ERROR") {
           setTimeout(() => {
             void load();
@@ -218,12 +224,19 @@ export function RunDetail(): ReactElement {
       },
       () => {
         setProgressConnected(false);
+        setProgressError("Connection lost. Please refresh manually.");
         setTimeout(() => void load(), 2000);
+      },
+      () => {
+        setProgressReconnecting(true);
+        setProgressError(null);
       },
     );
 
     progressCleanupRef.current = cleanup;
     setProgressConnected(true);
+    setProgressReconnecting(false);
+    setProgressError(null);
 
     return () => {
       cleanup();
@@ -526,6 +539,54 @@ export function RunDetail(): ReactElement {
           Created: {new Date(run.createdAt).toLocaleString()}
         </span>
       </div>
+
+      {/* Live Progress Reconnection Banner */}
+      {progressConnected && !progressReconnecting && (
+        <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-sm text-green-700 font-medium">Live</span>
+            {lastProgressTime && (
+              <span className="text-xs text-green-500">
+                Last update: {lastProgressTime.toLocaleTimeString()}
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => { void load(); }}
+            className="text-xs text-green-600 hover:text-green-500"
+          >
+            Refresh
+          </button>
+        </div>
+      )}
+      {progressReconnecting && (
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <svg className="animate-spin h-4 w-4 text-yellow-600" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span className="text-sm text-yellow-700 font-medium">Reconnecting...</span>
+          </div>
+        </div>
+      )}
+      {progressError && !progressConnected && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-red-500" />
+            <span className="text-sm text-red-700">{progressError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => { void load(); }}
+            className="text-xs text-red-600 hover:text-red-500"
+          >
+            Refresh
+          </button>
+        </div>
+      )}
 
       {progressConnected && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

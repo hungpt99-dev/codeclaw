@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { StatusBadge } from "../components/StatusBadge.js";
 import { DashboardSummaryCards } from "../components/dashboard/DashboardSummaryCards.js";
 import { api } from "../lib/api.js";
-import type { Run, ProviderConfig, NativeRunnerStatus } from "../lib/types.js";
+import { useProject } from "../lib/ProjectContext.js";
+import type { Run, ProviderConfig, NativeRunnerStatus, DashboardSummary } from "../lib/types.js";
 import type { ReactElement } from "react";
 
 export function Dashboard(): ReactElement {
@@ -11,54 +12,44 @@ export function Dashboard(): ReactElement {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [healthOk, setHealthOk] = useState<boolean | null>(null);
-  const [projectName, setProjectName] = useState("auto-code");
+  const [_summary, setSummary] = useState<DashboardSummary | null>(null);
   const [provider, setProvider] = useState<ProviderConfig | null>(null);
   const [nativeRunner, setNativeRunner] = useState<NativeRunnerStatus | null>(null);
+  const { activeProject } = useProject();
 
   useEffect(() => {
     api
       .health()
-      .then(() => {
-        setHealthOk(true);
-      })
-      .catch(() => {
-        setHealthOk(false);
-      });
-
-    api
-      .listSettings()
-      .then((settings) => {
-        const proj = settings.find((s) => s.key === "project_name");
-        if (proj) setProjectName(proj.value);
-      })
-      .catch(() => {
-        void 0;
-      });
+      .then(() => { setHealthOk(true); })
+      .catch(() => { setHealthOk(false); });
 
     api
       .getProviderConfig()
       .then(setProvider)
-      .catch(() => {
-        void 0;
-      });
+      .catch(() => void 0);
 
     api
       .getNativeRunnerStatus()
       .then(setNativeRunner)
-      .catch(() => {
-        void 0;
-      });
+      .catch(() => void 0);
 
-    api
-      .listRuns()
-      .then(setRuns)
+    const projectId = activeProject?.id;
+
+    Promise.all([
+      api.listRuns(projectId),
+      api.getDashboardSummary(projectId),
+    ])
+      .then(([runsData, summaryData]) => {
+        setRuns(runsData);
+        setSummary(summaryData);
+      })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : "Failed to load runs");
       })
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [activeProject?.id]);
 
   const latestRuns = runs.slice(0, 5);
 
@@ -93,7 +84,7 @@ export function Dashboard(): ReactElement {
       {/* Project Summary */}
       <div className="rounded-lg border bg-white p-4">
         <p className="text-sm text-gray-500">Current Project</p>
-        <p className="text-lg font-semibold text-gray-900 mt-0.5">{projectName}</p>
+        <p className="text-lg font-semibold text-gray-900 mt-0.5">{activeProject?.name ?? "auto-code"}</p>
       </div>
 
       {/* Loading State */}

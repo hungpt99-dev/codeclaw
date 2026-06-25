@@ -32,6 +32,8 @@ import type {
   ProviderConfig,
   NativeRunnerStatus,
   ProjectEntry,
+  DoctorStatus,
+  DashboardSummary,
 } from "./types.js";
 
 const BASE = "/api";
@@ -59,13 +61,15 @@ export const api = {
     return request("/health");
   },
 
-  async listRuns(): Promise<Run[]> {
-    const data = await request<{ runs: Run[] }>("/runs");
+  async listRuns(projectId?: string): Promise<Run[]> {
+    const params = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    const data = await request<{ runs: Run[] }>(`/runs${params}`);
     return data.runs;
   },
 
-  async getRun(id: string): Promise<Run> {
-    const data = await request<{ run: Run }>(`/runs/${id}`);
+  async getRun(id: string, projectId?: string): Promise<Run> {
+    const params = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    const data = await request<{ run: Run }>(`/runs/${id}${params}`);
     return data.run;
   },
 
@@ -73,6 +77,8 @@ export const api = {
     requirement: string;
     outputLanguage: string;
     mode: string;
+    projectId?: string;
+    workflowTemplateId?: string;
   }): Promise<Run> {
     const data = await request<{ run: Run }>("/runs", {
       method: "POST",
@@ -81,13 +87,15 @@ export const api = {
     return data.run;
   },
 
-  async listArtifacts(runId: string): Promise<Artifact[]> {
-    const data = await request<{ artifacts: Artifact[] }>(`/runs/${runId}/artifacts`);
+  async listArtifacts(runId: string, projectId?: string): Promise<Artifact[]> {
+    const params = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    const data = await request<{ artifacts: Artifact[] }>(`/runs/${runId}/artifacts${params}`);
     return data.artifacts;
   },
 
-  async getArtifact(runId: string, artifactId: string): Promise<Artifact> {
-    const data = await request<{ artifact: Artifact }>(`/runs/${runId}/artifacts/${artifactId}`);
+  async getArtifact(runId: string, artifactId: string, projectId?: string): Promise<Artifact> {
+    const params = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    const data = await request<{ artifact: Artifact }>(`/runs/${runId}/artifacts/${artifactId}${params}`);
     return data.artifact;
   },
 
@@ -153,8 +161,9 @@ export const api = {
     });
   },
 
-  async getDiffPatch(runId: string): Promise<{ diffContent: string }> {
-    return request(`/runs/${runId}/diff`);
+  async getDiffPatch(runId: string, projectId?: string): Promise<{ diffContent: string }> {
+    const params = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    return request(`/runs/${runId}/diff${params}`);
   },
 
   async getChangedFilesList(
@@ -336,30 +345,58 @@ export const api = {
     runId: string,
     onEvent: (event: WorkflowProgressEvent) => void,
     onError?: () => void,
+    onReconnecting?: () => void,
   ): () => void {
-    const eventSource = new EventSource(`${BASE}/runs/${runId}/progress`);
+    let eventSource: EventSource | null = null;
+    let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
 
-    eventSource.onmessage = (e: MessageEvent) => {
-      const event = JSON.parse(e.data as string) as WorkflowProgressEvent;
-      onEvent(event);
-    };
+    function connect(): void {
+      eventSource?.close();
+      eventSource = new EventSource(`${BASE}/runs/${runId}/progress`);
 
-    eventSource.onerror = () => {
-      onError?.();
-    };
+      eventSource.onmessage = (e: MessageEvent) => {
+        try {
+          const event = JSON.parse(e.data as string) as WorkflowProgressEvent;
+          onEvent(event);
+          reconnectAttempts = 0;
+        } catch {
+          // ignore parse errors
+        }
+      };
+
+      eventSource.onerror = () => {
+        eventSource?.close();
+        if (reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts += 1;
+          onReconnecting?.();
+          reconnectTimeout = setTimeout(() => {
+            connect();
+          }, Math.min(1000 * 2 ** reconnectAttempts, 30000));
+        } else {
+          onError?.();
+        }
+      };
+    }
+
+    connect();
 
     return () => {
-      eventSource.close();
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      eventSource?.close();
     };
   },
 
-  async listSteps(runId: string): Promise<StepRun[]> {
-    const data = await request<{ steps: StepRun[] }>(`/runs/${runId}/steps`);
+  async listSteps(runId: string, projectId?: string): Promise<StepRun[]> {
+    const params = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    const data = await request<{ steps: StepRun[] }>(`/runs/${runId}/steps${params}`);
     return data.steps;
   },
 
-  async getExecutionReport(runId: string): Promise<{ report: string }> {
-    return request(`/runs/${runId}/execution-report`);
+  async getExecutionReport(runId: string, projectId?: string): Promise<{ report: string }> {
+    const params = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    return request(`/runs/${runId}/execution-report${params}`);
   },
 
   async getProviderConfig(): Promise<ProviderConfig> {
@@ -370,191 +407,65 @@ export const api = {
     return request("/settings/native-runner");
   },
 
-  listWorkflowTemplates(): Promise<WorkflowTemplate[]> {
-    // For now, return default templates from a hardcoded list
-    const defaultTemplates: WorkflowTemplate[] = [
-      {
-        workflowTemplateId: "default-docs",
-        name: "Docs Only",
-        description: "Generate documentation artifacts without code execution",
-        isDefault: true,
-        steps: [
-          {
-            id: "ba",
-            name: "BA Analysis",
-            agentName: "BA",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "architect",
-            name: "Architecture Design",
-            agentName: "Architect",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "pm",
-            name: "Task Breakdown",
-            agentName: "PM",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "qa",
-            name: "Test Planning",
-            agentName: "QA",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "reporter",
-            name: "Final Report",
-            agentName: "Reporter",
-            enabled: true,
-            producesArtifacts: true,
-          },
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        workflowTemplateId: "default-assisted",
-        name: "Assisted (with UX)",
-        description: "Full assisted workflow with UX research, design, and coding plan",
-        isDefault: false,
-        steps: [
-          {
-            id: "ba",
-            name: "BA Analysis",
-            agentName: "BA",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "architect",
-            name: "Architecture Design",
-            agentName: "Architect",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "ux",
-            name: "UX Research",
-            agentName: "UX Researcher",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "pm",
-            name: "Task Breakdown",
-            agentName: "PM",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "qa",
-            name: "Test Planning",
-            agentName: "QA",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "developer",
-            name: "Implementation",
-            agentName: "Developer",
-            enabled: true,
-            requiresApproval: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "reporter",
-            name: "Final Report",
-            agentName: "Reporter",
-            enabled: true,
-            producesArtifacts: true,
-          },
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        workflowTemplateId: "default-semi-auto",
-        name: "Semi-Auto (with Code)",
-        description: "Full workflow including code generation, testing, and review",
-        isDefault: false,
-        steps: [
-          {
-            id: "ba",
-            name: "BA Analysis",
-            agentName: "BA",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "architect",
-            name: "Architecture Design",
-            agentName: "Architect",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "pm",
-            name: "Task Breakdown",
-            agentName: "PM",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "qa",
-            name: "Test Planning",
-            agentName: "QA",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "developer",
-            name: "Code Generation",
-            agentName: "Developer",
-            enabled: true,
-            requiresApproval: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "reviewer",
-            name: "Code Review",
-            agentName: "Reviewer",
-            enabled: true,
-            producesArtifacts: true,
-          },
-          {
-            id: "reporter",
-            name: "Final Report",
-            agentName: "Reporter",
-            enabled: true,
-            producesArtifacts: true,
-          },
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    ];
-    return Promise.resolve(defaultTemplates);
+  async getDashboardSummary(projectId?: string): Promise<DashboardSummary> {
+    const params = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    return request(`/dashboard/summary${params}`);
   },
 
-  saveWorkflowTemplate(template: WorkflowTemplate): Promise<WorkflowTemplate> {
-    // For now, store in localStorage
-    const stored = JSON.parse(
-      localStorage.getItem("codeclaw_workflow_templates") ?? "[]",
-    ) as WorkflowTemplate[];
-    const idx = stored.findIndex((t) => t.workflowTemplateId === template.workflowTemplateId);
-    if (idx >= 0) {
-      stored[idx] = { ...template, updatedAt: new Date().toISOString() };
-    } else {
-      stored.push(template);
-    }
-    localStorage.setItem("codeclaw_workflow_templates", JSON.stringify(stored));
-    return Promise.resolve(template);
+  async listWorkflowTemplates(projectId?: string): Promise<WorkflowTemplate[]> {
+    const params = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    const data = await request<{ templates: WorkflowTemplate[] }>(`/workflows${params}`);
+    return data.templates;
+  },
+
+  async createWorkflowTemplate(template: {
+    projectId?: string;
+    name: string;
+    description?: string;
+    steps: ({ id: string; name: string; agentName?: string; enabled: boolean; requiresApproval?: boolean; producesArtifacts?: boolean; description?: string; order?: number } & Record<string, unknown>)[];
+    isDefault?: boolean;
+  }): Promise<WorkflowTemplate> {
+    const data = await request<{ template: WorkflowTemplate }>("/workflows", {
+      method: "POST",
+      body: JSON.stringify(template),
+    });
+    return data.template;
+  },
+
+  async getWorkflowTemplate(id: string, projectId?: string): Promise<WorkflowTemplate> {
+    const params = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    const data = await request<{ template: WorkflowTemplate }>(`/workflows/${id}${params}`);
+    return data.template;
+  },
+
+  async updateWorkflowTemplate(
+    id: string,
+    template: { name?: string; description?: string; steps?: { id: string; name: string; agentName?: string; enabled: boolean; requiresApproval?: boolean; producesArtifacts?: boolean; description?: string; order: number }[]; isDefault?: boolean },
+  ): Promise<WorkflowTemplate> {
+    const data = await request<{ template: WorkflowTemplate }>(`/workflows/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(template),
+    });
+    return data.template;
+  },
+
+  async deleteWorkflowTemplate(id: string): Promise<boolean> {
+    const data = await request<{ success: boolean }>(`/workflows/${id}`, { method: "DELETE" });
+    return data.success;
+  },
+
+  async duplicateWorkflowTemplate(id: string): Promise<WorkflowTemplate> {
+    const data = await request<{ template: WorkflowTemplate }>(`/workflows/${id}/duplicate`, { method: "POST" });
+    return data.template;
+  },
+
+  async validateWorkflowTemplate(id: string): Promise<{ valid: boolean; errors: string[]; warnings: string[] }> {
+    return request(`/workflows/${id}/validate`, { method: "POST" });
+  },
+
+  async getDoctorStatus(projectId?: string): Promise<DoctorStatus> {
+    const params = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    return request(`/doctor${params}`);
   },
 
   async listProjects(): Promise<{ projects: ProjectEntry[]; activeProjectId: string | null }> {

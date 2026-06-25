@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { StatusBadge } from "../components/StatusBadge.js";
 import { RunListFilters } from "../components/runs/RunListFilters.js";
 import { api } from "../lib/api.js";
+import { useProject } from "../lib/ProjectContext.js";
 import type { Run } from "../lib/types.js";
 import type { ReactElement } from "react";
 
@@ -11,14 +12,16 @@ export function Runs(): ReactElement {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const { activeProject } = useProject();
 
   const statusFilter = searchParams.get("status") ?? "";
   const modeFilter = searchParams.get("mode") ?? "";
   const searchQuery = searchParams.get("q") ?? "";
 
   useEffect(() => {
+    setLoading(true);
     api
-      .listRuns()
+      .listRuns(activeProject?.id)
       .then(setRuns)
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : "Failed to load runs");
@@ -26,7 +29,7 @@ export function Runs(): ReactElement {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [activeProject?.id]);
 
   const updateFilter = (key: string, value: string): void => {
     const next = new URLSearchParams(searchParams);
@@ -137,7 +140,9 @@ export function Runs(): ReactElement {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Runs</h1>
-        <p className="text-gray-500 mt-1">All execution runs ordered by creation date.</p>
+        <p className="text-gray-500 mt-1">
+          {activeProject ? `Runs for project: ${activeProject.name}` : "All execution runs ordered by creation date."}
+        </p>
       </div>
 
       <RunListFilters
@@ -171,11 +176,17 @@ export function Runs(): ReactElement {
             />
           </svg>
           <p className="mt-4 text-sm font-medium text-gray-900">
-            {runs.length === 0 ? "No runs yet" : "No runs match your filters"}
+            {runs.length === 0
+              ? activeProject
+                ? `No runs for project "${activeProject.name}"`
+                : "No runs yet"
+              : "No runs match your filters"}
           </p>
           <p className="mt-1 text-sm text-gray-500">
             {runs.length === 0
-              ? "Create a new requirement to see runs here."
+              ? activeProject
+                ? "Create a new requirement to see runs here."
+                : "Create a new requirement to see runs here."
               : "Try adjusting your search or filters."}
           </p>
           {runs.length === 0 ? (

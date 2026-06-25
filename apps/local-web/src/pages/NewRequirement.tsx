@@ -1,6 +1,8 @@
-import { useState, type ReactElement, type SyntheticEvent } from "react";
+import { useState, useEffect, type ReactElement, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api.js";
+import { useProject } from "../lib/ProjectContext.js";
+import type { WorkflowTemplate } from "../lib/types.js";
 
 const OUTPUT_LANGUAGES = ["English", "Vietnamese", "Bilingual"] as const;
 
@@ -8,9 +10,29 @@ export function NewRequirement(): ReactElement {
   const [rawRequirement, setRawRequirement] = useState("");
   const [outputLanguage, setOutputLanguage] = useState<string>("English");
   const [mode, setMode] = useState("docs-only");
+  const [workflowTemplates, setWorkflowTemplates] = useState<WorkflowTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { activeProject } = useProject();
+
+  useEffect(() => {
+    api.listWorkflowTemplates(activeProject?.id)
+      .then((templates) => {
+        setWorkflowTemplates(templates);
+        const defaultTpl = templates.find((t) => t.isDefault);
+        if (defaultTpl) {
+          setSelectedTemplateId(defaultTpl.workflowTemplateId);
+        } else if (templates.length > 0) {
+          const first = templates[0];
+          if (first) setSelectedTemplateId(first.workflowTemplateId);
+        }
+      })
+      .catch(() => {
+        // ignore
+      });
+  }, [activeProject?.id]);
 
   const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -25,6 +47,8 @@ export function NewRequirement(): ReactElement {
         requirement: rawRequirement.trim(),
         outputLanguage,
         mode,
+        ...(activeProject?.id ? { projectId: activeProject.id } : {}),
+        ...(selectedTemplateId ? { workflowTemplateId: selectedTemplateId } : {}),
       });
       void navigate(`/runs/${run.id}`);
     } catch (err) {
@@ -43,9 +67,7 @@ export function NewRequirement(): ReactElement {
         </p>
       </div>
       <form
-        onSubmit={(e) => {
-          void handleSubmit(e);
-        }}
+        onSubmit={(e) => { void handleSubmit(e); }}
         className="space-y-4"
       >
         <div>
@@ -56,13 +78,32 @@ export function NewRequirement(): ReactElement {
             id="requirement"
             rows={8}
             value={rawRequirement}
-            onChange={(e) => {
-              setRawRequirement(e.target.value);
-            }}
+            onChange={(e) => { setRawRequirement(e.target.value); }}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             placeholder="Describe what needs to be built..."
           />
         </div>
+
+        {workflowTemplates.length > 0 && (
+          <div>
+            <label htmlFor="template" className="block text-sm font-medium text-gray-700 mb-1">
+              Workflow Template
+            </label>
+            <select
+              id="template"
+              value={selectedTemplateId}
+              onChange={(e) => { setSelectedTemplateId(e.target.value); }}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              {workflowTemplates.map((tpl) => (
+                <option key={tpl.workflowTemplateId} value={tpl.workflowTemplateId}>
+                  {tpl.name} {tpl.isDefault ? "(Default)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div>
           <label htmlFor="outputLanguage" className="block text-sm font-medium text-gray-700 mb-1">
             Output Language
@@ -70,15 +111,11 @@ export function NewRequirement(): ReactElement {
           <select
             id="outputLanguage"
             value={outputLanguage}
-            onChange={(e) => {
-              setOutputLanguage(e.target.value);
-            }}
+            onChange={(e) => { setOutputLanguage(e.target.value); }}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             {OUTPUT_LANGUAGES.map((lang) => (
-              <option key={lang} value={lang}>
-                {lang}
-              </option>
+              <option key={lang} value={lang}>{lang}</option>
             ))}
           </select>
         </div>
@@ -89,9 +126,7 @@ export function NewRequirement(): ReactElement {
           <select
             id="mode"
             value={mode}
-            onChange={(e) => {
-              setMode(e.target.value);
-            }}
+            onChange={(e) => { setMode(e.target.value); }}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="docs-only">Docs-only</option>
@@ -110,19 +145,8 @@ export function NewRequirement(): ReactElement {
         >
           {submitting && (
             <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-              />
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
           )}
           {submitting ? "Starting..." : "Start Workflow"}

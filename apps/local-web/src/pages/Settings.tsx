@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../lib/api.js";
 import type {
   AiCliToolInfo,
@@ -490,6 +491,22 @@ export function Settings(): ReactElement {
             {aiTestResult.message}
           </div>
         )}
+      </Section>
+
+      {/* ─── System Readiness ─── */}
+      <Section title="System Readiness">
+        <p className="text-sm text-gray-500 mb-3">Check if CodeClaw is ready to run for the selected project.</p>
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <p className="text-sm text-blue-800">
+            Run the Doctor check for a full system readiness report including project status, provider config, adapter availability, and security.
+          </p>
+          <Link
+            to="/doctor"
+            className="inline-block mt-3 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+          >
+            Open Doctor
+          </Link>
+        </div>
       </Section>
 
       {/* ─── Provider Settings ─── */}

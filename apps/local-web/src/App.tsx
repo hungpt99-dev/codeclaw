@@ -9,24 +9,29 @@ import { Integrations } from "./pages/Integrations.js";
 import { Workflows } from "./pages/Workflows.js";
 import { Projects } from "./pages/Projects.js";
 import { PromptTemplates } from "./pages/PromptTemplates.js";
+import { Doctor } from "./pages/Doctor.js";
+import { ProjectProvider } from "./lib/ProjectContext.js";
 import type { ReactElement } from "react";
 
 export function App(): ReactElement {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route element={<AppLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="new" element={<NewRequirement />} />
-          <Route path="runs" element={<Runs />} />
-          <Route path="runs/:id" element={<RunDetail />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="integrations" element={<Integrations />} />
-          <Route path="workflows" element={<Workflows />} />
-          <Route path="projects" element={<Projects />} />
-          <Route path="templates" element={<PromptTemplates />} />
-        </Route>
-      </Routes>
+      <ProjectProvider>
+        <Routes>
+          <Route element={<AppLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="new" element={<NewRequirement />} />
+            <Route path="runs" element={<Runs />} />
+            <Route path="runs/:id" element={<RunDetail />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="integrations" element={<Integrations />} />
+            <Route path="workflows" element={<Workflows />} />
+            <Route path="projects" element={<Projects />} />
+            <Route path="templates" element={<PromptTemplates />} />
+            <Route path="doctor" element={<Doctor />} />
+          </Route>
+        </Routes>
+      </ProjectProvider>
     </BrowserRouter>
   );
 }
