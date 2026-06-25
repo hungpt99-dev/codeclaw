@@ -49,8 +49,9 @@ export interface ArtifactPaths {
   operationsGuidePath: string;
 }
 
-export function getArtifactPaths(runId: string): ArtifactPaths {
-  const runDir = join(".codeclaw", "runs", runId);
+export function getArtifactPaths(runId: string, dataDir?: string): ArtifactPaths {
+  const base = dataDir ?? ".codeclaw";
+  const runDir = join(base, "runs", runId);
   return {
     runDir,
     opencodeExecutionReportPath: join(runDir, "opencode-execution-report.md"),
@@ -100,8 +101,8 @@ export function getArtifactPaths(runId: string): ArtifactPaths {
   };
 }
 
-export async function createArtifactDirs(runId: string): Promise<ArtifactPaths> {
-  const paths = getArtifactPaths(runId);
+export async function createArtifactDirs(runId: string, dataDir?: string): Promise<ArtifactPaths> {
+  const paths = getArtifactPaths(runId, dataDir);
   await mkdir(paths.runDir, { recursive: true });
   await mkdir(paths.requirementDir, { recursive: true });
   await mkdir(paths.scopeDir, { recursive: true });

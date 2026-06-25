@@ -151,6 +151,22 @@ export type {
 } from "./review/deterministicReview.js";
 export { runFixLoop } from "./workflows/fixLoop.js";
 export type { FixLoopConfig, FixLoopIteration, FixLoopResult } from "./workflows/fixLoop.js";
+export { executeRun, setRunExecutionStorage } from "./workflows/runExecutionEntrypoint.js";
+export type {
+  RunExecutionInput,
+  RunExecutionResult,
+  RunExecutionStorage,
+} from "./workflows/runExecutionEntrypoint.js";
+export {
+  runCustomWorkflow,
+  validateWorkflowTemplateSteps,
+} from "./workflows/customWorkflowRunner.js";
+export type {
+  CustomWorkflowInput,
+  CustomWorkflowOutput,
+} from "./workflows/customWorkflowRunner.js";
+export { DEFAULT_WORKFLOW_TEMPLATES, getSeedName } from "./workflows/workflowTemplateSeeder.js";
+export type { WorkflowTemplateSeedState } from "./workflows/workflowTemplateSeeder.js";
 export { generateFixPrompt } from "./workflows/fixPromptGenerator.js";
 export type { ParsedTestFailure } from "./workflows/fixPromptGenerator.js";
 
@@ -168,3 +184,10 @@ export {
 } from "./project/projectRegistry.js";
 export { resolveProjectDir } from "./project/projectResolver.js";
 export type { ResolveResult } from "./project/projectResolver.js";
+export {
+  resolveProjectContext,
+  resolveProjectContextForProject,
+  getArtifactRunDir,
+  createArtifactPathsForContext,
+} from "./project/projectContextResolver.js";
+export type { ResolveContextOptions } from "./project/projectContextResolver.js";

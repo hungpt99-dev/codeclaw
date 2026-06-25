@@ -25,6 +25,7 @@ export interface StepRunnerOptions {
   stepIndex: number;
   stepName: string;
   agentRole: string | null;
+  stepKind?: string;
   execute: () => Promise<{ success: boolean; error?: string; artifactPath?: string }>;
 }
 
