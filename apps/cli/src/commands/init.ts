@@ -2,9 +2,9 @@ import { mkdir, writeFile, access, cp } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defaultConfig } from "@codeclaw/shared";
-import { openDatabase, initializeSchema } from "@codeclaw/storage";
+import { openDatabase, initializeSchema, createWorkflowTemplateRepository } from "@codeclaw/storage";
 import { initializeRuntimeMemory } from "@codeclaw/memory";
-import { analyzeRepository } from "@codeclaw/core";
+import { analyzeRepository, DEFAULT_WORKFLOW_TEMPLATES } from "@codeclaw/core";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -52,8 +52,29 @@ export async function initCommand(options: InitOptions): Promise<void> {
   await writeFile(join(aiTeamDir, "config.json"), JSON.stringify(config, null, 2), "utf-8");
   console.log("✅ Created .codeclaw/config.json");
 
-  const db = openDatabase(join(aiTeamDir, "database.sqlite"));
+  const dbPath = join(aiTeamDir, "database.sqlite");
+  const db = openDatabase(dbPath);
   initializeSchema(db);
+  
+  // Seed default workflow templates into this project's database
+  const templateRepo = createWorkflowTemplateRepository(db);
+  const existing = templateRepo.findAll();
+  if (existing.length === 0) {
+    for (const tpl of DEFAULT_WORKFLOW_TEMPLATES) {
+      templateRepo.create({
+        id: `default-${tpl.name.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
+        projectId: undefined,
+        name: tpl.name,
+        description: tpl.description,
+        steps: JSON.stringify(tpl.steps),
+        isDefault: tpl.isDefault ?? false,
+        createdAt: undefined,
+        updatedAt: undefined,
+      });
+    }
+    console.log("✅ Seeded default workflow templates");
+  }
+  
   db.close();
   console.log("✅ Created .codeclaw/database.sqlite");
 

@@ -31,6 +31,7 @@ import {
   useProjectCommand,
   currentProjectCommand,
   removeProjectCommand,
+  migrateRunsCommand,
 } from "./commands/project.js";
 import {
   githubStatusCommand,
@@ -88,6 +89,7 @@ interface RunCliOptions {
   agent?: string;
   timeout?: string;
   project?: string;
+  workflowTemplate?: string;
 }
 
 interface ApproveCliOptions {
@@ -209,6 +211,7 @@ program
   .option("--agent <name>", "Selected AI coding agent (claude, codex, gemini, aider)")
   .option("--timeout <seconds>", "Override command timeout in seconds")
   .option("-p, --project <name>", "Project name or ID")
+  .option("--workflow-template <id>", "Workflow template ID for custom workflow execution")
   .action(async (requirement: string, options: RunCliOptions) => {
     await runCommand(requirement, options);
   });
@@ -500,6 +503,18 @@ projectProgram
   .argument("<nameOrId>", "Project name or ID")
   .action(async (nameOrId: string) => {
     await removeProjectCommand(nameOrId);
+  });
+
+projectProgram
+  .command("migrate-runs")
+  .description("Migrate legacy unassigned runs to a project database")
+  .option("--project <nameOrId>", "Target project name or ID")
+  .option("--dry-run", "Show what would be migrated without making changes")
+  .option("--yes", "Skip confirmation prompt")
+  .option("--from-legacy-db <path>", "Path to legacy database (default: cwd/.codeclaw/database.sqlite)")
+  .option("--only-run <runId>", "Migrate only a specific run")
+  .action(async (options: { project?: string; dryRun?: boolean; yes?: boolean; fromLegacyDb?: string; onlyRun?: string }) => {
+    await migrateRunsCommand(options);
   });
 
 const githubProgram = program.command("github").description("GitHub integration (optional)");
