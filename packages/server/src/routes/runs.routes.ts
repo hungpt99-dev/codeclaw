@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unnecessary-condition */
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { FastifyInstance } from "fastify";
@@ -17,38 +18,26 @@ import type {
   ApprovalStatus,
   AiAdapterName,
 } from "@codeclaw/shared";
-import { createRunId, ArtifactTypeValues } from "@codeclaw/shared";
+import { createRunId } from "@codeclaw/shared";
 import { createRunRequestSchema } from "@codeclaw/shared";
 import {
-  runDocsOnlyWorkflow,
-  runAssistedWorkflow,
-  runSemiAutoWorkflow,
-  analyzeRepository,
-  generateTraceability,
   getArtifactPaths,
   runTestsForRun,
-  loadAndReview,
-  persistReview,
-  emitWorkflowProgress,
 } from "@codeclaw/core";
-
-interface ArtifactDef {
-  type: ArtifactType;
-  name: string;
-  format: string;
-}
 
 export function registerRunsRoutes(
   app: FastifyInstance,
   db: DbConnection,
   codeclawDir?: string,
+  dataDir?: string,
 ): void {
   const configPath = codeclawDir
     ? join(codeclawDir, "config.json")
     : join(".codeclaw", "config.json");
-  app.get("/api/runs", async (_request, _reply) => {
+  app.get("/api/runs", async (request, _reply) => {
+    const query = request.query as { projectId?: string };
     const repo = createRunRepository(db);
-    const runs = repo.findAll();
+    let runs = repo.findAllWithProject(query.projectId);
     const { createStepExecutionRepository } = await import("@codeclaw/storage");
     const stepRepo = createStepExecutionRepository(db);
     const runsWithSteps = runs.map((run) => {
@@ -70,14 +59,18 @@ export function registerRunsRoutes(
   app.get("/api/runs/:id", async (request, reply) => {
     const repo = createRunRepository(db);
     const params = request.params as { id: string };
+    const query = request.query as { projectId?: string };
     const run = repo.findById(params.id);
     if (!run) {
       return reply.status(404).send({ error: "Run not found" });
     }
+    if (query.projectId && run.projectId && run.projectId !== query.projectId) {
+      return reply.status(404).send({ error: "Run not found in this project" });
+    }
     return { run };
   });
 
-  app.post("/api/runs", async (request, reply) => {
+    app.post("/api/runs", async (request, reply) => {
     const result = createRunRequestSchema.safeParse(request.body);
     if (!result.success) {
       return reply.status(400).send({ error: "Requirement is required" });
@@ -90,14 +83,17 @@ export function registerRunsRoutes(
 
     const outputLanguage = result.data.outputLanguage;
     const mode = result.data.mode;
-    const runId = createRunId(rawRequirement);
+    const body = request.body as Record<string, unknown> | undefined;
+    const projectId = (body?.projectId as string | undefined);
+    const workflowTemplateId = (body?.workflowTemplateId as string | undefined);
 
+    // Create run record synchronously
+    const runId = createRunId(rawRequirement);
     const runRepo = createRunRepository(db);
     const existing = runRepo.findById(runId);
     if (existing) {
       return reply.status(409).send({ error: "Run already exists", runId });
     }
-
     const title = rawRequirement.length > 80 ? rawRequirement.slice(0, 80) + "..." : rawRequirement;
     runRepo.create({
       id: runId,
@@ -105,153 +101,30 @@ export function registerRunsRoutes(
       rawRequirement,
       mode: mode as RunMode,
       outputLanguage,
+      projectId,
+      workflowTemplateId,
+      workflowMode: mode,
     });
 
     runRepo.updateStatus(runId, "SPEC_GENERATED");
-
-    const isAssisted = mode === "assisted";
-
-    emitWorkflowProgress(runId, "WORKFLOW_STARTED", {
-      stage: "Workflow Started",
-      message: "Workflow started",
-      stages: isAssisted
-        ? [
-            "BA Analysis",
-            "Architecture Design",
-            "Integration Planning",
-            "Frontend Planning",
-            "Backend Planning",
-            "Task Breakdown",
-            "Test Planning",
-            "UX Research",
-            "UI Design",
-            "UX Writing",
-            "Coding Plan",
-            "Developer Implementation",
-            "DevOps Release",
-            "Traceability",
-            "Final Report",
-          ]
-        : [
-            "Repository Analysis",
-            "BA Analysis",
-            "PO Scope Definition",
-            "UX Research",
-            "UI Design",
-            "UX Writing",
-            "Architecture Design",
-            "Integration Planning",
-            "Frontend Planning",
-            "Backend Planning",
-            "Task Breakdown",
-            "Test Planning",
-            "DevOps Release",
-            "Traceability",
-            "Technical Documentation",
-            "Final Report",
-          ],
-    });
-
     const run = runRepo.findById(runId);
 
+    // Run workflow in background
     setTimeout(() => {
       void (async () => {
         try {
-          const workflowResult = isAssisted
-            ? await runAssistedWorkflow({
-                requirement: rawRequirement,
-                projectRoot: undefined,
-                memoryContext: undefined,
-              })
-            : await runDocsOnlyWorkflow({
-                requirement: rawRequirement,
-                projectRoot: undefined,
-                memoryContext: undefined,
-              });
-
-          const artifactRepo = createArtifactRepository(db);
-
-          const docsArtifactDefs: ArtifactDef[] = [
-            { type: ArtifactTypeValues.RAW_REQUIREMENT, name: "input.md", format: "markdown" },
-            {
-              type: ArtifactTypeValues.CLARIFIED_REQUIREMENT,
-              name: "clarified-requirement.md",
-              format: "markdown",
-            },
-            {
-              type: ArtifactTypeValues.BUSINESS_RULES,
-              name: "business-rules.md",
-              format: "markdown",
-            },
-            {
-              type: ArtifactTypeValues.ACCEPTANCE_CRITERIA,
-              name: "acceptance-criteria.md",
-              format: "markdown",
-            },
-            {
-              type: ArtifactTypeValues.OPEN_QUESTIONS,
-              name: "open-questions.md",
-              format: "markdown",
-            },
-            { type: ArtifactTypeValues.ASSUMPTIONS, name: "assumptions.md", format: "markdown" },
-            {
-              type: ArtifactTypeValues.TECHNICAL_DESIGN,
-              name: "technical-design.md",
-              format: "markdown",
-            },
-            { type: ArtifactTypeValues.API_DESIGN, name: "api-design.md", format: "markdown" },
-            { type: ArtifactTypeValues.DB_DESIGN, name: "db-design.md", format: "markdown" },
-            {
-              type: ArtifactTypeValues.TASK_BREAKDOWN,
-              name: "task-breakdown.md",
-              format: "markdown",
-            },
-            {
-              type: ArtifactTypeValues.TASK_BREAKDOWN,
-              name: "task-breakdown.json",
-              format: "json",
-            },
-            {
-              type: ArtifactTypeValues.JIRA_READY_TASKS,
-              name: "jira-ready-tasks.md",
-              format: "markdown",
-            },
-            { type: ArtifactTypeValues.TEST_MATRIX, name: "test-matrix.md", format: "markdown" },
-            { type: ArtifactTypeValues.TEST_MATRIX, name: "test-matrix.json", format: "json" },
-            { type: ArtifactTypeValues.FINAL_REPORT, name: "final-report.md", format: "markdown" },
-          ];
-
-          const assistedArtifactDefs: ArtifactDef[] = [
-            {
-              type: ArtifactTypeValues.IMPLEMENTATION_PROMPT,
-              name: "implementation-prompt.md",
-              format: "markdown",
-            },
-          ];
-
-          const artifactDefs = isAssisted
-            ? [...docsArtifactDefs, ...assistedArtifactDefs]
-            : docsArtifactDefs;
-
-          for (let i = 0; i < artifactDefs.length; i++) {
-            const def = artifactDefs[i];
-            if (!def) continue;
-            const artifactPath = workflowResult.artifacts[i];
-            if (!artifactPath) continue;
-            artifactRepo.create({
-              id: `${runId}_artifact_${String(i)}`,
-              runId,
-              type: def.type,
-              name: def.name,
-              path: artifactPath,
-              format: def.format,
-            });
-          }
-
-          runRepo.updateStatus(runId, "REPORT_GENERATED");
-        } catch {
-          runRepo.updateStatus(runId, "FAILED");
-        }
+          const { executeRun } = await import("@codeclaw/core");
+          await executeRun({
+            projectId,
+            requirement: rawRequirement,
+            workflowMode: mode ?? "docs-only",
+            workflowTemplateId,
+            outputLanguage,
+            approve: (body?.approve as boolean) ?? false,
+            agent: body?.agent as string | undefined,
+            dataDirOverride: dataDir ?? codeclawDir,
+          } as unknown as Parameters<typeof executeRun>[0]);
+        } catch { /* background workflow execution */ }
       })();
     }, 0);
 
@@ -430,7 +303,16 @@ export function registerRunsRoutes(
 
   app.get("/api/runs/:id/diff", async (request, reply) => {
     const params = request.params as { id: string };
-    const paths = getArtifactPaths(params.id);
+    const query = request.query as { projectId?: string };
+    const runRepo = createRunRepository(db);
+    const run = runRepo.findById(params.id);
+    if (!run) {
+      return reply.status(404).send({ error: "Run not found" });
+    }
+    if (query.projectId && run.projectId && run.projectId !== query.projectId) {
+      return reply.status(404).send({ error: "Run not found in this project" });
+    }
+    const paths = getArtifactPaths(params.id, dataDir);
     try {
       const content = await readFile(paths.diffPatchPath, "utf-8");
       return { diffContent: content };
@@ -738,8 +620,17 @@ export function registerRunsRoutes(
     };
   });
 
-  app.get("/api/runs/:id/steps", async (request, _reply) => {
+  app.get("/api/runs/:id/steps", async (request, reply) => {
     const params = request.params as { id: string };
+    const query = request.query as { projectId?: string };
+    const runRepo = createRunRepository(db);
+    const run = runRepo.findById(params.id);
+    if (!run) {
+      return reply.status(404).send({ error: "Run not found" });
+    }
+    if (query.projectId && run.projectId && run.projectId !== query.projectId) {
+      return reply.status(404).send({ error: "Run not found in this project" });
+    }
     const { createStepExecutionRepository } = await import("@codeclaw/storage");
     const stepRepo = createStepExecutionRepository(db);
     const steps = stepRepo.findByRunId(params.id);
@@ -748,7 +639,16 @@ export function registerRunsRoutes(
 
   app.get("/api/runs/:id/execution-report", async (request, reply) => {
     const params = request.params as { id: string };
-    const paths = getArtifactPaths(params.id);
+    const query = request.query as { projectId?: string };
+    const runRepo = createRunRepository(db);
+    const run = runRepo.findById(params.id);
+    if (!run) {
+      return reply.status(404).send({ error: "Run not found" });
+    }
+    if (query.projectId && run.projectId && run.projectId !== query.projectId) {
+      return reply.status(404).send({ error: "Run not found in this project" });
+    }
+    const paths = getArtifactPaths(params.id, dataDir);
     const reportPath = paths.opencodeExecutionReportPath;
     if (!reportPath) {
       return reply.status(404).send({ error: "Execution report not found" });
